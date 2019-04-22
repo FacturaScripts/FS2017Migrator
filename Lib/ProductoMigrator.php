@@ -45,8 +45,8 @@ class ProductoMigrator extends MigratorBase
         }
 
         $newOffset = 0;
-        $sql = "SELECT * FROM articulos";
-        foreach ($this->dataBase->selectLimit($sql, FS_ITEM_LIMIT, $offset) as $row) {
+        $sql = "SELECT * FROM articulos ORDER BY referencia ASC";
+        foreach ($this->dataBase->selectLimit($sql, 100, $offset) as $row) {
             $this->newProduct($row);
             $newOffset += empty($newOffset) ? 1 + $offset : 1;
         }
