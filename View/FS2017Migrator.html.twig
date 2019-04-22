@@ -1,0 +1,39 @@
+{% extends "Master/MenuTemplate.html.twig" %}
+
+{% block body %}
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <h1 class="h2">
+                    <i class="fas fa-database fa-fw"></i> {{ i18n.trans('2017-migrator') }}
+                </h1>
+                <hr/>
+                <p>{{ i18n.trans('2017-migrator-paragraph') }}</p>
+                <ul>
+                    {% for log in fsc.migrationLog %}
+                        <li>
+                            {{ log }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% if fsc.enableRun %}
+            <form method="post">
+                <input type="hidden" name="action" value="start"/>
+                <div class="row">
+                    <div class="col">
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-terminal fa-fw"></i> {{ i18n.trans('run') }}
+                        </button>
+                    </div>
+                </div>
+            </form>
+        {% endif %}
+        {% if fsc.working %}
+            <button class ="btn btn-warning">
+                <i class="fas fa-cog fa-spin fa-fw"></i> {{ i18n.trans('run') }}
+            </button>
+        {% endif %}
+    </div>
+{% endblock %}
