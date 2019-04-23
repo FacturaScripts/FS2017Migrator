@@ -89,7 +89,7 @@ class FS2017Migrator extends Controller
     {
         $this->working = true;
         $steps = [
-            'start', 'Empresa', 'Producto', 'end'
+            'start', 'Empresa', 'Cliente', 'Proveedor', 'Producto', 'end'
         ];
 
         $found = false;
@@ -111,8 +111,10 @@ class FS2017Migrator extends Controller
             if ($step == 'start') {
                 $migrator = new EmpresaMigrator();
                 $migrator->freeTables();
+                $this->cache->clear();
                 continue;
             } elseif ($step == 'end') {
+                $this->cache->clear();
                 $this->working = false;
                 break;
             }

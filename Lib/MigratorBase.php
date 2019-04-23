@@ -19,7 +19,6 @@
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\App\AppSettings;
-use FacturaScripts\Core\Base\Cache;
 use FacturaScripts\Core\Base\DataBase;
 use FacturaScripts\Core\Base\MiniLog;
 use FacturaScripts\Core\Base\Translator;
@@ -37,12 +36,6 @@ abstract class MigratorBase
      * @var AppSettings
      */
     protected $appSettings;
-
-    /**
-     *
-     * @var Cache
-     */
-    protected $cache;
 
     /**
      *
@@ -67,7 +60,6 @@ abstract class MigratorBase
     public function __construct()
     {
         $this->appSettings = new AppSettings();
-        $this->cache = new Cache();
         $this->dataBase = new DataBase();
         $this->i18n = new Translator();
         $this->miniLog = new MiniLog();
@@ -87,8 +79,6 @@ abstract class MigratorBase
                 $this->freeTable($tableName);
             }
         }
-
-        $this->cache->clear();
     }
 
     /**
