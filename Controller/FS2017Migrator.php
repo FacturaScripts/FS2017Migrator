@@ -89,7 +89,7 @@ class FS2017Migrator extends Controller
     {
         $this->working = true;
         $steps = [
-            'start', 'Empresa', 'Cliente', 'Proveedor', 'Producto', 'end'
+            'start', 'Empresa', 'GruposEpigrafes', 'Epigrafes', 'Cuentas', 'Subcuentas', 'end'
         ];
 
         $found = false;

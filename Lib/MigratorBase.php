@@ -20,8 +20,11 @@ namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\App\AppSettings;
 use FacturaScripts\Core\Base\DataBase;
+use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
 use FacturaScripts\Core\Base\MiniLog;
 use FacturaScripts\Core\Base\Translator;
+use FacturaScripts\Dinamic\Model\Cuenta;
+use FacturaScripts\Dinamic\Model\Impuesto;
 
 /**
  * Description of MigratorBase
@@ -51,6 +54,12 @@ abstract class MigratorBase
 
     /**
      *
+     * @var Impuesto[]
+     */
+    protected $impuestos = [];
+
+    /**
+     *
      * @var MiniLog
      */
     protected $miniLog;
@@ -62,6 +71,13 @@ abstract class MigratorBase
         $this->appSettings = new AppSettings();
         $this->dataBase = new DataBase();
         $this->i18n = new Translator();
+
+        /// Load taxes
+        $impuestoModel = new Impuesto();
+        foreach ($impuestoModel->all() as $imp) {
+            $this->impuestos[$imp->codimpuesto] = $imp;
+        }
+
         $this->miniLog = new MiniLog();
     }
 
@@ -83,6 +99,17 @@ abstract class MigratorBase
 
     /**
      * 
+     * @param string $codimpuesto
+     *
+     * @return string
+     */
+    protected function fixImpuesto($codimpuesto)
+    {
+        return isset($this->impuestos[$codimpuesto]) ? $codimpuesto : null;
+    }
+
+    /**
+     * 
      * @param string $tableName
      */
     private function freeTable($tableName)
@@ -100,6 +127,43 @@ abstract class MigratorBase
         }
 
         $this->removeNotNullColumns($tableName, $primaryKey);
+    }
+
+    /**
+     * 
+     * @param string $codejercicio
+     * @param string $codparent
+     * @param string $codcuenta
+     * @param string $descripcion
+     * @param string $idcuentaesp
+     *
+     * @return bool
+     */
+    protected function newCuenta($codejercicio, $codparent, $codcuenta, $descripcion, $idcuentaesp = null)
+    {
+        $cuenta = new Cuenta();
+        $where = [
+            new DataBaseWhere('codcuenta', $codcuenta),
+            new DataBaseWhere('codejercicio', $codejercicio)
+        ];
+        if ($cuenta->loadFromCode('', $where)) {
+            return true;
+        }
+
+        $cuenta->codcuenta = $codcuenta;
+        $cuenta->codejercicio = $codejercicio;
+        $cuenta->descripcion = $descripcion;
+        $cuenta->codcuentaesp = empty($idcuentaesp) ? null : $idcuentaesp;
+
+        if (!empty($codparent)) {
+            $parent = new Cuenta();
+            if ($parent->loadFromCode($codparent)) {
+                $cuenta->parent_codcuenta = $parent->codcuenta;
+                $cuenta->parent_idcuenta = $parent->idcuenta;
+            }
+        }
+
+        return $cuenta->save();
     }
 
     /**

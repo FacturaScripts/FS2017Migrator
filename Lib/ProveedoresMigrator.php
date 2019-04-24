@@ -23,11 +23,11 @@ use FacturaScripts\Dinamic\Model\Contacto;
 use FacturaScripts\Dinamic\Model\Proveedor;
 
 /**
- * Description of ProveedorMigrator
+ * Description of ProveedoresMigrator
  *
  * @author Carlos Garcia Gomez <carlos@facturascripts.com>
  */
-class ProveedorMigrator extends MigratorBase
+class ProveedoresMigrator extends MigratorBase
 {
 
     /**

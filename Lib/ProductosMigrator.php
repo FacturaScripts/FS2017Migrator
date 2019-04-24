@@ -24,11 +24,11 @@ use FacturaScripts\Dinamic\Model\Producto;
 use FacturaScripts\Dinamic\Model\Stock;
 
 /**
- * Description of ProductoMigrator
+ * Description of ProductosMigrator
  *
  * @author Carlos Garcia Gomez <carlos@facturascripts.com>
  */
-class ProductoMigrator extends MigratorBase
+class ProductosMigrator extends MigratorBase
 {
 
     /**

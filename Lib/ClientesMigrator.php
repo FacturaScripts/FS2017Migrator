@@ -24,11 +24,11 @@ use FacturaScripts\Dinamic\Model\Cliente;
 use FacturaScripts\Dinamic\Model\Contacto;
 
 /**
- * Description of ClienteMigrator
+ * Description of ClientesMigrator
  *
  * @author Carlos Garcia Gomez <carlos@facturascripts.com>
  */
-class ClienteMigrator extends MigratorBase
+class ClientesMigrator extends MigratorBase
 {
 
     /**
