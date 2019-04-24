@@ -74,13 +74,17 @@ class ProductosMigrator extends MigratorBase
         $producto->loadFromData($data);
         $producto->ventasinstock = Utils::str2bool($data['controlstock']);
         if ($producto->save()) {
-            $this->updateStock($producto);
+            if (!$this->updateStock($producto)) {
+                return false;
+            }
+
             foreach ($producto->getVariants() as $variante) {
                 $variante->codbarras = $data['codbarras'];
                 $variante->coste = $data['costemedio'];
                 $variante->precio = $data['pvp'];
                 $variante->save();
             }
+
             return true;
         }
 
@@ -90,6 +94,8 @@ class ProductosMigrator extends MigratorBase
     /**
      * 
      * @param Producto $producto
+     *
+     * @return bool
      */
     protected function updateStock(&$producto)
     {
@@ -97,7 +103,11 @@ class ProductosMigrator extends MigratorBase
         foreach ($this->dataBase->select($sql) as $row) {
             $stock = new Stock($row);
             $stock->idproducto = $producto->idproducto;
-            $stock->save();
+            if (!$stock->save()) {
+                return false;
+            }
         }
+
+        return true;
     }
 }
