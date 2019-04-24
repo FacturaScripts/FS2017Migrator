@@ -32,14 +32,20 @@ use FacturaScripts\Dinamic\Model\FormaPago;
 class EmpresaMigrator extends MigratorBase
 {
 
-    public function migrate($offset = 0)
+    /**
+     * 
+     * @param int $offset
+     *
+     * @return bool
+     */
+    public function migrate(&$offset = 0)
     {
         $sql = "SELECT * FROM empresa;";
         foreach ($this->dataBase->select($sql) as $row) {
             $this->updateCompany($row);
         }
 
-        return 0;
+        return true;
     }
 
     /**

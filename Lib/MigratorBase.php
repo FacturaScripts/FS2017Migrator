@@ -64,7 +64,7 @@ abstract class MigratorBase
      */
     protected $miniLog;
 
-    abstract public function migrate($offset = 0);
+    abstract public function migrate(&$offset = 0);
 
     public function __construct()
     {
@@ -157,7 +157,11 @@ abstract class MigratorBase
 
         if (!empty($codparent)) {
             $parent = new Cuenta();
-            if ($parent->loadFromCode($codparent)) {
+            $where2 = [
+                new DataBaseWhere('codcuenta', $codparent),
+                new DataBaseWhere('codejercicio', $codejercicio)
+            ];
+            if ($parent->loadFromCode('', $where2)) {
                 $cuenta->parent_codcuenta = $parent->codcuenta;
                 $cuenta->parent_idcuenta = $parent->idcuenta;
             }
@@ -208,12 +212,32 @@ abstract class MigratorBase
     /**
      * 
      * @param string $tableName
+     *
+     * @return bool
+     */
+    protected function removeTable($tableName)
+    {
+        $sql = 'DROP TABLE ' . $tableName . ';';
+        return $this->dataBase->exec($sql);
+    }
+
+    /**
+     * 
+     * @param string $tableName
      * @param string $newName
      *
      * @return bool
      */
     protected function renameTable($tableName, $newName)
     {
+        if (!$this->dataBase->tableExists($tableName)) {
+            return true;
+        }
+
+        if ($this->dataBase->tableExists($newName)) {
+            $this->removeTable($newName);
+        }
+
         $sql = 'ALTER TABLE ' . $tableName . ' RENAME "' . $newName . '";';
         if (strtolower(FS_DB_TYPE) == 'postgresql') {
             $sql = 'ALTER TABLE ' . $tableName . ' RENAME TO "' . $newName . '";';

@@ -5,10 +5,15 @@
         <div class="row">
             <div class="col">
                 <h1 class="h2">
-                    <i class="fas fa-database fa-fw"></i> {{ i18n.trans('2017-migrator') }}
+                    {% if fsc.working %}
+                        <i class="fas fa-sync fa-spin fa-fw"></i>
+                    {% else %}
+                        <i class="fas fa-database fa-fw"></i>
+                    {% endif %}
+                    {{ i18n.trans('2017-migrator') }}
                 </h1>
-                <hr/>
                 <p>{{ i18n.trans('2017-migrator-paragraph') }}</p>
+                <hr/>
                 <ul>
                     {% for log in fsc.migrationLog %}
                         <li>

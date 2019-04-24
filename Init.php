@@ -16,34 +16,26 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
+namespace FacturaScripts\Plugins\FS2017Migrator;
+
+use FacturaScripts\Core\Base\InitClass;
+use FacturaScripts\Dinamic\Model\Diario;
 
 /**
- * Description of GrupoEpigrafeMigrator
+ * Description of Init
  *
- * @author Carlos Garcia Gomez <carlos@facturascripts.com>
+ * @author carlos
  */
-class GruposEpigrafesMigrator extends MigratorBase
+class Init extends InitClass
 {
 
-    /**
-     * 
-     * @param int $offset
-     *
-     * @return bool
-     */
-    public function migrate(&$offset = 0)
+    public function init()
     {
-        $sql = "SELECT * FROM co_gruposepigrafes ORDER BY idgrupo ASC";
-        $rows = $this->dataBase->selectLimit($sql, 100, $offset);
-        foreach ($rows as $row) {
-            if (!$this->newCuenta($row['codejercicio'], '', $row['codgrupo'], $row['descripcion'])) {
-                return false;
-            }
+        ;
+    }
 
-            $offset++;
-        }
-
-        return true;
+    public function update()
+    {
+        new Diario();
     }
 }

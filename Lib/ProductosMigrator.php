@@ -35,23 +35,26 @@ class ProductosMigrator extends MigratorBase
      * 
      * @param int $offset
      *
-     * @return int
+     * @return bool
      */
-    public function migrate($offset = 0)
+    public function migrate(&$offset = 0)
     {
         /// rename stocks table
         if (!$this->dataBase->tableExists('stocks_old')) {
             $this->renameTable('stocks', 'stocks_old');
         }
 
-        $newOffset = 0;
         $sql = "SELECT * FROM articulos ORDER BY referencia ASC";
-        foreach ($this->dataBase->selectLimit($sql, 100, $offset) as $row) {
-            $this->newProduct($row);
-            $newOffset += empty($newOffset) ? 1 + $offset : 1;
+        $rows = $this->dataBase->selectLimit($sql, 100, $offset);
+        foreach ($rows as $row) {
+            if (!$this->newProduct($row)) {
+                return false;
+            }
+
+            $offset++;
         }
 
-        return $newOffset;
+        return true;
     }
 
     /**

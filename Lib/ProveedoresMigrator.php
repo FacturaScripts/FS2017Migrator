@@ -34,24 +34,27 @@ class ProveedoresMigrator extends MigratorBase
      * 
      * @param int $offset
      *
-     * @return int
+     * @return bool
      */
-    public function migrate($offset = 0)
+    public function migrate(&$offset = 0)
     {
-        $newOffset = 0;
-
         $proveedorModel = new Proveedor();
-        foreach ($proveedorModel->all([], ['codproveedor' => 'ASC'], $offset) as $proveedor) {
+        $rows = $proveedorModel->all([], ['codproveedor' => 'ASC'], $offset);
+        foreach ($rows as $proveedor) {
             $proveedor->codsubcuenta = $this->getSubcuenta($proveedor->codsubcuenta);
             $proveedor->email = filter_var($proveedor->email, FILTER_VALIDATE_EMAIL) ? $proveedor->email : '';
-            $proveedor->save();
+            if (!$proveedor->save()) {
+                return false;
+            }
 
-            $this->migrateAddress($proveedor);
+            if (!$this->migrateAddress($proveedor)) {
+                return false;
+            }
 
-            $newOffset += empty($newOffset) ? 1 + $offset : 1;
+            $offset++;
         }
 
-        return $newOffset;
+        return true;
     }
 
     /**
@@ -63,7 +66,7 @@ class ProveedoresMigrator extends MigratorBase
         $contacto = new Contacto();
         $where = [new DataBaseWhere('codproveedor', $proveedor->codproveedor)];
         if ($contacto->loadFromCode('', $where)) {
-            return;
+            return true;
         }
 
         $sql = "SELECT * FROM dirproveedores WHERE codproveedor = '" . $proveedor->codproveedor . "';";
@@ -75,8 +78,12 @@ class ProveedoresMigrator extends MigratorBase
 
             $newContacto->email = $proveedor->email;
             $newContacto->nombre = $proveedor->nombre;
-            $newContacto->save();
+            if (!$newContacto->save()) {
+                return false;
+            }
         }
+
+        return true;
     }
 
     /**

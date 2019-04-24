@@ -18,12 +18,16 @@
  */
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
+use FacturaScripts\Dinamic\Model\Asiento;
+use FacturaScripts\Dinamic\Model\Diario;
+use FacturaScripts\Dinamic\Model\Partida;
+
 /**
- * Description of GrupoEpigrafeMigrator
+ * Description of AsientosMigrator
  *
  * @author Carlos Garcia Gomez <carlos@facturascripts.com>
  */
-class GruposEpigrafesMigrator extends MigratorBase
+class AsientosMigrator extends MigratorBase
 {
 
     /**
@@ -34,14 +38,24 @@ class GruposEpigrafesMigrator extends MigratorBase
      */
     public function migrate(&$offset = 0)
     {
-        $sql = "SELECT * FROM co_gruposepigrafes ORDER BY idgrupo ASC";
-        $rows = $this->dataBase->selectLimit($sql, 100, $offset);
-        foreach ($rows as $row) {
-            if (!$this->newCuenta($row['codejercicio'], '', $row['codgrupo'], $row['descripcion'])) {
-                return false;
-            }
+        switch ($offset) {
+            case 0:
+                $offset++;
+                return $this->renameTable('co_asientos', 'asientos');
 
-            $offset++;
+            case 1:
+                $offset++;
+                return $this->renameTable('co_partidas', 'partidas');
+
+            case 2:
+                $offset++;
+                new Diario();
+                new Asiento();
+                return true;
+
+            case 3:
+                new Partida();
+                return true;
         }
 
         return true;

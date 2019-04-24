@@ -30,17 +30,20 @@ class CuentasMigrator extends MigratorBase
      * 
      * @param int $offset
      *
-     * @return int
+     * @return bool
      */
-    public function migrate($offset = 0)
+    public function migrate(&$offset = 0)
     {
-        $newOffset = 0;
         $sql = "SELECT * FROM co_cuentas ORDER BY idcuenta ASC";
-        foreach ($this->dataBase->selectLimit($sql, 100, $offset) as $row) {
-            $this->newCuenta($row['codejercicio'], $row['codepigrafe'], $row['codcuenta'], $row['descripcion'], $row['idcuentaesp']);
-            $newOffset += empty($newOffset) ? 1 + $offset : 1;
+        $rows = $this->dataBase->selectLimit($sql, 100, $offset);
+        foreach ($rows as $row) {
+            if (!$this->newCuenta($row['codejercicio'], $row['codepigrafe'], $row['codcuenta'], $row['descripcion'], $row['idcuentaesp'])) {
+                return false;
+            }
+
+            $offset++;
         }
 
-        return $newOffset;
+        return true;
     }
 }

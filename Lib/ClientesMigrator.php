@@ -35,24 +35,27 @@ class ClientesMigrator extends MigratorBase
      * 
      * @param int $offset
      *
-     * @return int
+     * @return bool
      */
-    public function migrate($offset = 0)
+    public function migrate(&$offset = 0)
     {
-        $newOffset = 0;
-
         $clienteModel = new Cliente();
-        foreach ($clienteModel->all([], ['codcliente' => 'ASC'], $offset) as $cliente) {
+        $rows = $clienteModel->all([], ['codcliente' => 'ASC'], $offset);
+        foreach ($rows as $cliente) {
             $cliente->codsubcuenta = $this->getSubcuenta($cliente->codsubcuenta);
             $cliente->email = filter_var($cliente->email, FILTER_VALIDATE_EMAIL) ? $cliente->email : '';
-            $cliente->save();
+            if (!$cliente->save()) {
+                return false;
+            }
 
-            $this->migrateAddress($cliente);
+            if (!$this->migrateAddress($cliente)) {
+                return false;
+            }
 
-            $newOffset += empty($newOffset) ? 1 + $offset : 1;
+            $offset++;
         }
 
-        return $newOffset;
+        return true;
     }
 
     /**
@@ -64,7 +67,7 @@ class ClientesMigrator extends MigratorBase
         $contacto = new Contacto();
         $where = [new DataBaseWhere('codcliente', $cliente->codcliente)];
         if ($contacto->loadFromCode('', $where)) {
-            return;
+            return true;
         }
 
         $sql = "SELECT * FROM dirclientes WHERE codcliente = '" . $cliente->codcliente . "';";
@@ -76,7 +79,9 @@ class ClientesMigrator extends MigratorBase
 
             $newContacto->email = $cliente->email;
             $newContacto->nombre = $cliente->nombre;
-            $newContacto->save();
+            if (!$newContacto->save()) {
+                return false;
+            }
 
             if (Utils::str2bool($row['domfacturacion'])) {
                 $cliente->idcontactofact = $newContacto->idcontacto;
@@ -87,7 +92,7 @@ class ClientesMigrator extends MigratorBase
             }
         }
 
-        $cliente->save();
+        return $cliente->save();
     }
 
     /**

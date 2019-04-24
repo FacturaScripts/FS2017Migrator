@@ -34,18 +34,48 @@ class SubcuentasMigrator extends MigratorBase
      * 
      * @param int $offset
      *
-     * @return int
+     * @return bool
      */
-    public function migrate($offset = 0)
+    public function migrate(&$offset = 0)
     {
-        $newOffset = 0;
         $sql = "SELECT * FROM co_subcuentas ORDER BY idsubcuenta ASC";
-        foreach ($this->dataBase->selectLimit($sql, 100, $offset) as $row) {
-            $this->newSubcuenta($row);
-            $newOffset += empty($newOffset) ? 1 + $offset : 1;
+        $rows = $this->dataBase->selectLimit($sql, 100, $offset);
+        foreach ($rows as $row) {
+            if (!$this->newSubcuenta($row)) {
+                return false;
+            }
+
+            $offset++;
         }
 
-        return $newOffset;
+        return true;
+    }
+
+    /**
+     * 
+     * @param Cuenta $cuenta
+     * @param string $codcuenta
+     * @param string $codejercicio
+     *
+     * @return bool
+     */
+    private function fixMissingCuenta(&$cuenta, $codcuenta, $codejercicio)
+    {
+        $parentCuenta = new Cuenta();
+        $where = [
+            new DataBaseWhere('codcuenta', substr($codcuenta, 1)),
+            new DataBaseWhere('codejercicio', $codejercicio),
+        ];
+        if (!$parentCuenta->loadFromCode('', $where)) {
+            return false;
+        }
+
+        $cuenta->codcuenta = $codcuenta;
+        $cuenta->codejercicio = $codejercicio;
+        $cuenta->descripcion = $codcuenta;
+        $cuenta->parent_codcuenta = $parentCuenta->codcuenta;
+        $cuenta->parent_idcuenta = $parentCuenta->idcuenta;
+        return $cuenta->save();
     }
 
     /**
@@ -70,7 +100,8 @@ class SubcuentasMigrator extends MigratorBase
             new DataBaseWhere('codcuenta', $data['codcuenta']),
             new DataBaseWhere('codejercicio', $data['codejercicio']),
         ];
-        if (!$cuenta->loadFromCode('', $where2)) {
+        if (!$cuenta->loadFromCode('', $where2) && !$this->fixMissingCuenta($cuenta, $data['codcuenta'], $data['codejercicio'])) {
+            $this->miniLog->warning('account-missing');
             return false;
         }
 
@@ -82,6 +113,7 @@ class SubcuentasMigrator extends MigratorBase
         $subcuenta->descripcion = $data['descripcion'];
         $subcuenta->haber = $data['haber'];
         $subcuenta->idcuenta = $cuenta->primaryColumnValue();
+        $subcuenta->idsubcuenta = $data['idsubcuenta'];
         $subcuenta->saldo = $data['saldo'];
         return $subcuenta->save();
     }

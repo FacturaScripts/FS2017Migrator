@@ -89,12 +89,13 @@ class FS2017Migrator extends Controller
     {
         $this->working = true;
         $steps = [
-            'start', 'Empresa', 'GruposEpigrafes', 'Epigrafes', 'Cuentas', 'Subcuentas', 'end'
+            'start', 'Empresa', 'GruposEpigrafes', 'Epigrafes', 'Cuentas',
+            'Subcuentas', 'Asientos', 'Clientes', 'Proveedores', 'Productos', 'end'
         ];
 
-        $found = false;
+        $next = false;
         foreach ($steps as $step) {
-            if ($found) {
+            if ($next) {
                 /// redirect to next step
                 $this->redirect($this->url() . '?action=' . $step, 2);
                 break;
@@ -107,7 +108,7 @@ class FS2017Migrator extends Controller
             $this->migrationLog[] = empty($this->offset) ? $step : $step . ' (' . $this->offset . ')';
 
             /// selected step
-            $found = true;
+            $next = true;
             if ($step == 'start') {
                 $migrator = new EmpresaMigrator();
                 $migrator->freeTables();
@@ -119,12 +120,16 @@ class FS2017Migrator extends Controller
                 break;
             }
 
+            $initial = $this->offset;
             $className = 'FacturaScripts\\Plugins\\FS2017Migrator\\Lib\\' . $step . 'Migrator';
             $migrator = new $className();
-            $offset = $migrator->migrate($this->offset);
-            if ($offset > 0) {
-                /// reload with newxt offset
-                $this->redirect($this->url() . '?action=' . $step . '&offset=' . $offset, 2);
+            if (!$migrator->migrate($this->offset)) {
+                /// migration error
+                $this->working = false;
+                break;
+            } elseif ($this->offset > $initial) {
+                /// reload with next offset
+                $this->redirect($this->url() . '?action=' . $step . '&offset=' . $this->offset, 2);
                 break;
             }
         }
