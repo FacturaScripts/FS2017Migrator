@@ -27,11 +27,11 @@ use FacturaScripts\Dinamic\Model\Cuenta;
 use FacturaScripts\Dinamic\Model\Impuesto;
 
 /**
- * Description of MigratorBase
+ * Description of InicioMigrator
  *
  * @author Carlos Garcia Gomez <carlos@facturascripts.com>
  */
-abstract class MigratorBase
+class InicioMigrator
 {
 
     /**
@@ -64,8 +64,6 @@ abstract class MigratorBase
      */
     protected $miniLog;
 
-    abstract public function migrate(&$offset = 0);
-
     public function __construct()
     {
         $this->appSettings = new AppSettings();
@@ -81,7 +79,13 @@ abstract class MigratorBase
         $this->miniLog = new MiniLog();
     }
 
-    public function freeTables()
+    /**
+     * 
+     * @param int $offset
+     *
+     * @return bool
+     */
+    public function migrate(&$offset = 0)
     {
         $exclude = [
             'articulo_propiedades', 'attached_files', 'empresas',
@@ -91,10 +95,12 @@ abstract class MigratorBase
             'users', 'variantes'
         ];
         foreach ($this->dataBase->getTables() as $tableName) {
-            if (!in_array($tableName, $exclude)) {
-                $this->freeTable($tableName);
+            if (!in_array($tableName, $exclude) && !$this->freeTable($tableName)) {
+                /// no return
             }
         }
+
+        return true;
     }
 
     /**
@@ -111,6 +117,8 @@ abstract class MigratorBase
     /**
      * 
      * @param string $tableName
+     *
+     * @return bool
      */
     private function freeTable($tableName)
     {
@@ -123,10 +131,12 @@ abstract class MigratorBase
                 continue;
             }
 
-            $this->removeContraint($tableName, $constraint);
+            if (!$this->removeContraint($tableName, $constraint)) {
+                return false;
+            }
         }
 
-        $this->removeNotNullColumns($tableName, $primaryKey);
+        return $this->removeNotNullColumns($tableName, $primaryKey);
     }
 
     /**
@@ -174,16 +184,26 @@ abstract class MigratorBase
      * 
      * @param string $tableName
      * @param array  $constraint
+     *
+     * @return bool
      */
     private function removeContraint($tableName, $constraint)
     {
+        $sql = '';
         if (strtolower(FS_DB_TYPE) == 'postgresql') {
-            $sql = 'ALTER TABLE ' . $tableName . ' DROP CONSTRAINT ' . $constraint['name'] . ';';
+            $sql .= 'ALTER TABLE ' . $tableName . ' DROP CONSTRAINT ' . $constraint['name'] . ';';
+        } elseif ($constraint['type'] == 'FOREIGN KEY') {
+            $sql .= 'ALTER TABLE ' . $tableName . ' DROP FOREIGN KEY ' . $constraint['name'] . ';';
+        } elseif ($constraint['type'] == 'UNIQUE') {
+            $sql .= 'ALTER TABLE ' . $tableName . ' DROP INDEX ' . $constraint['name'] . ';';
         }
 
-        if (!$this->dataBase->exec($sql)) {
+        if (!empty($sql) && !$this->dataBase->exec($sql)) {
             $this->miniLog->warning('cant-remove-constraint: ' . $constraint['name']);
+            return false;
         }
+
+        return true;
     }
 
     /**
@@ -205,8 +225,11 @@ abstract class MigratorBase
 
             if (!$this->dataBase->exec($sql)) {
                 $this->miniLog->warning('cant-remove-not-null: ' . $tableName . ' ' . $column['name']);
+                return false;
             }
         }
+
+        return true;
     }
 
     /**
@@ -238,7 +261,7 @@ abstract class MigratorBase
             $this->removeTable($newName);
         }
 
-        $sql = 'ALTER TABLE ' . $tableName . ' RENAME "' . $newName . '";';
+        $sql = 'ALTER TABLE ' . $tableName . ' RENAME ' . $newName . ';';
         if (strtolower(FS_DB_TYPE) == 'postgresql') {
             $sql = 'ALTER TABLE ' . $tableName . ' RENAME TO "' . $newName . '";';
         }

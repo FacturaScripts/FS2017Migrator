@@ -19,7 +19,6 @@
 namespace FacturaScripts\Plugins\FS2017Migrator\Controller;
 
 use FacturaScripts\Core\Base\Controller;
-use FacturaScripts\Plugins\FS2017Migrator\Lib\EmpresaMigrator;
 
 /**
  * Description of FS2017Migrator
@@ -89,7 +88,7 @@ class FS2017Migrator extends Controller
     {
         $this->working = true;
         $steps = [
-            'start', 'Empresa', 'GruposEpigrafes', 'Epigrafes', 'Cuentas',
+            'Inicio', 'Empresa', 'GruposEpigrafes', 'Epigrafes', 'Cuentas',
             'Subcuentas', 'Asientos', 'Clientes', 'Proveedores', 'Productos',
             'Compras', 'Ventas', 'end'
         ];
@@ -97,6 +96,8 @@ class FS2017Migrator extends Controller
         $next = false;
         foreach ($steps as $step) {
             if ($next) {
+                $this->cache->clear();
+
                 /// redirect to next step
                 $this->redirect($this->url() . '?action=' . $step, 2);
                 break;
@@ -110,12 +111,7 @@ class FS2017Migrator extends Controller
 
             /// selected step
             $next = true;
-            if ($step == 'start') {
-                $migrator = new EmpresaMigrator();
-                $migrator->freeTables();
-                $this->cache->clear();
-                continue;
-            } elseif ($step == 'end') {
+            if ($step == 'end') {
                 $this->cache->clear();
                 $this->working = false;
                 break;

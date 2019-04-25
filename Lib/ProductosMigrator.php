@@ -28,7 +28,7 @@ use FacturaScripts\Dinamic\Model\Stock;
  *
  * @author Carlos Garcia Gomez <carlos@facturascripts.com>
  */
-class ProductosMigrator extends MigratorBase
+class ProductosMigrator extends InicioMigrator
 {
 
     /**

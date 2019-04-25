@@ -27,7 +27,7 @@ use FacturaScripts\Dinamic\Model\Partida;
  *
  * @author Carlos Garcia Gomez <carlos@facturascripts.com>
  */
-class AsientosMigrator extends MigratorBase
+class AsientosMigrator extends InicioMigrator
 {
 
     /**

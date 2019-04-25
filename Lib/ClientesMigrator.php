@@ -28,7 +28,7 @@ use FacturaScripts\Dinamic\Model\Contacto;
  *
  * @author Carlos Garcia Gomez <carlos@facturascripts.com>
  */
-class ClientesMigrator extends MigratorBase
+class ClientesMigrator extends InicioMigrator
 {
 
     /**
@@ -42,7 +42,7 @@ class ClientesMigrator extends MigratorBase
         $clienteModel = new Cliente();
         $rows = $clienteModel->all([], ['codcliente' => 'ASC'], $offset);
         foreach ($rows as $cliente) {
-            $cliente->codsubcuenta = $this->getSubcuenta($cliente->codsubcuenta);
+            $cliente->codsubcuenta = $this->getSubcuenta($cliente->codcliente);
             $cliente->email = filter_var($cliente->email, FILTER_VALIDATE_EMAIL) ? $cliente->email : '';
             if (!$cliente->save()) {
                 return false;

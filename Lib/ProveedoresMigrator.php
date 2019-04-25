@@ -27,7 +27,7 @@ use FacturaScripts\Dinamic\Model\Proveedor;
  *
  * @author Carlos Garcia Gomez <carlos@facturascripts.com>
  */
-class ProveedoresMigrator extends MigratorBase
+class ProveedoresMigrator extends InicioMigrator
 {
 
     /**
@@ -41,7 +41,7 @@ class ProveedoresMigrator extends MigratorBase
         $proveedorModel = new Proveedor();
         $rows = $proveedorModel->all([], ['codproveedor' => 'ASC'], $offset);
         foreach ($rows as $proveedor) {
-            $proveedor->codsubcuenta = $this->getSubcuenta($proveedor->codsubcuenta);
+            $proveedor->codsubcuenta = $this->getSubcuenta($proveedor->codproveedor);
             $proveedor->email = filter_var($proveedor->email, FILTER_VALIDATE_EMAIL) ? $proveedor->email : '';
             if (!$proveedor->save()) {
                 return false;

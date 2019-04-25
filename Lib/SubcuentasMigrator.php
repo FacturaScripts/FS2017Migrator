@@ -27,7 +27,7 @@ use FacturaScripts\Dinamic\Model\Subcuenta;
  *
  * @author Carlos Garcia Gomez <carlos@facturascripts.com>
  */
-class SubcuentasMigrator extends MigratorBase
+class SubcuentasMigrator extends InicioMigrator
 {
 
     /**
@@ -39,7 +39,7 @@ class SubcuentasMigrator extends MigratorBase
     public function migrate(&$offset = 0)
     {
         $sql = "SELECT * FROM co_subcuentas ORDER BY idsubcuenta ASC";
-        $rows = $this->dataBase->selectLimit($sql, 100, $offset);
+        $rows = $this->dataBase->selectLimit($sql, FS_ITEM_LIMIT, $offset);
         foreach ($rows as $row) {
             if (!$this->newSubcuenta($row)) {
                 return false;

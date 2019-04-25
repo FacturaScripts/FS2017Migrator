@@ -23,7 +23,7 @@ namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
  *
  * @author Carlos Garcia Gomez <carlos@facturascripts.com>
  */
-class EpigrafesMigrator extends MigratorBase
+class EpigrafesMigrator extends InicioMigrator
 {
 
     /**

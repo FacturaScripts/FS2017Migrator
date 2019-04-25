@@ -27,7 +27,7 @@ use FacturaScripts\Dinamic\Model\PedidoProveedor;
  *
  * @author Carlos Garcia Gomez <carlos@facturascripts.com>
  */
-class ComprasMigrator extends MigratorBase
+class ComprasMigrator extends InicioMigrator
 {
 
     /**

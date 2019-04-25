@@ -29,7 +29,7 @@ use FacturaScripts\Dinamic\Model\FormaPago;
  *
  * @author Carlos Garcia Gomez <carlos@facturascripts.com>
  */
-class EmpresaMigrator extends MigratorBase
+class EmpresaMigrator extends InicioMigrator
 {
 
     /**
