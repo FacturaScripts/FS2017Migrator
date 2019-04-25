@@ -19,6 +19,7 @@
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
+use FacturaScripts\Core\Base\Utils;
 use FacturaScripts\Dinamic\Model\Contacto;
 use FacturaScripts\Dinamic\Model\Proveedor;
 
@@ -59,35 +60,6 @@ class ProveedoresMigrator extends InicioMigrator
 
     /**
      * 
-     * @param Proveedor $proveedor
-     */
-    protected function migrateAddress(&$proveedor)
-    {
-        $contacto = new Contacto();
-        $where = [new DataBaseWhere('codproveedor', $proveedor->codproveedor)];
-        if ($contacto->loadFromCode('', $where)) {
-            return true;
-        }
-
-        $sql = "SELECT * FROM dirproveedores WHERE codproveedor = '" . $proveedor->codproveedor . "';";
-        foreach ($this->dataBase->select($sql) as $row) {
-            $newContacto = new Contacto();
-            foreach ($row as $key => $value) {
-                $newContacto->{$key} = $value;
-            }
-
-            $newContacto->email = $proveedor->email;
-            $newContacto->nombre = $proveedor->nombre;
-            if (!$newContacto->save()) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * 
      * @param string $codproveedor
      *
      * @return string
@@ -102,5 +74,68 @@ class ProveedoresMigrator extends InicioMigrator
         }
 
         return '';
+    }
+
+    /**
+     * 
+     * @param Proveedor $proveedor
+     *
+     * @return bool
+     */
+    protected function migrateAddress(&$proveedor)
+    {
+        $contacto = new Contacto();
+        $where = [new DataBaseWhere('codproveedor', $proveedor->codproveedor)];
+        if ($contacto->loadFromCode('', $where)) {
+            return true;
+        }
+
+        $found = false;
+        $sql = "SELECT * FROM dirproveedores WHERE codproveedor = '" . $proveedor->codproveedor . "';";
+        foreach ($this->dataBase->select($sql) as $row) {
+            $newContacto = new Contacto();
+            foreach ($row as $key => $value) {
+                $newContacto->{$key} = $value;
+            }
+
+            $newContacto->email = $proveedor->email;
+            $newContacto->nombre = $proveedor->nombre;
+            if (!$newContacto->save()) {
+                return false;
+            }
+
+            if (Utils::str2bool($row['direccionppal'])) {
+                $proveedor->idcontacto = $newContacto->idcontacto;
+            }
+        }
+
+        return $found ? $proveedor->save() : $this->newContacto($proveedor);
+    }
+
+    /**
+     * 
+     * @param Proveedor $proveedor
+     *
+     * @return bool
+     */
+    protected function newContacto(&$proveedor)
+    {
+        $contact = new Contacto();
+        $contact->cifnif = $proveedor->cifnif;
+        $contact->codproveedor = $proveedor->codproveedor;
+        $contact->descripcion = $proveedor->nombre;
+        $contact->email = $proveedor->email;
+        $contact->empresa = $proveedor->razonsocial;
+        $contact->fax = $proveedor->fax;
+        $contact->nombre = $proveedor->nombre;
+        $contact->personafisica = $proveedor->personafisica;
+        $contact->telefono1 = $proveedor->telefono1;
+        $contact->telefono2 = $proveedor->telefono2;
+        if ($contact->save()) {
+            $proveedor->idcontacto = $contact->idcontacto;
+            return $proveedor->save();
+        }
+
+        return false;
     }
 }

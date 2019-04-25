@@ -60,7 +60,27 @@ class ClientesMigrator extends InicioMigrator
 
     /**
      * 
+     * @param string $codcliente
+     *
+     * @return string
+     */
+    protected function getSubcuenta($codcliente)
+    {
+        $sql = "SELECT * FROM co_subcuentascli WHERE codcliente = '" . $codcliente
+            . "' ORDER BY id DESC;";
+
+        foreach ($this->dataBase->select($sql) as $row) {
+            return $row['codsubcuenta'];
+        }
+
+        return '';
+    }
+
+    /**
+     * 
      * @param Cliente $cliente
+     *
+     * @return bool
      */
     protected function migrateAddress(&$cliente)
     {
@@ -70,6 +90,7 @@ class ClientesMigrator extends InicioMigrator
             return true;
         }
 
+        $found = false;
         $sql = "SELECT * FROM dirclientes WHERE codcliente = '" . $cliente->codcliente . "';";
         foreach ($this->dataBase->select($sql) as $row) {
             $newContacto = new Contacto();
@@ -90,26 +111,38 @@ class ClientesMigrator extends InicioMigrator
             if (Utils::str2bool($row['domenvio'])) {
                 $cliente->idcontactoenv = $newContacto->idcontacto;
             }
+
+            $found = true;
         }
 
-        return $cliente->save();
+        return $found ? $cliente->save() : $this->newContacto($cliente);
     }
 
     /**
      * 
-     * @param string $codcliente
+     * @param Cliente $cliente
      *
-     * @return string
+     * @return bool
      */
-    protected function getSubcuenta($codcliente)
+    protected function newContacto(&$cliente)
     {
-        $sql = "SELECT * FROM co_subcuentascli WHERE codcliente = '" . $codcliente
-            . "' ORDER BY id DESC;";
-
-        foreach ($this->dataBase->select($sql) as $row) {
-            return $row['codsubcuenta'];
+        $contact = new Contacto();
+        $contact->cifnif = $cliente->cifnif;
+        $contact->codcliente = $cliente->codcliente;
+        $contact->descripcion = $cliente->nombre;
+        $contact->email = $cliente->email;
+        $contact->empresa = $cliente->razonsocial;
+        $contact->fax = $cliente->fax;
+        $contact->nombre = $cliente->nombre;
+        $contact->personafisica = $cliente->personafisica;
+        $contact->telefono1 = $cliente->telefono1;
+        $contact->telefono2 = $cliente->telefono2;
+        if ($contact->save()) {
+            $cliente->idcontactoenv = $contact->idcontacto;
+            $cliente->idcontactofact = $contact->idcontacto;
+            return $cliente->save();
         }
 
-        return '';
+        return false;
     }
 }
