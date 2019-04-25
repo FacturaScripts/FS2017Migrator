@@ -90,7 +90,9 @@ class FS2017Migrator extends Controller
         $steps = [
             'Inicio', 'Empresa', 'GruposEpigrafes', 'Epigrafes', 'Cuentas',
             'Subcuentas', 'Asientos', 'Clientes', 'Proveedores', 'Productos',
-            'Compras', 'Ventas', 'end'
+            'PedidosProveedor', 'AlbaranesProveedor', 'FacturasProveedor',
+            'PresupuestosCliente', 'PedidosCliente', 'AlbaranesCliente',
+            'FacturasCliente', 'end'
         ];
 
         $next = false;
