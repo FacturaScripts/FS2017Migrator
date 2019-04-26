@@ -35,7 +35,7 @@ class GruposEpigrafesMigrator extends InicioMigrator
     public function migrate(&$offset = 0)
     {
         $sql = "SELECT * FROM co_gruposepigrafes ORDER BY idgrupo ASC";
-        $rows = $this->dataBase->selectLimit($sql, 100, $offset);
+        $rows = $this->dataBase->selectLimit($sql, 300, $offset);
         foreach ($rows as $row) {
             if (!$this->newCuenta($row['codejercicio'], '', $row['codgrupo'], $row['descripcion'])) {
                 return false;

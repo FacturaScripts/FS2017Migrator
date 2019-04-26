@@ -39,22 +39,7 @@ class ProductosMigrator extends InicioMigrator
      */
     public function migrate(&$offset = 0)
     {
-        /// rename stocks table
-        if (!$this->dataBase->tableExists('stocks_old')) {
-            $this->renameTable('stocks', 'stocks_old');
-        }
-
-        $sql = "SELECT * FROM articulos ORDER BY referencia ASC";
-        $rows = $this->dataBase->selectLimit($sql, 100, $offset);
-        foreach ($rows as $row) {
-            if (!$this->newProduct($row)) {
-                return false;
-            }
-
-            $offset++;
-        }
-
-        return true;
+        return $this->migrateInTransaction($offset);
     }
 
     /**
@@ -74,7 +59,7 @@ class ProductosMigrator extends InicioMigrator
         $producto->loadFromData($data);
         $producto->ventasinstock = Utils::str2bool($data['controlstock']);
         if ($producto->save()) {
-            if (!$this->updateStock($producto)) {
+            if (!$producto->nostock && !$this->updateStock($producto)) {
                 return false;
             }
 
@@ -89,6 +74,32 @@ class ProductosMigrator extends InicioMigrator
         }
 
         return false;
+    }
+
+    /**
+     * 
+     * @param int $offset
+     *
+     * @return bool
+     */
+    protected function transactionProcess(&$offset = 0)
+    {
+        /// rename stocks table
+        if (!$this->dataBase->tableExists('stocks_old')) {
+            $this->renameTable('stocks', 'stocks_old');
+        }
+
+        $sql = "SELECT * FROM articulos ORDER BY referencia ASC";
+        $rows = $this->dataBase->selectLimit($sql, 300, $offset);
+        foreach ($rows as $row) {
+            if (!$this->newProduct($row)) {
+                return false;
+            }
+
+            $offset++;
+        }
+
+        return true;
     }
 
     /**

@@ -34,7 +34,22 @@ class FacturasClienteMigrator extends AlbaranesProveedorMigrator
      */
     public function migrate(&$offset = 0)
     {
+        return $this->migrateInTransaction($offset);
+    }
+
+    /**
+     * 
+     * @param int $offset
+     *
+     * @return bool
+     */
+    protected function transactionProcess(&$offset = 0)
+    {
         if (0 === $offset && !$this->fixLinesTable('lineasfacturascli')) {
+            return false;
+        }
+
+        if (0 === $offset && !$this->setModelCompany('FacturaCliente')) {
             return false;
         }
 
@@ -44,11 +59,10 @@ class FacturasClienteMigrator extends AlbaranesProveedorMigrator
 
         $sql = "SELECT * FROM lineasfacturascli"
             . " WHERE idalbaran IS NOT null"
-            . " AND idlineaalbaran IS NOT null"
             . " AND idalbaran != '0'"
             . " ORDER BY idlinea ASC";
 
-        $rows = $this->dataBase->selectLimit($sql, 100, $offset);
+        $rows = $this->dataBase->selectLimit($sql, 300, $offset);
         foreach ($rows as $row) {
             $done = $this->newDocTransformation(
                 'AlbaranCliente', $row['idalbaran'], $row['idlineaalbaran'], 'FacturaCliente', $row['idfactura'], $row['idlinea']

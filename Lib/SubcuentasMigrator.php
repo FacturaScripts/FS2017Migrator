@@ -38,17 +38,7 @@ class SubcuentasMigrator extends InicioMigrator
      */
     public function migrate(&$offset = 0)
     {
-        $sql = "SELECT * FROM co_subcuentas ORDER BY idsubcuenta ASC";
-        $rows = $this->dataBase->selectLimit($sql, 100, $offset);
-        foreach ($rows as $row) {
-            if (!$this->newSubcuenta($row)) {
-                return false;
-            }
-
-            $offset++;
-        }
-
-        return true;
+        return $this->migrateInTransaction($offset);
     }
 
     /**
@@ -116,5 +106,26 @@ class SubcuentasMigrator extends InicioMigrator
         $subcuenta->idsubcuenta = $data['idsubcuenta'];
         $subcuenta->saldo = $data['saldo'];
         return $subcuenta->save();
+    }
+
+    /**
+     * 
+     * @param int $offset
+     *
+     * @return bool
+     */
+    protected function transactionProcess(&$offset = 0)
+    {
+        $sql = "SELECT * FROM co_subcuentas ORDER BY idsubcuenta ASC";
+        $rows = $this->dataBase->selectLimit($sql, 600, $offset);
+        foreach ($rows as $row) {
+            if (!$this->newSubcuenta($row)) {
+                return false;
+            }
+
+            $offset++;
+        }
+
+        return true;
     }
 }

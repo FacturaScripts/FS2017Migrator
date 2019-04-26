@@ -141,6 +141,35 @@ class InicioMigrator
 
     /**
      * 
+     * @param int $offset
+     *
+     * @return bool
+     */
+    protected function migrateInTransaction(&$offset = 0)
+    {
+        // start transaction
+        $this->dataBase->beginTransaction();
+        $return = false;
+
+        try {
+            $return = $this->transactionProcess($offset);
+
+            // confirm data
+            $this->dataBase->commit();
+        } catch (Exception $exp) {
+            $this->miniLog->alert($exp->getMessage());
+            $return = false;
+        } finally {
+            if ($this->dataBase->inTransaction()) {
+                $this->dataBase->rollback();
+            }
+        }
+
+        return $return;
+    }
+
+    /**
+     * 
      * @param string $codejercicio
      * @param string $codparent
      * @param string $codcuenta
@@ -267,5 +296,16 @@ class InicioMigrator
         }
 
         return $this->dataBase->exec($sql);
+    }
+
+    /**
+     * 
+     * @param int $offset
+     *
+     * @return bool
+     */
+    protected function transactionProcess(&$offset = 0)
+    {
+        return true;
     }
 }

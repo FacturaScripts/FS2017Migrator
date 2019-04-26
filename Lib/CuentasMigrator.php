@@ -34,8 +34,19 @@ class CuentasMigrator extends InicioMigrator
      */
     public function migrate(&$offset = 0)
     {
+        return $this->migrateInTransaction($offset);
+    }
+
+    /**
+     * 
+     * @param int $offset
+     *
+     * @return bool
+     */
+    protected function transactionProcess(&$offset = 0)
+    {
         $sql = "SELECT * FROM co_cuentas ORDER BY idcuenta ASC";
-        $rows = $this->dataBase->selectLimit($sql, 100, $offset);
+        $rows = $this->dataBase->selectLimit($sql, 300, $offset);
         foreach ($rows as $row) {
             if (!$this->newCuenta($row['codejercicio'], $row['codepigrafe'], $row['codcuenta'], $row['descripcion'], $row['idcuentaesp'])) {
                 return false;

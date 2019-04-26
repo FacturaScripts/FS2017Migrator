@@ -18,6 +18,7 @@
  */
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
+use FacturaScripts\Core\App\AppSettings;
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
 use FacturaScripts\Dinamic\Model\DocTransformation;
 use FacturaScripts\Dinamic\Model\EstadoDocumento;
@@ -38,32 +39,7 @@ class AlbaranesProveedorMigrator extends InicioMigrator
      */
     public function migrate(&$offset = 0)
     {
-        if (0 === $offset && !$this->fixLinesTable('lineasalbaranesprov')) {
-            return false;
-        }
-
-        if (0 === $offset && !$this->setModelStatusAll('AlbaranProveedor', 'idfactura')) {
-            return false;
-        }
-
-        $sql = "SELECT * FROM lineasalbaranesprov"
-            . " WHERE idpedido IS NOT null"
-            . " AND idpedido != '0'"
-            . " ORDER BY idlinea ASC";
-
-        $rows = $this->dataBase->selectLimit($sql, 100, $offset);
-        foreach ($rows as $row) {
-            $done = $this->newDocTransformation(
-                'PedidoProveedor', $row['idpedido'], $row['idlineapedido'], 'AlbaranProveedor', $row['idalbaran'], $row['idlinea']
-            );
-            if (!$done) {
-                return false;
-            }
-
-            $offset++;
-        }
-
-        return true;
+        return $this->migrateInTransaction($offset);
     }
 
     /**
@@ -106,7 +82,6 @@ class AlbaranesProveedorMigrator extends InicioMigrator
         $where = [
             new DataBaseWhere('iddoc1', $id1),
             new DataBaseWhere('iddoc2', $id2),
-            new DataBaseWhere('idlinea1', $idlinea1),
             new DataBaseWhere('idlinea2', $idlinea2),
             new DataBaseWhere('model1', $model1),
             new DataBaseWhere('model2', $model2),
@@ -117,7 +92,7 @@ class AlbaranesProveedorMigrator extends InicioMigrator
 
         $docTransformation->iddoc1 = $id1;
         $docTransformation->iddoc2 = $id2;
-        $docTransformation->idlinea1 = $idlinea1;
+        $docTransformation->idlinea1 = empty($idlinea1) ? 0 : $idlinea1;
         $docTransformation->idlinea2 = $idlinea2;
         $docTransformation->model1 = $model1;
         $docTransformation->model2 = $model2;
@@ -126,6 +101,22 @@ class AlbaranesProveedorMigrator extends InicioMigrator
         }
 
         return false;
+    }
+
+    /**
+     * 
+     * @param string $modelName
+     *
+     * @return bool
+     */
+    protected function setModelCompany($modelName)
+    {
+        $className = '\\FacturaScripts\\Dinamic\\Model\\' . $modelName;
+        $model1 = new $className();
+
+        $idempresa = AppSettings::get('default', 'idempresa');
+        $sql = "UPDATE " . $model1->tableName() . " set idempresa = " . $this->dataBase->var2str($idempresa);
+        return $this->dataBase->exec($sql);
     }
 
     /**
@@ -171,7 +162,7 @@ class AlbaranesProveedorMigrator extends InicioMigrator
         $where = [new DataBaseWhere('tipodoc', $modelName)];
         foreach ($estadoDocModel->all($where) as $estado) {
             $sql = "UPDATE " . $model1->tableName() . " set idestado = '" . $estado->idestado
-                . "' WHERE idestado IS null AND editable = " . $this->dataBase->var2str($estado->editable);
+                . "' WHERE editable = " . $this->dataBase->var2str($estado->editable);
 
             if (!empty($docNextColumn)) {
                 $sql .= empty($estado->generadoc) ? " AND " . $docNextColumn . " IS null;" : " AND " . $docNextColumn . " IS NOT null;";
@@ -180,6 +171,46 @@ class AlbaranesProveedorMigrator extends InicioMigrator
             if (!$this->dataBase->exec($sql)) {
                 return false;
             }
+        }
+
+        return true;
+    }
+
+    /**
+     * 
+     * @param int $offset
+     *
+     * @return bool
+     */
+    protected function transactionProcess(&$offset = 0)
+    {
+        if (0 === $offset && !$this->fixLinesTable('lineasalbaranesprov')) {
+            return false;
+        }
+
+        if (0 === $offset && !$this->setModelCompany('AlbaranProveedor')) {
+            return false;
+        }
+
+        if (0 === $offset && !$this->setModelStatusAll('AlbaranProveedor', 'idfactura')) {
+            return false;
+        }
+
+        $sql = "SELECT * FROM lineasalbaranesprov"
+            . " WHERE idpedido IS NOT null"
+            . " AND idpedido != '0'"
+            . " ORDER BY idlinea ASC";
+
+        $rows = $this->dataBase->selectLimit($sql, 300, $offset);
+        foreach ($rows as $row) {
+            $done = $this->newDocTransformation(
+                'PedidoProveedor', $row['idpedido'], $row['idlineapedido'], 'AlbaranProveedor', $row['idalbaran'], $row['idlinea']
+            );
+            if (!$done) {
+                return false;
+            }
+
+            $offset++;
         }
 
         return true;

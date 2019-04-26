@@ -38,6 +38,10 @@ class PedidosProveedorMigrator extends AlbaranesProveedorMigrator
             return false;
         }
 
+        if (0 === $offset && !$this->setModelCompany('PedidoProveedor')) {
+            return false;
+        }
+
         if (0 === $offset && !$this->setModelStatusAll('PedidoProveedor', 'idalbaran')) {
             return false;
         }

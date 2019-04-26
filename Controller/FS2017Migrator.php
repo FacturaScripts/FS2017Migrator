@@ -84,6 +84,10 @@ class FS2017Migrator extends Controller
         }
     }
 
+    /**
+     * 
+     * @param string $name
+     */
     private function executeStep($name)
     {
         $this->working = true;

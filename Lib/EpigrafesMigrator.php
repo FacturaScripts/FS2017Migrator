@@ -35,7 +35,7 @@ class EpigrafesMigrator extends InicioMigrator
     public function migrate(&$offset = 0)
     {
         $sql = "SELECT * FROM co_epigrafes ORDER BY idepigrafe ASC";
-        $rows = $this->dataBase->selectLimit($sql, 100, $offset);
+        $rows = $this->dataBase->selectLimit($sql, 300, $offset);
         foreach ($rows as $row) {
             if (!$this->newCuenta($row['codejercicio'], $this->getCodepigrafe($row), $row['codepigrafe'], $row['descripcion'])) {
                 return false;

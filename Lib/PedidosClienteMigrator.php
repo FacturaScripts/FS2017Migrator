@@ -34,7 +34,22 @@ class PedidosClienteMigrator extends AlbaranesProveedorMigrator
      */
     public function migrate(&$offset = 0)
     {
+        return $this->migrateInTransaction($offset);
+    }
+
+    /**
+     * 
+     * @param int $offset
+     *
+     * @return bool
+     */
+    protected function transactionProcess(&$offset = 0)
+    {
         if (0 === $offset && !$this->fixLinesTable('lineaspedidoscli')) {
+            return false;
+        }
+
+        if (0 === $offset && !$this->setModelCompany('PedidoCliente')) {
             return false;
         }
 
@@ -43,11 +58,11 @@ class PedidosClienteMigrator extends AlbaranesProveedorMigrator
         }
 
         $sql = "SELECT * FROM lineaspedidoscli"
-            . " WHERE idlineapresupuesto IS NOT null"
-            . " AND idlineapresupuesto != '0'"
+            . " WHERE idpresupuesto IS NOT null"
+            . " AND idpresupuesto != '0'"
             . " ORDER BY idlinea ASC";
 
-        $rows = $this->dataBase->selectLimit($sql, 100, $offset);
+        $rows = $this->dataBase->selectLimit($sql, 300, $offset);
         foreach ($rows as $row) {
             $done = $this->newDocTransformation(
                 'PresupuestoCliente', $row['idpresupuesto'], $row['idlineapresupuesto'], 'PedidoCliente', $row['idpedido'], $row['idlinea']
