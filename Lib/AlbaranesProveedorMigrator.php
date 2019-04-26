@@ -46,8 +46,12 @@ class AlbaranesProveedorMigrator extends InicioMigrator
             return false;
         }
 
-        $sql = "SELECT * FROM lineasalbaranesprov WHERE idpedido IS NOT null";
-        $rows = $this->dataBase->selectLimit($sql, FS_ITEM_LIMIT, $offset);
+        $sql = "SELECT * FROM lineasalbaranesprov"
+            . " WHERE idpedido IS NOT null"
+            . " AND idpedido != '0'"
+            . " ORDER BY idlinea ASC";
+
+        $rows = $this->dataBase->selectLimit($sql, 100, $offset);
         foreach ($rows as $row) {
             $done = $this->newDocTransformation(
                 'PedidoProveedor', $row['idpedido'], $row['idlineapedido'], 'AlbaranProveedor', $row['idalbaran'], $row['idlinea']

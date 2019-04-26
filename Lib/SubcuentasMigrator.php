@@ -39,7 +39,7 @@ class SubcuentasMigrator extends InicioMigrator
     public function migrate(&$offset = 0)
     {
         $sql = "SELECT * FROM co_subcuentas ORDER BY idsubcuenta ASC";
-        $rows = $this->dataBase->selectLimit($sql, FS_ITEM_LIMIT, $offset);
+        $rows = $this->dataBase->selectLimit($sql, 100, $offset);
         foreach ($rows as $row) {
             if (!$this->newSubcuenta($row)) {
                 return false;

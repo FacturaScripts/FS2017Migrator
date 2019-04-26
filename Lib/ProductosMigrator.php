@@ -66,7 +66,7 @@ class ProductosMigrator extends InicioMigrator
     protected function newProduct($data)
     {
         $producto = new Producto();
-        $where = [new DataBaseWhere('referencia', $data['referencia'])];
+        $where = [new DataBaseWhere('referencia', trim($data['referencia']))];
         if ($producto->loadFromCode('', $where)) {
             return true;
         }

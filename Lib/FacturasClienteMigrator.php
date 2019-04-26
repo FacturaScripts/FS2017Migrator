@@ -42,8 +42,13 @@ class FacturasClienteMigrator extends AlbaranesProveedorMigrator
             return false;
         }
 
-        $sql = "SELECT * FROM lineasfacturascli WHERE idalbaran IS NOT null AND idlineaalbaran IS NOT null";
-        $rows = $this->dataBase->selectLimit($sql, FS_ITEM_LIMIT, $offset);
+        $sql = "SELECT * FROM lineasfacturascli"
+            . " WHERE idalbaran IS NOT null"
+            . " AND idlineaalbaran IS NOT null"
+            . " AND idalbaran != '0'"
+            . " ORDER BY idlinea ASC";
+
+        $rows = $this->dataBase->selectLimit($sql, 100, $offset);
         foreach ($rows as $row) {
             $done = $this->newDocTransformation(
                 'AlbaranCliente', $row['idalbaran'], $row['idlineaalbaran'], 'FacturaCliente', $row['idfactura'], $row['idlinea']

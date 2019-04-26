@@ -37,13 +37,17 @@ class FacturasProveedorMigrator extends AlbaranesProveedorMigrator
         if (0 === $offset && !$this->fixLinesTable('lineasfacturasprov')) {
             return false;
         }
-        
+
         if (0 === $offset && !$this->setModelStatusAll('FacturaProveedor')) {
             return false;
         }
-        
-        $sql = "SELECT * FROM lineasfacturasprov WHERE idlineaalbaran IS NOT null";
-        $rows = $this->dataBase->selectLimit($sql, FS_ITEM_LIMIT, $offset);
+
+        $sql = "SELECT * FROM lineasfacturasprov"
+            . " WHERE idlineaalbaran IS NOT null"
+            . " AND idlineaalbaran != '0'"
+            . " ORDER BY idlinea ASC";
+
+        $rows = $this->dataBase->selectLimit($sql, 100, $offset);
         foreach ($rows as $row) {
             $done = $this->newDocTransformation(
                 'AlbaranProveedor', $row['idalbaran'], $row['idlineaalbaran'], 'FacturaProveedor', $row['idfactura'], $row['idlinea']
