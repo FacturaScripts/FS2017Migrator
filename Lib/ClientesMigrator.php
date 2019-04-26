@@ -44,6 +44,8 @@ class ClientesMigrator extends InicioMigrator
         foreach ($rows as $cliente) {
             $cliente->codsubcuenta = $this->getSubcuenta($cliente->codcliente);
             $cliente->email = filter_var($cliente->email, FILTER_VALIDATE_EMAIL) ? $cliente->email : '';
+            $cliente->telefono1 = strlen($cliente->telefono1) > 20 ? substr($cliente->telefono1, 0, 20) : $cliente->telefono1;
+            $cliente->telefono2 = strlen($cliente->telefono2) > 20 ? substr($cliente->telefono2, 0, 20) : $cliente->telefono2;
             if (!$cliente->save()) {
                 return false;
             }
