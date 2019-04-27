@@ -59,7 +59,7 @@ class ProductosMigrator extends InicioMigrator
         $producto->loadFromData($data);
         $producto->ventasinstock = Utils::str2bool($data['controlstock']);
         if ($producto->save()) {
-            if (!$producto->nostock && !$this->updateStock($producto)) {
+            if ($producto->stockfis != 0 && !$this->updateStock($producto)) {
                 return false;
             }
 

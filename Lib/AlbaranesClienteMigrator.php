@@ -53,7 +53,7 @@ class AlbaranesClienteMigrator extends AlbaranesProveedorMigrator
             return false;
         }
 
-        if (0 === $offset && !$this->setModelStatusAll('AlbaranCliente', 'idfactura')) {
+        if (0 === $offset && !$this->setModelStatusAll('AlbaranCliente', 'idfactura', true)) {
             return false;
         }
 

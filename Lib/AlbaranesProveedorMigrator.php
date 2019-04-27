@@ -150,10 +150,11 @@ class AlbaranesProveedorMigrator extends InicioMigrator
      * 
      * @param string $modelName
      * @param string $docNextColumn
+     * @param bool   $ptfactura
      *
      * @return bool
      */
-    protected function setModelStatusAll($modelName, $docNextColumn = '')
+    protected function setModelStatusAll($modelName, $docNextColumn = '', $ptfactura = false)
     {
         $className = '\\FacturaScripts\\Dinamic\\Model\\' . $modelName;
         $model1 = new $className();
@@ -161,8 +162,13 @@ class AlbaranesProveedorMigrator extends InicioMigrator
         $estadoDocModel = new EstadoDocumento();
         $where = [new DataBaseWhere('tipodoc', $modelName)];
         foreach ($estadoDocModel->all($where) as $estado) {
-            $sql = "UPDATE " . $model1->tableName() . " set idestado = '" . $estado->idestado
-                . "' WHERE editable = " . $this->dataBase->var2str($estado->editable);
+            $sql = "UPDATE " . $model1->tableName() . " set idestado = '" . $estado->idestado;
+
+            if ($ptfactura) {
+                $sql .= "' WHERE ptefactura = " . $this->dataBase->var2str(!$estado->editable);
+            } else {
+                $sql .= "' WHERE editable = " . $this->dataBase->var2str($estado->editable);
+            }
 
             if (!empty($docNextColumn)) {
                 $sql .= empty($estado->generadoc) ? " AND " . $docNextColumn . " IS null;" : " AND " . $docNextColumn . " IS NOT null;";
@@ -192,7 +198,7 @@ class AlbaranesProveedorMigrator extends InicioMigrator
             return false;
         }
 
-        if (0 === $offset && !$this->setModelStatusAll('AlbaranProveedor', 'idfactura')) {
+        if (0 === $offset && !$this->setModelStatusAll('AlbaranProveedor', 'idfactura', true)) {
             return false;
         }
 
