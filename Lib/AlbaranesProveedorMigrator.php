@@ -165,7 +165,7 @@ class AlbaranesProveedorMigrator extends InicioMigrator
             $sql = "UPDATE " . $model1->tableName() . " set idestado = '" . $estado->idestado;
 
             if ($ptfactura) {
-                $sql .= "' WHERE ptefactura = " . $this->dataBase->var2str(!$estado->editable);
+                $sql .= "' WHERE ptefactura = " . $this->dataBase->var2str($estado->editable);
             } else {
                 $sql .= "' WHERE editable = " . $this->dataBase->var2str($estado->editable);
             }
