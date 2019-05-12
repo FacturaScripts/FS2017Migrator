@@ -23,7 +23,7 @@ namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
  *
  * @author Carlos Garcia Gomez <carlos@facturascripts.com>
  */
-class FacturasClienteMigrator extends AlbaranesProveedorMigrator
+class FacturasClienteMigrator extends FacturasProveedorMigrator
 {
 
     /**
@@ -50,6 +50,10 @@ class FacturasClienteMigrator extends AlbaranesProveedorMigrator
         }
 
         if (0 === $offset && !$this->setModelCompany('FacturaCliente')) {
+            return false;
+        }
+
+        if (0 === $offset && !$this->setInvoicePaid('FacturaCliente')) {
             return false;
         }
 
