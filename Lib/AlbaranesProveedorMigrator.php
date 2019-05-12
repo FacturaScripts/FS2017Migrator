@@ -162,12 +162,12 @@ class AlbaranesProveedorMigrator extends InicioMigrator
         $estadoDocModel = new EstadoDocumento();
         $where = [new DataBaseWhere('tipodoc', $modelName)];
         foreach ($estadoDocModel->all($where) as $estado) {
-            $sql = "UPDATE " . $model1->tableName() . " set idestado = '" . $estado->idestado;
+            $sql = "UPDATE " . $model1->tableName() . " SET idestado = " . $this->dataBase->var2str($estado->idestado);
 
             if ($ptfactura) {
-                $sql .= "' WHERE ptefactura = " . $this->dataBase->var2str($estado->editable);
+                $sql .= " WHERE ptefactura = " . $this->dataBase->var2str($estado->editable);
             } else {
-                $sql .= "' WHERE editable = " . $this->dataBase->var2str($estado->editable);
+                $sql .= " WHERE editable = " . $this->dataBase->var2str($estado->editable);
             }
 
             if (!empty($docNextColumn)) {
