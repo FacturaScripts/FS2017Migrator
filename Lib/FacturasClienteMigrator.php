@@ -53,10 +53,6 @@ class FacturasClienteMigrator extends FacturasProveedorMigrator
             return false;
         }
 
-        if (0 === $offset && !$this->setInvoicePaid('FacturaCliente')) {
-            return false;
-        }
-
         if (0 === $offset && !$this->setModelStatusAll('FacturaCliente')) {
             return false;
         }

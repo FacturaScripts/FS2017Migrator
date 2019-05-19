@@ -53,10 +53,6 @@ class FacturasProveedorMigrator extends AlbaranesProveedorMigrator
             return false;
         }
 
-        if (0 === $offset && !$this->setInvoicePaid('FacturaProveedor')) {
-            return false;
-        }
-
         if (0 === $offset && !$this->setModelStatusAll('FacturaProveedor')) {
             return false;
         }
@@ -79,20 +75,5 @@ class FacturasProveedorMigrator extends AlbaranesProveedorMigrator
         }
 
         return true;
-    }
-
-    /**
-     * 
-     * @param string $modelName
-     *
-     * @return bool
-     */
-    protected function setInvoicePaid($modelName)
-    {
-        $className = '\\FacturaScripts\\Dinamic\\Model\\' . $modelName;
-        $model1 = new $className();
-
-        $sql = "UPDATE " . $model1->tableName() . " set pagado = pagada";
-        return $this->dataBase->exec($sql);
     }
 }

@@ -109,6 +109,8 @@ class ProveedoresMigrator extends InicioMigrator
             if (Utils::str2bool($row['direccionppal'])) {
                 $proveedor->idcontacto = $newContacto->idcontacto;
             }
+
+            $found = true;
         }
 
         return $found ? $proveedor->save() : $this->newContacto($proveedor);
