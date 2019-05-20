@@ -28,6 +28,12 @@ use FacturaScripts\Dinamic\Model\EstadoDocumento;
 class BusinessMigrator extends InicioMigrator
 {
 
+    /**
+     * 
+     * @param int $offset
+     *
+     * @return bool
+     */
     public function migrate(&$offset = 0)
     {
         $estadoModel = new EstadoDocumento();

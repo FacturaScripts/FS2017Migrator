@@ -31,6 +31,8 @@ class AtributosMigrator extends InicioMigrator
     /**
      * 
      * @param int $offset
+     *
+     * @return bool
      */
     public function migrate(&$offset = 0)
     {

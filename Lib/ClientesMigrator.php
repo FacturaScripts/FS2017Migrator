@@ -68,9 +68,11 @@ class ClientesMigrator extends InicioMigrator
      */
     protected function getSubcuenta($codcliente)
     {
-        $sql = "SELECT * FROM co_subcuentascli WHERE codcliente = '" . $codcliente
-            . "' ORDER BY id DESC;";
+        if (!$this->dataBase->tableExists('co_subcuentascli')) {
+            return '';
+        }
 
+        $sql = "SELECT * FROM co_subcuentascli WHERE codcliente = " . $this->dataBase->var2str($codcliente) . " ORDER BY id DESC;";
         foreach ($this->dataBase->select($sql) as $row) {
             return $row['codsubcuenta'];
         }

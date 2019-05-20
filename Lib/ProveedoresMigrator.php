@@ -68,9 +68,11 @@ class ProveedoresMigrator extends InicioMigrator
      */
     protected function getSubcuenta($codproveedor)
     {
-        $sql = "SELECT * FROM co_subcuentasprov WHERE codproveedor = '" . $codproveedor
-            . "' ORDER BY id DESC;";
+        if (!$this->dataBase->tableExists('co_subcuentasprov')) {
+            return '';
+        }
 
+        $sql = "SELECT * FROM co_subcuentasprov WHERE codproveedor = " . $this->dataBase->var2str($codproveedor) . " ORDER BY id DESC;";
         foreach ($this->dataBase->select($sql) as $row) {
             return $row['codsubcuenta'];
         }
