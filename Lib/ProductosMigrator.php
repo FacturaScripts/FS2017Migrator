@@ -18,10 +18,12 @@
  */
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
+use FacturaScripts\Core\App\AppSettings;
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
 use FacturaScripts\Core\Base\Utils;
 use FacturaScripts\Dinamic\Model\Producto;
 use FacturaScripts\Dinamic\Model\Stock;
+use FacturaScripts\Dinamic\Model\Variante;
 
 /**
  * Description of ProductosMigrator
@@ -44,6 +46,39 @@ class ProductosMigrator extends InicioMigrator
 
     /**
      * 
+     * @param string $ref
+     * @param float  $precio
+     *
+     * @return array
+     */
+    protected function getCombinaciones($ref, $precio)
+    {
+        if (!$this->dataBase->tableExists('articulo_combinaciones')) {
+            return [];
+        }
+
+        $combinaciones = [];
+        $sql = "SELECT * FROM articulo_combinaciones WHERE referencia = " . $this->dataBase->var2str($ref) . " ORDER BY codigo ASC;";
+        foreach ($this->dataBase->select($sql) as $row) {
+            if (!isset($combinaciones[$row['codigo']])) {
+                $combinaciones[$row['codigo']] = [
+                    'codbarras' => $row['codbarras'],
+                    'idatributovalor1' => $row['idvalor'],
+                    'precio' => floatval($row['impactoprecio']) + $precio,
+                    'referencia' => empty($row['refcombinacion']) ? $ref . '-' . $row['codigo'] : $row['refcombinacion'],
+                    'stockfis' => floatval($row['stockfis'])
+                ];
+                continue;
+            }
+
+            $combinaciones[$row['codigo']]['idatributovalor2'] = $row['idvalor'];
+        }
+
+        return $combinaciones;
+    }
+
+    /**
+     * 
      * @param array $data
      *
      * @return bool
@@ -59,21 +94,60 @@ class ProductosMigrator extends InicioMigrator
         $producto->loadFromData($data);
         $producto->ventasinstock = Utils::str2bool($data['controlstock']);
         if ($producto->save()) {
-            if ($producto->stockfis != 0 && !$this->updateStock($producto)) {
-                return false;
+            if ($data['tipo'] == 'atributos') {
+                return $this->newProductVariants($producto, $data);
             }
 
+            /// type: simple
             foreach ($producto->getVariants() as $variante) {
                 $variante->codbarras = $data['codbarras'];
                 $variante->coste = $data['costemedio'];
                 $variante->precio = $data['pvp'];
                 $variante->save();
+                break;
+            }
+
+            if ($producto->stockfis != 0 && !$this->updateStock($producto)) {
+                return false;
             }
 
             return true;
         }
 
         return false;
+    }
+
+    /**
+     * 
+     * @param Producto $producto
+     * @param array    $data
+     *
+     * @return bool
+     */
+    protected function newProductVariants($producto, $data)
+    {
+        foreach ($this->getCombinaciones($producto->referencia, (float) $data['pvp']) as $combi) {
+            $newVariante = new Variante($combi);
+            $newVariante->idproducto = $producto->idproducto;
+            if (!$newVariante->save()) {
+                return false;
+            }
+
+            if ($newVariante->stockfis == 0) {
+                continue;
+            }
+
+            $newStock = new Stock();
+            $newStock->cantidad = $newVariante->stockfis;
+            $newStock->codalmacen = AppSettings::get('default', 'codalmacen');
+            $newStock->idproducto = $newVariante->idproducto;
+            $newStock->referencia = $newVariante->referencia;
+            if (!$newStock->save()) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -85,7 +159,7 @@ class ProductosMigrator extends InicioMigrator
     protected function transactionProcess(&$offset = 0)
     {
         /// rename stocks table
-        if (!$this->dataBase->tableExists('stocks_old')) {
+        if ($offset == 0 && !$this->dataBase->tableExists('stocks_old')) {
             $this->renameTable('stocks', 'stocks_old');
         }
 
@@ -110,7 +184,7 @@ class ProductosMigrator extends InicioMigrator
      */
     protected function updateStock(&$producto)
     {
-        $sql = "SELECT * FROM stocks_old WHERE referencia = '" . $producto->referencia . "';";
+        $sql = "SELECT * FROM stocks_old WHERE referencia = " . $this->dataBase->var2str($producto->referencia) . ";";
         foreach ($this->dataBase->select($sql) as $row) {
             $stock = new Stock($row);
             $stock->idproducto = $producto->idproducto;
