@@ -18,6 +18,8 @@
  */
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
+use FacturaScripts\Dinamic\Model\LiquidacionComision;
+
 /**
  * Description of AlbaranesClienteMigrator
  *
@@ -55,6 +57,11 @@ class AlbaranesClienteMigrator extends AlbaranesProveedorMigrator
 
         if (0 === $offset && !$this->setModelStatusAll('AlbaranCliente', 'idfactura', true)) {
             return false;
+        }
+
+        if (0 === $offset) {
+            /// needed dependency
+            new LiquidacionComision();
         }
 
         $sql = "SELECT * FROM lineasalbaranescli"

@@ -21,11 +21,11 @@ namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 use FacturaScripts\Dinamic\Model\EstadoDocumento;
 
 /**
- * Description of BusinessMigrator
+ * Description of EstadosMigrator
  *
  * @author Carlos Garcia Gomez <carlos@facturascripts.com>
  */
-class BusinessMigrator extends InicioMigrator
+class EstadosMigrator extends InicioMigrator
 {
 
     /**

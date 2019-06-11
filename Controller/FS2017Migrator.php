@@ -59,11 +59,10 @@ class FS2017Migrator extends Controller
     public function getPageData()
     {
         $data = parent::getPageData();
-        $data['icon'] = 'fas fa-database';
         $data['menu'] = 'admin';
         $data['submenu'] = 'control-panel';
         $data['title'] = '2017-migrator';
-
+        $data['icon'] = 'fas fa-database';
         return $data;
     }
 
@@ -95,8 +94,9 @@ class FS2017Migrator extends Controller
             'Inicio', 'Empresa', 'GruposEpigrafes', 'Epigrafes', 'Cuentas',
             'Subcuentas', 'Asientos', 'Clientes', 'Proveedores', 'Atributos',
             'Productos', 'PedidosProveedor', 'AlbaranesProveedor',
-            'FacturasProveedor', 'PresupuestosCliente', 'PedidosCliente',
-            'AlbaranesCliente', 'FacturasCliente', 'Business', 'end'
+            'FacturasProveedor', 'RecibosProveedor', 'PresupuestosCliente',
+            'PedidosCliente', 'AlbaranesCliente', 'FacturasCliente',
+            'RecibosCliente', 'Estados', 'end'
         ];
 
         $next = false;

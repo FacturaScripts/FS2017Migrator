@@ -18,6 +18,8 @@
  */
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
+use FacturaScripts\Dinamic\Model\LiquidacionComision;
+
 /**
  * Description of FacturasClienteMigrator
  *
@@ -55,6 +57,11 @@ class FacturasClienteMigrator extends FacturasProveedorMigrator
 
         if (0 === $offset && !$this->setModelStatusAll('FacturaCliente')) {
             return false;
+        }
+
+        if (0 === $offset) {
+            /// needed dependency
+            new LiquidacionComision();
         }
 
         $sql = "SELECT * FROM lineasfacturascli"
