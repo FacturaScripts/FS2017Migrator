@@ -93,7 +93,7 @@ class FS2017Migrator extends Controller
         $steps = [
             'Inicio', 'Empresa', 'GruposEpigrafes', 'Epigrafes', 'Cuentas',
             'Subcuentas', 'Asientos', 'Clientes', 'Proveedores', 'Atributos',
-            'Productos', 'PedidosProveedor', 'AlbaranesProveedor',
+            'Productos', 'Tarifas', 'PedidosProveedor', 'AlbaranesProveedor',
             'FacturasProveedor', 'RecibosProveedor', 'PagosProveedor',
             'PresupuestosCliente', 'PedidosCliente', 'AlbaranesCliente',
             'FacturasCliente', 'RecibosCliente', 'PagosCliente', 'Estados', 'end'
