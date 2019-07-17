@@ -42,6 +42,11 @@ class PedidosProveedorMigrator extends AlbaranesProveedorMigrator
             return false;
         }
 
+        $columns = $this->dataBase->getColumns('pedidosprov');
+        if (!in_array('idalbaran', array_keys($columns))) {
+            return true;
+        }
+
         if (0 === $offset && !$this->setModelStatusAll('PedidoProveedor', 'idalbaran')) {
             return false;
         }

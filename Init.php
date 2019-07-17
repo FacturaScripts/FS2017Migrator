@@ -20,11 +20,12 @@ namespace FacturaScripts\Plugins\FS2017Migrator;
 
 use FacturaScripts\Core\Base\InitClass;
 use FacturaScripts\Dinamic\Model\Diario;
+use FacturaScripts\Dinamic\Model\Producto;
 
 /**
  * Description of Init
  *
- * @author carlos
+ * @author Carlos Garcia Gomez <carlos@facturascripts.com>
  */
 class Init extends InitClass
 {
@@ -37,5 +38,6 @@ class Init extends InitClass
     public function update()
     {
         new Diario();
+        new Producto();
     }
 }

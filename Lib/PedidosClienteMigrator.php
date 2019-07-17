@@ -52,6 +52,11 @@ class PedidosClienteMigrator extends AlbaranesProveedorMigrator
         if (0 === $offset && !$this->setModelCompany('PedidoCliente')) {
             return false;
         }
+        
+        $columns = $this->dataBase->getColumns('pedidoscli');
+        if (!in_array('idalbaran', array_keys($columns))) {
+            return true;
+        }
 
         if (0 === $offset && !$this->setModelStatusAll('PedidoCliente', 'idalbaran')) {
             return false;

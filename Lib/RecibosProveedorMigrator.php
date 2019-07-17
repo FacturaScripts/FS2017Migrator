@@ -92,8 +92,11 @@ class RecibosProveedorMigrator extends InicioMigrator
      */
     protected function transactionProcess(&$offset = 0)
     {
-        $sql = 'SELECT * FROM recibosprov ORDER BY idrecibo ASC';
+        if (0 === $offset && !$this->dataBase->tableExists('recibosprov')) {
+            return true;
+        }
 
+        $sql = 'SELECT * FROM recibosprov ORDER BY idrecibo ASC';
         $rows = $this->dataBase->selectLimit($sql, 300, $offset);
         foreach ($rows as $row) {
             $done = $this->newReceipt($row);

@@ -42,6 +42,11 @@ class PresupuestosClienteMigrator extends AlbaranesProveedorMigrator
             return false;
         }
 
+        $columns = $this->dataBase->getColumns('presupuestoscli');
+        if (!in_array('idpedido', array_keys($columns))) {
+            return true;
+        }
+
         if (0 === $offset && !$this->setModelStatusAll('PresupuestoCliente', 'idpedido')) {
             return false;
         }

@@ -39,6 +39,10 @@ class ProveedoresMigrator extends InicioMigrator
      */
     public function migrate(&$offset = 0)
     {
+        if (0 === $offset) {
+            $this->fixProveedores();
+        }
+
         $proveedorModel = new Proveedor();
         $rows = $proveedorModel->all([], ['codproveedor' => 'ASC'], $offset);
         foreach ($rows as $proveedor) {
@@ -58,6 +62,12 @@ class ProveedoresMigrator extends InicioMigrator
         }
 
         return true;
+    }
+
+    protected function fixProveedores()
+    {
+        $sql = "UPDATE proveedores SET codpago = null WHERE codpago NOT IN (SELECT codpago FROM formaspago)";
+        $this->dataBase->exec($sql);
     }
 
     /**

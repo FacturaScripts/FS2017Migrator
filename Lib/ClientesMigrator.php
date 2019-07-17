@@ -39,6 +39,10 @@ class ClientesMigrator extends InicioMigrator
      */
     public function migrate(&$offset = 0)
     {
+        if (0 === $offset) {
+            $this->fixClientes();
+        }
+
         $clienteModel = new Cliente();
         $rows = $clienteModel->all([], ['codcliente' => 'ASC'], $offset);
         foreach ($rows as $cliente) {
@@ -58,6 +62,12 @@ class ClientesMigrator extends InicioMigrator
         }
 
         return true;
+    }
+
+    protected function fixClientes()
+    {
+        $sql = "UPDATE clientes SET codpago = null WHERE codpago NOT IN (SELECT codpago FROM formaspago)";
+        $this->dataBase->exec($sql);
     }
 
     /**
