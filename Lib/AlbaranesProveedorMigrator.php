@@ -114,7 +114,7 @@ class AlbaranesProveedorMigrator extends InicioMigrator
         $className = '\\FacturaScripts\\Dinamic\\Model\\' . $modelName;
         $model1 = new $className();
 
-        $idempresa = AppSettings::get('default', 'idempresa');
+        $idempresa = $this->toolBox()->appSettings()->get('default', 'idempresa');
         $sql = "UPDATE " . $model1->tableName() . " set idempresa = " . $this->dataBase->var2str($idempresa);
         return $this->dataBase->exec($sql);
     }

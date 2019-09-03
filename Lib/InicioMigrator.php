@@ -18,11 +18,9 @@
  */
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
-use FacturaScripts\Core\App\AppSettings;
 use FacturaScripts\Core\Base\DataBase;
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
-use FacturaScripts\Core\Base\MiniLog;
-use FacturaScripts\Core\Base\Translator;
+use FacturaScripts\Core\Base\ToolBox;
 use FacturaScripts\Dinamic\Model\Cuenta;
 use FacturaScripts\Dinamic\Model\Impuesto;
 
@@ -36,21 +34,9 @@ class InicioMigrator
 
     /**
      *
-     * @var AppSettings
-     */
-    protected $appSettings;
-
-    /**
-     *
      * @var DataBase
      */
     protected $dataBase;
-
-    /**
-     *
-     * @var Translator
-     */
-    protected $i18n;
 
     /**
      *
@@ -58,25 +44,15 @@ class InicioMigrator
      */
     protected $impuestos = [];
 
-    /**
-     *
-     * @var MiniLog
-     */
-    protected $miniLog;
-
     public function __construct()
     {
-        $this->appSettings = new AppSettings();
         $this->dataBase = new DataBase();
-        $this->i18n = new Translator();
 
         /// Load taxes
         $impuestoModel = new Impuesto();
         foreach ($impuestoModel->all() as $imp) {
             $this->impuestos[$imp->codimpuesto] = $imp;
         }
-
-        $this->miniLog = new MiniLog();
     }
 
     /**
@@ -157,7 +133,7 @@ class InicioMigrator
             // confirm data
             $this->dataBase->commit();
         } catch (Exception $exp) {
-            $this->miniLog->alert($exp->getMessage());
+            $this->toolBox()->log()->alert($exp->getMessage());
             $return = false;
         } finally {
             if ($this->dataBase->inTransaction()) {
@@ -228,7 +204,7 @@ class InicioMigrator
         }
 
         if (!empty($sql) && !$this->dataBase->exec($sql)) {
-            $this->miniLog->warning('cant-remove-constraint: ' . $constraint['name']);
+            $this->toolBox()->log()->warning('cant-remove-constraint: ' . $constraint['name']);
             return false;
         }
 
@@ -253,7 +229,7 @@ class InicioMigrator
             }
 
             if (!$this->dataBase->exec($sql)) {
-                $this->miniLog->warning('cant-remove-not-null: ' . $tableName . ' ' . $column['name']);
+                $this->toolBox()->log()->warning('cant-remove-not-null: ' . $tableName . ' ' . $column['name']);
                 return false;
             }
         }
@@ -307,5 +283,14 @@ class InicioMigrator
     protected function transactionProcess(&$offset = 0)
     {
         return true;
+    }
+
+    /**
+     * 
+     * @return ToolBox
+     */
+    protected function toolBox()
+    {
+        return new ToolBox();
     }
 }

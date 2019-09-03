@@ -18,6 +18,7 @@
  */
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
+use FacturaScripts\Core\Base\Utils;
 use FacturaScripts\Core\Model\Tarifa;
 
 /**
@@ -36,25 +37,29 @@ class TarifasMigrator extends InicioMigrator
      */
     public function migrate(&$offset = 0)
     {
+        if ($this->dataBase->tableExists('tarifasav')) {
+            $this->migrateTarifasAv();
+        }
+
         if (!$this->dataBase->tableExists('tarifas')) {
             return true;
         }
 
         $tarifaModel = new Tarifa();
         foreach ($tarifaModel->all([], [], 0, 0) as $tarifa) {
-            if (!isset($tarifa->aplicar_a)) {
+            if (!empty($tarifa->aplicar) || !isset($tarifa->aplicar_a)) {
                 continue;
             }
 
             switch ($tarifa->aplicar_a) {
-                case 'coste':
-                    $tarifa->aplicar = 'coste';
+                case Tarifa::APPLY_COST:
+                    $tarifa->aplicar = Tarifa::APPLY_COST;
                     $tarifa->valorx = (float) $tarifa->incporcentual;
                     $tarifa->valory = (float) $tarifa->inclineal;
                     break;
 
-                case 'pvp':
-                    $tarifa->aplicar = 'pvp';
+                case Tarifa::APPLY_PRICE:
+                    $tarifa->aplicar = Tarifa::APPLY_PRICE;
                     $tarifa->valorx = 0 - (float) $tarifa->incporcentual;
                     $tarifa->valory = 0 - (float) $tarifa->inclineal;
                     break;
@@ -64,5 +69,28 @@ class TarifasMigrator extends InicioMigrator
         }
 
         return true;
+    }
+
+    protected function migrateTarifasAv()
+    {
+        $sql = "SELECT * FROM tarifasav WHERE madre IS NOT NULL;";
+        foreach ($this->dataBase->select($sql) as $row) {
+            $tarifa = new Tarifa();
+            $tarifa->codtarifa = $row['codtarifa'];
+            $tarifa->nombre = $row['nombre'];
+
+            if ($this->toolBox()->utils()->str2bool($row['margen'])) {
+                $tarifa->aplicar = Tarifa::APPLY_COST;
+                $tarifa->valorx = (float) $tarifa->incporcentual;
+                $tarifa->valory = (float) $tarifa->inclineal;
+                $tarifa->save();
+                continue;
+            }
+
+            $tarifa->aplicar = Tarifa::APPLY_PRICE;
+            $tarifa->valorx = 0 - (float) $tarifa->incporcentual;
+            $tarifa->valory = 0 - (float) $tarifa->inclineal;
+            $tarifa->save();
+        }
     }
 }

@@ -92,7 +92,7 @@ class ProductosMigrator extends InicioMigrator
         }
 
         $producto->loadFromData($data);
-        $producto->ventasinstock = Utils::str2bool($data['controlstock']);
+        $producto->ventasinstock = $this->toolBox()->utils()->str2bool($data['controlstock']);
         if ($producto->save()) {
             if ($data['tipo'] == 'atributos') {
                 return $this->newProductVariants($producto, $data);
@@ -139,7 +139,7 @@ class ProductosMigrator extends InicioMigrator
 
             $newStock = new Stock();
             $newStock->cantidad = $newVariante->stockfis;
-            $newStock->codalmacen = AppSettings::get('default', 'codalmacen');
+            $newStock->codalmacen = $this->toolBox()->appSettings()->get('default', 'codalmacen');
             $newStock->idproducto = $newVariante->idproducto;
             $newStock->referencia = $newVariante->referencia;
             if (!$newStock->save()) {

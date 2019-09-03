@@ -19,6 +19,7 @@
 namespace FacturaScripts\Plugins\FS2017Migrator;
 
 use FacturaScripts\Core\Base\InitClass;
+use FacturaScripts\Dinamic\Model\AttachedFile;
 use FacturaScripts\Dinamic\Model\Diario;
 use FacturaScripts\Dinamic\Model\Producto;
 
@@ -37,6 +38,7 @@ class Init extends InitClass
 
     public function update()
     {
+        new AttachedFile();
         new Diario();
         new Producto();
     }

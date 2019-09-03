@@ -92,7 +92,7 @@ class EmpresaMigrator extends InicioMigrator
             }
 
             if (!$empresa->save()) {
-                $this->miniLog->warning($this->i18n->trans('record-save-error'));
+                $this->toolBox()->i18nLog()->error('record-save-error');
                 return;
             }
 

@@ -66,7 +66,8 @@ class ProveedoresMigrator extends InicioMigrator
 
     protected function fixProveedores()
     {
-        $sql = "UPDATE proveedores SET codpago = null WHERE codpago NOT IN (SELECT codpago FROM formaspago)";
+        $sql = "UPDATE proveedores SET codpago = null WHERE codpago NOT IN (SELECT codpago FROM formaspago);"
+            . "UPDATE proveedores SET codserie = null WHERE codserie NOT IN (SELECT codserie FROM series);";
         $this->dataBase->exec($sql);
     }
 
@@ -118,7 +119,7 @@ class ProveedoresMigrator extends InicioMigrator
                 return false;
             }
 
-            if (Utils::str2bool($row['direccionppal'])) {
+            if ($this->toolBox()->utils()->str2bool($row['direccionppal'])) {
                 $proveedor->idcontacto = $newContacto->idcontacto;
             }
 

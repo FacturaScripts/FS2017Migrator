@@ -91,7 +91,7 @@ class SubcuentasMigrator extends InicioMigrator
             new DataBaseWhere('codejercicio', $data['codejercicio']),
         ];
         if (!$cuenta->loadFromCode('', $where2) && !$this->fixMissingCuenta($cuenta, $data['codcuenta'], $data['codejercicio'])) {
-            $this->miniLog->warning('account-missing');
+            $this->toolBox()->log()->warning('account-missing');
             return false;
         }
 

@@ -86,7 +86,7 @@ class PagosProveedorMigrator extends InicioMigrator
         $newReceipt->fechapago = date('d-m-Y', strtotime($row['fecha']));
         $newReceipt->idfactura = $row['idfactura'];
         $newReceipt->importe = $row['total'];
-        $newReceipt->pagado = Utils::str2bool($row['pagada']);
+        $newReceipt->pagado = $this->toolBox()->utils()->str2bool($row['pagada']);
         $newReceipt->vencimiento = date('d-m-Y', strtotime($row['fecha']));
         return $newReceipt->save() ? $this->newPayment($newReceipt, $row['idasientop']) : false;
     }

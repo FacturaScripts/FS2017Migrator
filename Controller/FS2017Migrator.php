@@ -102,7 +102,7 @@ class FS2017Migrator extends Controller
         $next = false;
         foreach ($steps as $step) {
             if ($next) {
-                $this->cache->clear();
+                $this->toolBox()->cache()->clear();
 
                 /// redirect to next step
                 $this->redirect($this->url() . '?action=' . $step, 2);
@@ -118,13 +118,13 @@ class FS2017Migrator extends Controller
             /// selected step
             $next = true;
             if ($step == 'end') {
-                $this->cache->clear();
+                $this->toolBox()->cache()->clear();
                 $this->working = false;
                 break;
             }
 
             $initial = $this->offset;
-            $className = 'FacturaScripts\\Plugins\\FS2017Migrator\\Lib\\' . $step . 'Migrator';
+            $className = '\\FacturaScripts\\Plugins\\FS2017Migrator\\Lib\\' . $step . 'Migrator';
             $migrator = new $className();
             if (!$migrator->migrate($this->offset)) {
                 /// migration error
