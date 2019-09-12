@@ -96,12 +96,12 @@ class EmpresaMigrator extends InicioMigrator
                 return;
             }
 
-            $this->appSettings->set('default', 'idempresa', $empresa->idempresa);
+            $this->toolBox()->appSettings()->set('default', 'idempresa', $empresa->idempresa);
             $this->updateWarehouses($empresa->idempresa, $data['codalmacen']);
             $this->updatePaymentMethods($empresa->idempresa, $data['codpago']);
             $this->updateBankAccounts($empresa->idempresa);
             $this->updateAccounting($empresa->idempresa);
-            $this->appSettings->save();
+            $this->toolBox()->appSettings()->save();
             break;
         }
     }
@@ -119,7 +119,7 @@ class EmpresaMigrator extends InicioMigrator
             $formaPago->save();
 
             if ($formaPago->codpago == $codpago) {
-                $this->appSettings->set('default', 'codpago', $codpago);
+                $this->toolBox()->appSettings()->set('default', 'codpago', $codpago);
             }
         }
     }
@@ -137,7 +137,7 @@ class EmpresaMigrator extends InicioMigrator
             $almacen->save();
 
             if ($almacen->codalmacen == $codalmacen) {
-                $this->appSettings->set('default', 'codalmacen', $codalmacen);
+                $this->toolBox()->appSettings()->set('default', 'codalmacen', $codalmacen);
             }
         }
     }
