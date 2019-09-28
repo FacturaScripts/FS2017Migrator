@@ -18,9 +18,7 @@
  */
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
-use FacturaScripts\Core\App\AppSettings;
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
-use FacturaScripts\Core\Base\Utils;
 use FacturaScripts\Dinamic\Model\Producto;
 use FacturaScripts\Dinamic\Model\Stock;
 use FacturaScripts\Dinamic\Model\Variante;
@@ -62,7 +60,7 @@ class ProductosMigrator extends InicioMigrator
         foreach ($this->dataBase->select($sql) as $row) {
             if (!isset($combinaciones[$row['codigo']])) {
                 $combinaciones[$row['codigo']] = [
-                    'codbarras' => $row['codbarras'],
+                    'codbarras' => $this->fixString($row['codbarras'], 20),
                     'idatributovalor1' => $row['idvalor'],
                     'precio' => floatval($row['impactoprecio']) + $precio,
                     'referencia' => empty($row['refcombinacion']) ? $ref . '-' . $row['codigo'] : $row['refcombinacion'],
@@ -100,7 +98,7 @@ class ProductosMigrator extends InicioMigrator
 
             /// type: simple
             foreach ($producto->getVariants() as $variante) {
-                $variante->codbarras = $data['codbarras'];
+                $variante->codbarras = $this->fixString($data['codbarras'], 20);
                 $variante->coste = $data['costemedio'];
                 $variante->precio = $data['pvp'];
                 $variante->save();

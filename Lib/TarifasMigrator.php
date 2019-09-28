@@ -18,7 +18,6 @@
  */
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
-use FacturaScripts\Core\Base\Utils;
 use FacturaScripts\Core\Model\Tarifa;
 
 /**

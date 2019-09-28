@@ -19,7 +19,6 @@
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
-use FacturaScripts\Core\Base\Utils;
 use FacturaScripts\Dinamic\Model\Contacto;
 use FacturaScripts\Dinamic\Model\Proveedor;
 
@@ -48,8 +47,8 @@ class ProveedoresMigrator extends InicioMigrator
         foreach ($rows as $proveedor) {
             $proveedor->codsubcuenta = $this->getSubcuenta($proveedor->codproveedor);
             $proveedor->email = filter_var($proveedor->email, FILTER_VALIDATE_EMAIL) ? $proveedor->email : '';
-            $proveedor->telefono1 = strlen($proveedor->telefono1) > 20 ? substr($proveedor->telefono1, 0, 20) : $proveedor->telefono1;
-            $proveedor->telefono2 = strlen($proveedor->telefono2) > 20 ? substr($proveedor->telefono2, 0, 20) : $proveedor->telefono2;
+            $proveedor->telefono1 = $this->fixString($proveedor->telefono1, 20);
+            $proveedor->telefono2 = $this->fixString($proveedor->telefono2, 20);
             if (!$proveedor->save()) {
                 return false;
             }

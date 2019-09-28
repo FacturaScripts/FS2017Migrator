@@ -23,6 +23,7 @@ use FacturaScripts\Dinamic\Model\CuentaBanco;
 use FacturaScripts\Dinamic\Model\Ejercicio;
 use FacturaScripts\Dinamic\Model\Empresa;
 use FacturaScripts\Dinamic\Model\FormaPago;
+use FacturaScripts\Dinamic\Model\Serie;
 
 /**
  * Description of EmpresaMigrator
@@ -45,6 +46,7 @@ class EmpresaMigrator extends InicioMigrator
             $this->updateCompany($row);
         }
 
+        $this->updateSeries();
         return true;
     }
 
@@ -109,7 +111,7 @@ class EmpresaMigrator extends InicioMigrator
     /**
      * 
      * @param int    $idempresa
-     * @param string $codalmacen
+     * @param string $codpago
      */
     protected function updatePaymentMethods($idempresa, $codpago)
     {
@@ -120,6 +122,18 @@ class EmpresaMigrator extends InicioMigrator
 
             if ($formaPago->codpago == $codpago) {
                 $this->toolBox()->appSettings()->set('default', 'codpago', $codpago);
+            }
+        }
+    }
+
+    protected function updateSeries()
+    {
+        foreach (['A', 'R', 'S'] as $codserie) {
+            $serie = new Serie();
+            if (!$serie->loadFromCode($codserie)) {
+                $serie->codserie = $codserie;
+                $serie->descripcion = $codserie;
+                $serie->save();
             }
         }
     }

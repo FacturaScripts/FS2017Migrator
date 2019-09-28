@@ -92,6 +92,23 @@ class InicioMigrator
 
     /**
      * 
+     * @param string $txt
+     * @param int    $len
+     *
+     * @return string
+     */
+    protected function fixString($txt, $len = 0)
+    {
+        if (empty($txt)) {
+            return $txt;
+        }
+
+        $string = $this->toolBox()->utils()->noHtml($txt);
+        return empty($len) ? $string : substr($string, 0, $len);
+    }
+
+    /**
+     * 
      * @param string $tableName
      *
      * @return bool

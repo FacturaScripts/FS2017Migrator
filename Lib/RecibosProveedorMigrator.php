@@ -18,7 +18,6 @@
  */
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
-use FacturaScripts\Core\App\AppSettings;
 use FacturaScripts\Dinamic\Model\PagoProveedor;
 use FacturaScripts\Dinamic\Model\ReciboProveedor;
 

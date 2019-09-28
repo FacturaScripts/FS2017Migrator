@@ -51,6 +51,10 @@ class FacturasClienteMigrator extends FacturasProveedorMigrator
             return false;
         }
 
+        if (0 === $offset && !$this->fixCustomers('facturascli')) {
+            return false;
+        }
+
         if (0 === $offset && !$this->setModelCompany('FacturaCliente')) {
             return false;
         }

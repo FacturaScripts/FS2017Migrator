@@ -38,6 +38,10 @@ class PresupuestosClienteMigrator extends AlbaranesProveedorMigrator
             return false;
         }
 
+        if (0 === $offset && !$this->fixCustomers('presupuestoscli')) {
+            return false;
+        }
+
         if (0 === $offset && !$this->setModelCompany('PresupuestoCliente')) {
             return false;
         }

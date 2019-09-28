@@ -18,7 +18,6 @@
  */
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
-use FacturaScripts\Core\App\AppSettings;
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
 use FacturaScripts\Dinamic\Model\DocTransformation;
 use FacturaScripts\Dinamic\Model\EstadoDocumento;
@@ -48,6 +47,23 @@ class AlbaranesProveedorMigrator extends InicioMigrator
      *
      * @return bool
      */
+    protected function fixCustomers($tableName)
+    {
+        if (!$this->dataBase->tableExists($tableName)) {
+            return true;
+        }
+
+        $sql = "UPDATE " . $tableName . " SET codcliente = null WHERE codcliente IS NOT null"
+            . " AND codcliente NOT IN (SELECT codcliente FROM clientes);";
+        return $this->dataBase->exec($sql);
+    }
+
+    /**
+     * 
+     * @param string $tableName
+     *
+     * @return bool
+     */
     protected function fixLinesTable($tableName)
     {
         if (!$this->dataBase->tableExists($tableName)) {
@@ -62,6 +78,23 @@ class AlbaranesProveedorMigrator extends InicioMigrator
         $sql = "UPDATE " . $tableName . " SET recargo = 0 WHERE recargo IS null;"
             . " UPDATE " . $tableName . " SET codimpuesto = null WHERE codimpuesto IS NOT null"
             . " AND codimpuesto NOT IN (" . implode(',', $values) . ");";
+        return $this->dataBase->exec($sql);
+    }
+
+    /**
+     * 
+     * @param string $tableName
+     *
+     * @return bool
+     */
+    protected function fixSuppliers($tableName)
+    {
+        if (!$this->dataBase->tableExists($tableName)) {
+            return true;
+        }
+
+        $sql = "UPDATE " . $tableName . " SET codproveedor = null WHERE codproveedor IS NOT null"
+            . " AND codproveedor NOT IN (SELECT codproveedor FROM proveedores);";
         return $this->dataBase->exec($sql);
     }
 
@@ -191,6 +224,10 @@ class AlbaranesProveedorMigrator extends InicioMigrator
     protected function transactionProcess(&$offset = 0)
     {
         if (0 === $offset && !$this->fixLinesTable('lineasalbaranesprov')) {
+            return false;
+        }
+
+        if (0 === $offset && !$this->fixSuppliers('albaranesprov')) {
             return false;
         }
 

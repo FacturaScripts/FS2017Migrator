@@ -105,7 +105,12 @@ class SubcuentasMigrator extends InicioMigrator
         $subcuenta->idcuenta = $cuenta->primaryColumnValue();
         $subcuenta->idsubcuenta = $data['idsubcuenta'];
         $subcuenta->saldo = $data['saldo'];
-        return $subcuenta->save();
+        if ($subcuenta->save()) {
+            return true;
+        }
+
+        $this->toolBox()->log()->error('codejercicio: ' . $subcuenta->codejercicio . ', codsubcuenta: ' . $subcuenta->codsubcuenta);
+        return false;
     }
 
     /**

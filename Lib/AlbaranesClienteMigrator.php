@@ -51,6 +51,10 @@ class AlbaranesClienteMigrator extends AlbaranesProveedorMigrator
             return false;
         }
 
+        if (0 === $offset && !$this->fixCustomers('albaranescli')) {
+            return false;
+        }
+
         if (0 === $offset && !$this->setModelCompany('AlbaranCliente')) {
             return false;
         }

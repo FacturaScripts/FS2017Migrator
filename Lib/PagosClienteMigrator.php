@@ -19,7 +19,6 @@
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
-use FacturaScripts\Core\Base\Utils;
 use FacturaScripts\Dinamic\Model\PagoCliente;
 use FacturaScripts\Dinamic\Model\ReciboCliente;
 

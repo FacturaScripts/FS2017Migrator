@@ -49,6 +49,10 @@ class FacturasProveedorMigrator extends AlbaranesProveedorMigrator
             return false;
         }
 
+        if (0 === $offset && !$this->fixSuppliers('facturasprov')) {
+            return false;
+        }
+
         if (0 === $offset && !$this->setModelCompany('FacturaProveedor')) {
             return false;
         }
