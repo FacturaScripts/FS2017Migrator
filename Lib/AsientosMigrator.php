@@ -27,7 +27,7 @@ use FacturaScripts\Dinamic\Model\Partida;
  *
  * @author Carlos Garcia Gomez <carlos@facturascripts.com>
  */
-class AsientosMigrator extends InicioMigrator
+class AsientosMigrator extends MigratorBase
 {
 
     /**
@@ -36,7 +36,7 @@ class AsientosMigrator extends InicioMigrator
      *
      * @return bool
      */
-    public function migrate(&$offset = 0)
+    protected function migrationProcess(&$offset = 0): bool
     {
         switch ($offset) {
             case 0:

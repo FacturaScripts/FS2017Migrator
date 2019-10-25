@@ -27,7 +27,7 @@ use FacturaScripts\Dinamic\Model\Contacto;
  *
  * @author Carlos Garcia Gomez <carlos@facturascripts.com>
  */
-class ClientesMigrator extends InicioMigrator
+class ClientesMigrator extends MigratorBase
 {
 
     /**
@@ -36,7 +36,7 @@ class ClientesMigrator extends InicioMigrator
      *
      * @return bool
      */
-    public function migrate(&$offset = 0)
+    protected function migrationProcess(&$offset = 0): bool
     {
         if (0 === $offset) {
             $this->fixClientes();

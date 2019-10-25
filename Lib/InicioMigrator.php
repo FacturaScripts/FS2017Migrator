@@ -18,94 +18,13 @@
  */
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
-use FacturaScripts\Core\Base\DataBase;
-use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
-use FacturaScripts\Core\Base\ToolBox;
-use FacturaScripts\Dinamic\Model\Cuenta;
-use FacturaScripts\Dinamic\Model\Impuesto;
-
 /**
  * Description of InicioMigrator
  *
  * @author Carlos Garcia Gomez <carlos@facturascripts.com>
  */
-class InicioMigrator
+class InicioMigrator extends MigratorBase
 {
-
-    /**
-     *
-     * @var DataBase
-     */
-    protected $dataBase;
-
-    /**
-     *
-     * @var Impuesto[]
-     */
-    protected $impuestos = [];
-
-    public function __construct()
-    {
-        $this->dataBase = new DataBase();
-
-        /// Load taxes
-        $impuestoModel = new Impuesto();
-        foreach ($impuestoModel->all() as $imp) {
-            $this->impuestos[$imp->codimpuesto] = $imp;
-        }
-    }
-
-    /**
-     * 
-     * @param int $offset
-     *
-     * @return bool
-     */
-    public function migrate(&$offset = 0)
-    {
-        $exclude = [
-            'articulo_propiedades', 'attached_files', 'empresas',
-            'estados_documentos', 'fs_access', 'fs_extensions2', 'pages',
-            'pages_filters', 'pages_options', 'productos', 'roles',
-            'roles_access', 'roles_users', 'secuencias_documentos', 'settings',
-            'users', 'variantes'
-        ];
-        foreach ($this->dataBase->getTables() as $tableName) {
-            if (!in_array($tableName, $exclude) && !$this->freeTable($tableName)) {
-                /// no return
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * 
-     * @param string $codimpuesto
-     *
-     * @return string
-     */
-    protected function fixImpuesto($codimpuesto)
-    {
-        return isset($this->impuestos[$codimpuesto]) ? $codimpuesto : null;
-    }
-
-    /**
-     * 
-     * @param string $txt
-     * @param int    $len
-     *
-     * @return string
-     */
-    protected function fixString($txt, $len = 0)
-    {
-        if (empty($txt)) {
-            return $txt;
-        }
-
-        $string = $this->toolBox()->utils()->noHtml($txt);
-        return empty($len) ? $string : substr($string, 0, $len);
-    }
 
     /**
      * 
@@ -138,68 +57,25 @@ class InicioMigrator
      *
      * @return bool
      */
-    protected function migrateInTransaction(&$offset = 0)
+    protected function migrationProcess(&$offset = 0): bool
     {
-        // start transaction
-        $this->dataBase->beginTransaction();
-        $return = false;
-
-        try {
-            $return = $this->transactionProcess($offset);
-
-            // confirm data
-            $this->dataBase->commit();
-        } catch (Exception $exp) {
-            $this->toolBox()->log()->alert($exp->getMessage());
-            $return = false;
-        } finally {
-            if ($this->dataBase->inTransaction()) {
-                $this->dataBase->rollback();
-            }
-        }
-
-        return $return;
-    }
-
-    /**
-     * 
-     * @param string $codejercicio
-     * @param string $codparent
-     * @param string $codcuenta
-     * @param string $descripcion
-     * @param string $idcuentaesp
-     *
-     * @return bool
-     */
-    protected function newCuenta($codejercicio, $codparent, $codcuenta, $descripcion, $idcuentaesp = null)
-    {
-        $cuenta = new Cuenta();
-        $where = [
-            new DataBaseWhere('codcuenta', $codcuenta),
-            new DataBaseWhere('codejercicio', $codejercicio)
+        $exclude = [
+            'articulo_propiedades', 'attached_files', 'empresas',
+            'estados_documentos', 'fs_access', 'fs_extensions2', 'pages',
+            'pages_filters', 'pages_options', 'productos', 'roles',
+            'roles_access', 'roles_users', 'secuencias_documentos', 'settings',
+            'users', 'variantes'
         ];
-        if ($cuenta->loadFromCode('', $where)) {
-            return true;
-        }
 
-        $cuenta->codcuenta = $codcuenta;
-        $cuenta->codejercicio = $codejercicio;
-        $cuenta->descripcion = $descripcion;
-        $cuenta->codcuentaesp = empty($idcuentaesp) ? null : $idcuentaesp;
-
-        if (!empty($codparent)) {
-            $parent = new Cuenta();
-            $where2 = [
-                new DataBaseWhere('codcuenta', $codparent),
-                new DataBaseWhere('codejercicio', $codejercicio)
-            ];
-            if ($parent->loadFromCode('', $where2)) {
-                $cuenta->parent_codcuenta = $parent->codcuenta;
-                $cuenta->parent_idcuenta = $parent->idcuenta;
+        $this->disableForeignKeys(true);
+        foreach ($this->dataBase->getTables() as $tableName) {
+            if (!in_array($tableName, $exclude) && !$this->freeTable($tableName)) {
+                /// no return
             }
         }
 
-        return $cuenta->save();
+        $this->disableForeignKeys(false);
+        return true;
     }
 
     /**
@@ -252,62 +128,5 @@ class InicioMigrator
         }
 
         return true;
-    }
-
-    /**
-     * 
-     * @param string $tableName
-     *
-     * @return bool
-     */
-    protected function removeTable($tableName)
-    {
-        $sql = 'DROP TABLE ' . $tableName . ';';
-        return $this->dataBase->exec($sql);
-    }
-
-    /**
-     * 
-     * @param string $tableName
-     * @param string $newName
-     *
-     * @return bool
-     */
-    protected function renameTable($tableName, $newName)
-    {
-        if (!$this->dataBase->tableExists($tableName)) {
-            return true;
-        }
-
-        if ($this->dataBase->tableExists($newName)) {
-            $this->removeTable($newName);
-        }
-
-        $sql = 'ALTER TABLE ' . $tableName . ' RENAME ' . $newName . ';';
-        if (strtolower(FS_DB_TYPE) == 'postgresql') {
-            $sql = 'ALTER TABLE ' . $tableName . ' RENAME TO "' . $newName . '";';
-        }
-
-        return $this->dataBase->exec($sql);
-    }
-
-    /**
-     * 
-     * @param int $offset
-     *
-     * @return bool
-     */
-    protected function transactionProcess(&$offset = 0)
-    {
-        return true;
-    }
-
-    /**
-     * 
-     * @return ToolBox
-     */
-    protected function toolBox()
-    {
-        return new ToolBox();
     }
 }

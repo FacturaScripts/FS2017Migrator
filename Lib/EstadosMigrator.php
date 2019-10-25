@@ -25,7 +25,7 @@ use FacturaScripts\Dinamic\Model\EstadoDocumento;
  *
  * @author Carlos Garcia Gomez <carlos@facturascripts.com>
  */
-class EstadosMigrator extends InicioMigrator
+class EstadosMigrator extends MigratorBase
 {
 
     /**
@@ -34,7 +34,7 @@ class EstadosMigrator extends InicioMigrator
      *
      * @return bool
      */
-    public function migrate(&$offset = 0)
+    protected function migrationProcess(&$offset = 0): bool
     {
         $estadoModel = new EstadoDocumento();
         foreach ($estadoModel->all([], [$estadoModel->primaryColumn() => 'ASC'], $offset, 2) as $estado) {

@@ -27,19 +27,8 @@ use FacturaScripts\Dinamic\Model\EstadoDocumento;
  *
  * @author Carlos Garcia Gomez <carlos@facturascripts.com>
  */
-class AlbaranesProveedorMigrator extends InicioMigrator
+class AlbaranesProveedorMigrator extends MigratorBase
 {
-
-    /**
-     * 
-     * @param int $offset
-     *
-     * @return bool
-     */
-    public function migrate(&$offset = 0)
-    {
-        return $this->migrateInTransaction($offset);
-    }
 
     /**
      * 
@@ -96,6 +85,50 @@ class AlbaranesProveedorMigrator extends InicioMigrator
         $sql = "UPDATE " . $tableName . " SET codproveedor = null WHERE codproveedor IS NOT null"
             . " AND codproveedor NOT IN (SELECT codproveedor FROM proveedores);";
         return $this->dataBase->exec($sql);
+    }
+
+    /**
+     * 
+     * @param int $offset
+     *
+     * @return bool
+     */
+    protected function migrationProcess(&$offset = 0): bool
+    {
+        if (0 === $offset && !$this->fixLinesTable('lineasalbaranesprov')) {
+            return false;
+        }
+
+        if (0 === $offset && !$this->fixSuppliers('albaranesprov')) {
+            return false;
+        }
+
+        if (0 === $offset && !$this->setModelCompany('AlbaranProveedor')) {
+            return false;
+        }
+
+        if (0 === $offset && !$this->setModelStatusAll('AlbaranProveedor', 'idfactura', true)) {
+            return false;
+        }
+
+        $sql = "SELECT * FROM lineasalbaranesprov"
+            . " WHERE idpedido IS NOT null"
+            . " AND idpedido != '0'"
+            . " ORDER BY idlinea ASC";
+
+        $rows = $this->dataBase->selectLimit($sql, 300, $offset);
+        foreach ($rows as $row) {
+            $done = $this->newDocTransformation(
+                'PedidoProveedor', $row['idpedido'], $row['idlineapedido'], 'AlbaranProveedor', $row['idalbaran'], $row['idlinea']
+            );
+            if (!$done) {
+                return false;
+            }
+
+            $offset++;
+        }
+
+        return true;
     }
 
     /**
@@ -210,50 +243,6 @@ class AlbaranesProveedorMigrator extends InicioMigrator
             if (!$this->dataBase->exec($sql)) {
                 return false;
             }
-        }
-
-        return true;
-    }
-
-    /**
-     * 
-     * @param int $offset
-     *
-     * @return bool
-     */
-    protected function transactionProcess(&$offset = 0)
-    {
-        if (0 === $offset && !$this->fixLinesTable('lineasalbaranesprov')) {
-            return false;
-        }
-
-        if (0 === $offset && !$this->fixSuppliers('albaranesprov')) {
-            return false;
-        }
-
-        if (0 === $offset && !$this->setModelCompany('AlbaranProveedor')) {
-            return false;
-        }
-
-        if (0 === $offset && !$this->setModelStatusAll('AlbaranProveedor', 'idfactura', true)) {
-            return false;
-        }
-
-        $sql = "SELECT * FROM lineasalbaranesprov"
-            . " WHERE idpedido IS NOT null"
-            . " AND idpedido != '0'"
-            . " ORDER BY idlinea ASC";
-
-        $rows = $this->dataBase->selectLimit($sql, 300, $offset);
-        foreach ($rows as $row) {
-            $done = $this->newDocTransformation(
-                'PedidoProveedor', $row['idpedido'], $row['idlineapedido'], 'AlbaranProveedor', $row['idalbaran'], $row['idlinea']
-            );
-            if (!$done) {
-                return false;
-            }
-
-            $offset++;
         }
 
         return true;

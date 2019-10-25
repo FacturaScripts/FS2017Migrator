@@ -26,7 +26,7 @@ use FacturaScripts\Dinamic\Model\ReciboProveedor;
  *
  * @author Carlos Garcia Gomez <carlos@facturascripts.com>
  */
-class RecibosProveedorMigrator extends InicioMigrator
+class RecibosProveedorMigrator extends MigratorBase
 {
 
     /**
@@ -35,9 +35,24 @@ class RecibosProveedorMigrator extends InicioMigrator
      *
      * @return bool
      */
-    public function migrate(&$offset = 0)
+    protected function migrationProcess(&$offset = 0): bool
     {
-        return $this->migrateInTransaction($offset);
+        if (0 === $offset && !$this->dataBase->tableExists('recibosprov')) {
+            return true;
+        }
+
+        $sql = 'SELECT * FROM recibosprov ORDER BY idrecibo ASC';
+        $rows = $this->dataBase->selectLimit($sql, 300, $offset);
+        foreach ($rows as $row) {
+            $done = $this->newReceipt($row);
+            if (!$done) {
+                return false;
+            }
+
+            $offset++;
+        }
+
+        return true;
     }
 
     /**
@@ -81,31 +96,5 @@ class RecibosProveedorMigrator extends InicioMigrator
         }
 
         return $newReceipt->save() ? $this->newPayment($newReceipt) : false;
-    }
-
-    /**
-     * 
-     * @param int $offset
-     *
-     * @return bool
-     */
-    protected function transactionProcess(&$offset = 0)
-    {
-        if (0 === $offset && !$this->dataBase->tableExists('recibosprov')) {
-            return true;
-        }
-
-        $sql = 'SELECT * FROM recibosprov ORDER BY idrecibo ASC';
-        $rows = $this->dataBase->selectLimit($sql, 300, $offset);
-        foreach ($rows as $row) {
-            $done = $this->newReceipt($row);
-            if (!$done) {
-                return false;
-            }
-
-            $offset++;
-        }
-
-        return true;
     }
 }

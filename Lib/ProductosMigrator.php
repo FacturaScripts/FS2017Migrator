@@ -28,19 +28,8 @@ use FacturaScripts\Dinamic\Model\Variante;
  *
  * @author Carlos Garcia Gomez <carlos@facturascripts.com>
  */
-class ProductosMigrator extends InicioMigrator
+class ProductosMigrator extends MigratorBase
 {
-
-    /**
-     * 
-     * @param int $offset
-     *
-     * @return bool
-     */
-    public function migrate(&$offset = 0)
-    {
-        return $this->migrateInTransaction($offset);
-    }
 
     /**
      * 
@@ -73,6 +62,32 @@ class ProductosMigrator extends InicioMigrator
         }
 
         return $combinaciones;
+    }
+
+    /**
+     * 
+     * @param int $offset
+     *
+     * @return bool
+     */
+    protected function migrationProcess(&$offset = 0): bool
+    {
+        /// rename stocks table
+        if ($offset == 0 && !$this->dataBase->tableExists('stocks_old')) {
+            $this->renameTable('stocks', 'stocks_old');
+        }
+
+        $sql = "SELECT * FROM articulos ORDER BY referencia ASC";
+        $rows = $this->dataBase->selectLimit($sql, 300, $offset);
+        foreach ($rows as $row) {
+            if (!$this->newProduct($row)) {
+                return false;
+            }
+
+            $offset++;
+        }
+
+        return true;
     }
 
     /**
@@ -143,32 +158,6 @@ class ProductosMigrator extends InicioMigrator
             if (!$newStock->save()) {
                 return false;
             }
-        }
-
-        return true;
-    }
-
-    /**
-     * 
-     * @param int $offset
-     *
-     * @return bool
-     */
-    protected function transactionProcess(&$offset = 0)
-    {
-        /// rename stocks table
-        if ($offset == 0 && !$this->dataBase->tableExists('stocks_old')) {
-            $this->renameTable('stocks', 'stocks_old');
-        }
-
-        $sql = "SELECT * FROM articulos ORDER BY referencia ASC";
-        $rows = $this->dataBase->selectLimit($sql, 300, $offset);
-        foreach ($rows as $row) {
-            if (!$this->newProduct($row)) {
-                return false;
-            }
-
-            $offset++;
         }
 
         return true;

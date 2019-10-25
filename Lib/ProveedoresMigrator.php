@@ -27,41 +27,8 @@ use FacturaScripts\Dinamic\Model\Proveedor;
  *
  * @author Carlos Garcia Gomez <carlos@facturascripts.com>
  */
-class ProveedoresMigrator extends InicioMigrator
+class ProveedoresMigrator extends MigratorBase
 {
-
-    /**
-     * 
-     * @param int $offset
-     *
-     * @return bool
-     */
-    public function migrate(&$offset = 0)
-    {
-        if (0 === $offset) {
-            $this->fixProveedores();
-        }
-
-        $proveedorModel = new Proveedor();
-        $rows = $proveedorModel->all([], ['codproveedor' => 'ASC'], $offset);
-        foreach ($rows as $proveedor) {
-            $proveedor->codsubcuenta = $this->getSubcuenta($proveedor->codproveedor);
-            $proveedor->email = filter_var($proveedor->email, FILTER_VALIDATE_EMAIL) ? $proveedor->email : '';
-            $proveedor->telefono1 = $this->fixString($proveedor->telefono1, 20);
-            $proveedor->telefono2 = $this->fixString($proveedor->telefono2, 20);
-            if (!$proveedor->save()) {
-                return false;
-            }
-
-            if (!$this->migrateAddress($proveedor)) {
-                return false;
-            }
-
-            $offset++;
-        }
-
-        return true;
-    }
 
     protected function fixProveedores()
     {
@@ -126,6 +93,39 @@ class ProveedoresMigrator extends InicioMigrator
         }
 
         return $found ? $proveedor->save() : $this->newContacto($proveedor);
+    }
+
+    /**
+     * 
+     * @param int $offset
+     *
+     * @return bool
+     */
+    protected function migrationProcess(&$offset = 0): bool
+    {
+        if (0 === $offset) {
+            $this->fixProveedores();
+        }
+
+        $proveedorModel = new Proveedor();
+        $rows = $proveedorModel->all([], ['codproveedor' => 'ASC'], $offset);
+        foreach ($rows as $proveedor) {
+            $proveedor->codsubcuenta = $this->getSubcuenta($proveedor->codproveedor);
+            $proveedor->email = filter_var($proveedor->email, FILTER_VALIDATE_EMAIL) ? $proveedor->email : '';
+            $proveedor->telefono1 = $this->fixString($proveedor->telefono1, 20);
+            $proveedor->telefono2 = $this->fixString($proveedor->telefono2, 20);
+            if (!$proveedor->save()) {
+                return false;
+            }
+
+            if (!$this->migrateAddress($proveedor)) {
+                return false;
+            }
+
+            $offset++;
+        }
+
+        return true;
     }
 
     /**

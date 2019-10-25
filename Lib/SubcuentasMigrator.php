@@ -27,19 +27,8 @@ use FacturaScripts\Dinamic\Model\Subcuenta;
  *
  * @author Carlos Garcia Gomez <carlos@facturascripts.com>
  */
-class SubcuentasMigrator extends InicioMigrator
+class SubcuentasMigrator extends MigratorBase
 {
-
-    /**
-     * 
-     * @param int $offset
-     *
-     * @return bool
-     */
-    public function migrate(&$offset = 0)
-    {
-        return $this->migrateInTransaction($offset);
-    }
 
     /**
      * 
@@ -66,6 +55,27 @@ class SubcuentasMigrator extends InicioMigrator
         $cuenta->parent_codcuenta = $parentCuenta->codcuenta;
         $cuenta->parent_idcuenta = $parentCuenta->idcuenta;
         return $cuenta->save();
+    }
+
+    /**
+     * 
+     * @param int $offset
+     *
+     * @return bool
+     */
+    protected function migrationProcess(&$offset = 0): bool
+    {
+        $sql = "SELECT * FROM co_subcuentas ORDER BY idsubcuenta ASC";
+        $rows = $this->dataBase->selectLimit($sql, 600, $offset);
+        foreach ($rows as $row) {
+            if (!$this->newSubcuenta($row)) {
+                return false;
+            }
+
+            $offset++;
+        }
+
+        return true;
     }
 
     /**
@@ -111,26 +121,5 @@ class SubcuentasMigrator extends InicioMigrator
 
         $this->toolBox()->log()->error('codejercicio: ' . $subcuenta->codejercicio . ', codsubcuenta: ' . $subcuenta->codsubcuenta);
         return false;
-    }
-
-    /**
-     * 
-     * @param int $offset
-     *
-     * @return bool
-     */
-    protected function transactionProcess(&$offset = 0)
-    {
-        $sql = "SELECT * FROM co_subcuentas ORDER BY idsubcuenta ASC";
-        $rows = $this->dataBase->selectLimit($sql, 600, $offset);
-        foreach ($rows as $row) {
-            if (!$this->newSubcuenta($row)) {
-                return false;
-            }
-
-            $offset++;
-        }
-
-        return true;
     }
 }

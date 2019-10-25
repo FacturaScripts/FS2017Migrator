@@ -30,7 +30,7 @@ use FacturaScripts\Dinamic\Model\Serie;
  *
  * @author Carlos Garcia Gomez <carlos@facturascripts.com>
  */
-class EmpresaMigrator extends InicioMigrator
+class EmpresaMigrator extends MigratorBase
 {
 
     /**
@@ -39,7 +39,7 @@ class EmpresaMigrator extends InicioMigrator
      *
      * @return bool
      */
-    public function migrate(&$offset = 0)
+    protected function migrationProcess(&$offset = 0): bool
     {
         $sql = "SELECT * FROM empresa;";
         foreach ($this->dataBase->select($sql) as $row) {

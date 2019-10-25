@@ -32,7 +32,7 @@ class PresupuestosClienteMigrator extends AlbaranesProveedorMigrator
      *
      * @return bool
      */
-    public function migrate(&$offset = 0)
+    protected function migrationProcess(&$offset = 0): bool
     {
         if (0 === $offset && !$this->fixLinesTable('lineaspresupuestoscli')) {
             return false;

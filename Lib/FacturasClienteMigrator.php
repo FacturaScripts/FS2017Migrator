@@ -34,18 +34,7 @@ class FacturasClienteMigrator extends FacturasProveedorMigrator
      *
      * @return bool
      */
-    public function migrate(&$offset = 0)
-    {
-        return $this->migrateInTransaction($offset);
-    }
-
-    /**
-     * 
-     * @param int $offset
-     *
-     * @return bool
-     */
-    protected function transactionProcess(&$offset = 0)
+    protected function migrationProcess(&$offset = 0): bool
     {
         if (0 === $offset && !$this->fixLinesTable('lineasfacturascli')) {
             return false;

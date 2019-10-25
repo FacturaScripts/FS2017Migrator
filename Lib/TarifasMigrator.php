@@ -25,7 +25,7 @@ use FacturaScripts\Core\Model\Tarifa;
  *
  * @author Carlos Garcia Gomez <carlos@facturascripts.com>
  */
-class TarifasMigrator extends InicioMigrator
+class TarifasMigrator extends MigratorBase
 {
 
     /**
@@ -34,7 +34,7 @@ class TarifasMigrator extends InicioMigrator
      *
      * @return bool
      */
-    public function migrate(&$offset = 0)
+    protected function migrationProcess(&$offset = 0): bool
     {
         if ($this->dataBase->tableExists('tarifasav')) {
             $this->migrateTarifasAv();

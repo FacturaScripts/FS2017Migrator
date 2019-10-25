@@ -23,7 +23,7 @@ namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
  *
  * @author Carlos Garcia Gomez <carlos@facturascripts.com>
  */
-class GruposEpigrafesMigrator extends InicioMigrator
+class GruposEpigrafesMigrator extends MigratorBase
 {
 
     /**
@@ -32,7 +32,7 @@ class GruposEpigrafesMigrator extends InicioMigrator
      *
      * @return bool
      */
-    public function migrate(&$offset = 0)
+    protected function migrationProcess(&$offset = 0): bool
     {
         $sql = "SELECT * FROM co_gruposepigrafes ORDER BY idgrupo ASC";
         $rows = $this->dataBase->selectLimit($sql, 300, $offset);

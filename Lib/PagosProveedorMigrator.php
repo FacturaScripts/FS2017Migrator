@@ -27,7 +27,7 @@ use FacturaScripts\Dinamic\Model\ReciboProveedor;
  *
  * @author Carlos Garcia Gomez <carlos@facturascripts.com>
  */
-class PagosProveedorMigrator extends InicioMigrator
+class PagosProveedorMigrator extends MigratorBase
 {
 
     /**
@@ -36,9 +36,21 @@ class PagosProveedorMigrator extends InicioMigrator
      *
      * @return bool
      */
-    public function migrate(&$offset = 0)
+    protected function migrationProcess(&$offset = 0): bool
     {
-        return $this->migrateInTransaction($offset);
+        $sql = 'SELECT * FROM facturasprov WHERE idasientop IS NOT NULL ORDER BY idfactura ASC';
+
+        $rows = $this->dataBase->selectLimit($sql, 300, $offset);
+        foreach ($rows as $row) {
+            $done = $this->newReceipt($row);
+            if (!$done) {
+                return false;
+            }
+
+            $offset++;
+        }
+
+        return true;
     }
 
     /**
@@ -88,28 +100,5 @@ class PagosProveedorMigrator extends InicioMigrator
         $newReceipt->pagado = $this->toolBox()->utils()->str2bool($row['pagada']);
         $newReceipt->vencimiento = date('d-m-Y', strtotime($row['fecha']));
         return $newReceipt->save() ? $this->newPayment($newReceipt, $row['idasientop']) : false;
-    }
-
-    /**
-     * 
-     * @param int $offset
-     *
-     * @return bool
-     */
-    protected function transactionProcess(&$offset = 0)
-    {
-        $sql = 'SELECT * FROM facturasprov WHERE idasientop IS NOT NULL ORDER BY idfactura ASC';
-
-        $rows = $this->dataBase->selectLimit($sql, 300, $offset);
-        foreach ($rows as $row) {
-            $done = $this->newReceipt($row);
-            if (!$done) {
-                return false;
-            }
-
-            $offset++;
-        }
-
-        return true;
     }
 }

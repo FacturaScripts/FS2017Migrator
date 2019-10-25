@@ -23,29 +23,8 @@ namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
  *
  * @author Carlos Garcia Gomez <carlos@facturascripts.com>
  */
-class EpigrafesMigrator extends InicioMigrator
+class EpigrafesMigrator extends MigratorBase
 {
-
-    /**
-     * 
-     * @param int $offset
-     *
-     * @return bool
-     */
-    public function migrate(&$offset = 0)
-    {
-        $sql = "SELECT * FROM co_epigrafes ORDER BY idepigrafe ASC";
-        $rows = $this->dataBase->selectLimit($sql, 300, $offset);
-        foreach ($rows as $row) {
-            if (!$this->newCuenta($row['codejercicio'], $this->getCodepigrafe($row), $row['codepigrafe'], $row['descripcion'])) {
-                return false;
-            }
-
-            $offset++;
-        }
-
-        return true;
-    }
 
     /**
      * 
@@ -70,5 +49,26 @@ class EpigrafesMigrator extends InicioMigrator
         }
 
         return '';
+    }
+
+    /**
+     * 
+     * @param int $offset
+     *
+     * @return bool
+     */
+    protected function migrationProcess(&$offset = 0): bool
+    {
+        $sql = "SELECT * FROM co_epigrafes ORDER BY idepigrafe ASC";
+        $rows = $this->dataBase->selectLimit($sql, 300, $offset);
+        foreach ($rows as $row) {
+            if (!$this->newCuenta($row['codejercicio'], $this->getCodepigrafe($row), $row['codepigrafe'], $row['descripcion'])) {
+                return false;
+            }
+
+            $offset++;
+        }
+
+        return true;
     }
 }

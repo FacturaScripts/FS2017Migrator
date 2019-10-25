@@ -23,7 +23,7 @@ namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
  *
  * @author Carlos Garcia Gomez <carlos@facturascripts.com>
  */
-class CuentasMigrator extends InicioMigrator
+class CuentasMigrator extends MigratorBase
 {
 
     /**
@@ -32,18 +32,7 @@ class CuentasMigrator extends InicioMigrator
      *
      * @return bool
      */
-    public function migrate(&$offset = 0)
-    {
-        return $this->migrateInTransaction($offset);
-    }
-
-    /**
-     * 
-     * @param int $offset
-     *
-     * @return bool
-     */
-    protected function transactionProcess(&$offset = 0)
+    protected function migrationProcess(&$offset = 0): bool
     {
         $sql = "SELECT * FROM co_cuentas ORDER BY idcuenta ASC";
         $rows = $this->dataBase->selectLimit($sql, 300, $offset);

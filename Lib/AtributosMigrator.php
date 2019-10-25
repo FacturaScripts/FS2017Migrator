@@ -25,7 +25,7 @@ use FacturaScripts\Dinamic\Model\AtributoValor;
  *
  * @author Carlos Garcia Gomez <carlos@facturascripts.com>
  */
-class AtributosMigrator extends InicioMigrator
+class AtributosMigrator extends MigratorBase
 {
 
     /**
@@ -34,18 +34,7 @@ class AtributosMigrator extends InicioMigrator
      *
      * @return bool
      */
-    public function migrate(&$offset = 0)
-    {
-        return $this->migrateInTransaction($offset);
-    }
-
-    /**
-     * 
-     * @param int $offset
-     *
-     * @return bool
-     */
-    protected function transactionProcess(&$offset = 0)
+    protected function migrationProcess(&$offset = 0): bool
     {
         $AtributoValorModel = new AtributoValor();
         foreach ($AtributoValorModel->all([], ['id' => 'ASC'], $offset) as $valor) {
