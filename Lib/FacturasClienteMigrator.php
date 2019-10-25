@@ -44,6 +44,10 @@ class FacturasClienteMigrator extends FacturasProveedorMigrator
             return false;
         }
 
+        if (0 === $offset && !$this->fixAccounting('facturascli')) {
+            return false;
+        }
+
         if (0 === $offset && !$this->setModelCompany('FacturaCliente')) {
             return false;
         }
@@ -75,5 +79,24 @@ class FacturasClienteMigrator extends FacturasProveedorMigrator
         }
 
         return true;
+    }
+
+    /**
+     * 
+     * @param string $tableName
+     *
+     * @return bool
+     */
+    protected function fixAccounting($tableName)
+    {
+        if (!$this->dataBase->tableExists($tableName)) {
+            return true;
+        }
+
+        $sql = "UPDATE " . $tableName . " SET idasiento = null WHERE idasiento IS NOT null"
+            . " AND idasiento NOT IN (SELECT idasiento FROM asientos);"
+            . "UPDATE " . $tableName . " SET idasientop = null WHERE idasientop IS NOT null"
+            . " AND idasientop NOT IN (SELECT idasiento FROM asientos);";
+        return $this->dataBase->exec($sql);
     }
 }
