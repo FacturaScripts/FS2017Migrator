@@ -98,6 +98,13 @@ class ProductosMigrator extends MigratorBase
      */
     protected function newProduct($data)
     {
+        /// fix referencia
+        if (strlen($data['referencia']) > 30) {
+            $data['referencia'] = trim(substr($data['referencia'], 0, 30));
+        } else if (empty($data['referencia'])) {
+            $data['referencia'] = '-';
+        }
+
         $producto = new Producto();
         $where = [new DataBaseWhere('referencia', trim($data['referencia']))];
         if ($producto->loadFromCode('', $where)) {
