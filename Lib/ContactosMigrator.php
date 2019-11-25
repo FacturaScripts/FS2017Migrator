@@ -52,6 +52,31 @@ class ContactosMigrator extends MigratorBase
 
     /**
      * 
+     * @param string $name
+     *
+     * @return int
+     */
+    protected function getIdFuente($name)
+    {
+        $className = '\\FacturaScripts\\Dinamic\\Model\\CrmFuente';
+        if (empty($name) || !class_exists($className)) {
+            return null;
+        }
+
+        $fuente = new $className();
+        $where = [new DataBaseWhere('nombre', $this->toolBox()->utils()->noHtml($name))];
+        if (!$fuente->loadFromCode('', $where)) {
+            /// create source
+            $fuente->descripcion = $name;
+            $fuente->nombre = $name;
+            $fuente->save();
+        }
+
+        return $fuente->primaryColumnValue();
+    }
+
+    /**
+     * 
      * @param array $data
      *
      * @return bool
@@ -66,6 +91,7 @@ class ContactosMigrator extends MigratorBase
 
         $data['cifnif'] = $data['nif'] ?? '';
         $contacto->loadFromData($data);
+        $contacto->idfuente = $this->getIdFuente($data['fuente']);
         return $contacto->save();
     }
 }

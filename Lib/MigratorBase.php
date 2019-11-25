@@ -22,6 +22,7 @@ use FacturaScripts\Core\Base\DataBase;
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
 use FacturaScripts\Core\Base\ToolBox;
 use FacturaScripts\Dinamic\Model\Cuenta;
+use FacturaScripts\Dinamic\Model\CuentaEspecial;
 use FacturaScripts\Dinamic\Model\Impuesto;
 
 /**
@@ -128,6 +129,29 @@ abstract class MigratorBase
 
     /**
      * 
+     * @param string $code
+     *
+     * @return string
+     */
+    protected function getSpecialAccount($code)
+    {
+        if (empty($code)) {
+            return null;
+        }
+
+        $specialAccount = new CuentaEspecial();
+        if (!$specialAccount->loadFromCode($code)) {
+            /// create a new special account
+            $specialAccount->codcuentaesp = $code;
+            $specialAccount->descripcion = $code;
+            $specialAccount->save();
+        }
+
+        return $specialAccount->primaryColumnValue();
+    }
+
+    /**
+     * 
      * @param string $codejercicio
      * @param string $codparent
      * @param string $codcuenta
@@ -150,7 +174,7 @@ abstract class MigratorBase
         $cuenta->codcuenta = $codcuenta;
         $cuenta->codejercicio = $codejercicio;
         $cuenta->descripcion = $descripcion;
-        $cuenta->codcuentaesp = empty($idcuentaesp) ? null : $idcuentaesp;
+        $cuenta->codcuentaesp = $this->getSpecialAccount($idcuentaesp);
 
         if (!empty($codparent)) {
             $parent = new Cuenta();

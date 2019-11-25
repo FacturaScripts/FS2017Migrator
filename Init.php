@@ -22,6 +22,7 @@ use FacturaScripts\Core\Base\InitClass;
 use FacturaScripts\Dinamic\Model\AttachedFile;
 use FacturaScripts\Dinamic\Model\Diario;
 use FacturaScripts\Dinamic\Model\Producto;
+use FacturaScripts\Dinamic\Model\Retencion;
 
 /**
  * Description of Init
@@ -41,5 +42,6 @@ class Init extends InitClass
         new AttachedFile();
         new Diario();
         new Producto();
+        new Retencion();
     }
 }
