@@ -66,7 +66,9 @@ class ClientesMigrator extends MigratorBase
     protected function fixClientes()
     {
         $sql = "UPDATE clientes SET codpago = null WHERE codpago NOT IN (SELECT codpago FROM formaspago);"
-            . "UPDATE clientes SET codserie = null WHERE codserie NOT IN (SELECT codserie FROM series);";
+            . "UPDATE clientes SET codserie = null WHERE codserie NOT IN (SELECT codserie FROM series);"
+            . "UPDATE proveedores SET codpago = null WHERE codpago NOT IN (SELECT codpago FROM formaspago);"
+            . "UPDATE proveedores SET codserie = null WHERE codserie NOT IN (SELECT codserie FROM series);";
         $this->dataBase->exec($sql);
     }
 

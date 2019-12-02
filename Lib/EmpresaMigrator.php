@@ -46,6 +46,7 @@ class EmpresaMigrator extends MigratorBase
             $this->updateCompany($row);
         }
 
+        $this->updateCountries();
         $this->updateSeries();
         return true;
     }
@@ -106,6 +107,12 @@ class EmpresaMigrator extends MigratorBase
             $this->toolBox()->appSettings()->save();
             break;
         }
+    }
+
+    protected function updateCountries()
+    {
+        $sql = "UPDATE paises SET codiso = null WHERE codiso = '';";
+        $this->dataBase->exec($sql);
     }
 
     /**

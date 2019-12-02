@@ -27,6 +27,12 @@ class InicioMigrator extends MigratorBase
 {
 
     /**
+     *
+     * @var array
+     */
+    private $removedConstraints = [];
+
+    /**
      * 
      * @param string $tableName
      *
@@ -88,13 +94,18 @@ class InicioMigrator extends MigratorBase
     private function removeContraint($tableName, $constraint)
     {
         $sql = '';
-        if (strtolower(FS_DB_TYPE) == 'postgresql') {
+
+        if (in_array($constraint['name'], $this->removedConstraints)) {
+            return true;
+        } elseif (strtolower(FS_DB_TYPE) == 'postgresql') {
             $sql .= 'ALTER TABLE ' . $tableName . ' DROP CONSTRAINT ' . $constraint['name'] . ';';
         } elseif ($constraint['type'] == 'FOREIGN KEY') {
             $sql .= 'ALTER TABLE ' . $tableName . ' DROP FOREIGN KEY ' . $constraint['name'] . ';';
         } elseif ($constraint['type'] == 'UNIQUE') {
             $sql .= 'ALTER TABLE ' . $tableName . ' DROP INDEX ' . $constraint['name'] . ';';
         }
+
+        $this->removedConstraints[] = $constraint['name'];
 
         if (!empty($sql) && !$this->dataBase->exec($sql)) {
             $this->toolBox()->log()->warning('cant-remove-constraint: ' . $constraint['name']);

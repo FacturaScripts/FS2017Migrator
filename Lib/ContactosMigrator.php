@@ -90,8 +90,15 @@ class ContactosMigrator extends MigratorBase
         }
 
         $data['cifnif'] = $data['nif'] ?? '';
+        if (empty($data['nombre']) && empty($data['direccion'])) {
+            $data['descripcion'] = $data['codcontacto'];
+        }
+
         $contacto->loadFromData($data);
-        $contacto->idfuente = $this->getIdFuente($data['fuente']);
+        if (isset($data['fuente'])) {
+            $contacto->idfuente = $this->getIdFuente($data['fuente']);
+        }
+
         return $contacto->save();
     }
 }
