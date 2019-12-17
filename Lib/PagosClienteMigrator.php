@@ -85,7 +85,7 @@ class PagosClienteMigrator extends MigratorBase
     {
         $newReceipt = new ReciboCliente();
         $where = [new DataBaseWhere('idfactura', $row['idfactura'])];
-        if ($newReceipt->loadFromCode('', $where)) {
+        if ($newReceipt->loadFromCode('', $where) || empty($row['codcliente'])) {
             return true;
         }
 

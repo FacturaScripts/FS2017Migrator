@@ -97,7 +97,7 @@ class FS2017Migrator extends Controller
             'FacturasProveedor', 'RecibosProveedor', 'PagosProveedor',
             'PresupuestosCliente', 'PedidosCliente', 'AlbaranesCliente',
             'FacturasCliente', 'RecibosCliente', 'PagosCliente', 'Estados',
-            'Contactos', 'end'
+            'Secuencias', 'Contactos', 'end'
         ];
 
         $next = false;

@@ -37,14 +37,16 @@ class ContactosMigrator extends MigratorBase
      */
     protected function migrationProcess(&$offset = 0): bool
     {
-        $sql = "SELECT * FROM crm_contactos ORDER BY codcontacto ASC";
-        $rows = $this->dataBase->selectLimit($sql, 300, $offset);
-        foreach ($rows as $row) {
-            if (!$this->newContact($row)) {
-                return false;
-            }
+        if ($this->dataBase->tableExists('crm_contactos')) {
+            $sql = "SELECT * FROM crm_contactos ORDER BY codcontacto ASC";
+            $rows = $this->dataBase->selectLimit($sql, 300, $offset);
+            foreach ($rows as $row) {
+                if (!$this->newContact($row)) {
+                    return false;
+                }
 
-            $offset++;
+                $offset++;
+            }
         }
 
         return true;
@@ -93,6 +95,7 @@ class ContactosMigrator extends MigratorBase
         if (empty($data['nombre']) && empty($data['direccion'])) {
             $data['descripcion'] = $data['codcontacto'];
         }
+        $data['email'] = filter_var($data['email'], FILTER_VALIDATE_EMAIL) ? $data['email'] : '';
 
         $contacto->loadFromData($data);
         if (isset($data['fuente'])) {
