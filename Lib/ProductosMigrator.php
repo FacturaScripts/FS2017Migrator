@@ -111,7 +111,7 @@ class ProductosMigrator extends MigratorBase
             return true;
         }
 
-        $producto->loadFromData($data);
+        $producto->loadFromData($data, ['stockfis']);
         $producto->ventasinstock = $this->toolBox()->utils()->str2bool($data['controlstock']);
         if ($producto->save()) {
             if ($data['tipo'] == 'atributos') {
@@ -127,7 +127,7 @@ class ProductosMigrator extends MigratorBase
                 break;
             }
 
-            if ($producto->stockfis != 0 && !$this->updateStock($producto)) {
+            if (0 !== (int) $data['stockfis'] && !$this->updateStock($producto)) {
                 return false;
             }
 

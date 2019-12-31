@@ -106,7 +106,7 @@ class FS2017Migrator extends Controller
                 $this->toolBox()->cache()->clear();
 
                 /// redirect to next step
-                $this->redirect($this->url() . '?action=' . $step, 2);
+                $this->redirect($this->url() . '?action=' . $step, 1);
                 break;
             } elseif ($name != $step) {
                 /// step done
@@ -133,7 +133,7 @@ class FS2017Migrator extends Controller
                 break;
             } elseif ($this->offset > $initial) {
                 /// reload with next offset
-                $this->redirect($this->url() . '?action=' . $step . '&offset=' . $this->offset, 2);
+                $this->redirect($this->url() . '?action=' . $step . '&offset=' . $this->offset, 1);
                 break;
             }
         }
