@@ -68,6 +68,7 @@ class RecibosClienteMigrator extends MigratorBase
         foreach ($this->dataBase->select($sql) as $row) {
             $newPayment = new PagoCliente($row);
             $newPayment->codpago = $receipt->codpago;
+            $newPayment->disableAccountingGeneration(true);
             $newPayment->importe = $row['tipo'] == 'Pago' ? $receipt->importe : 0 - $receipt->importe;
             if (!$newPayment->save()) {
                 return false;
@@ -86,7 +87,7 @@ class RecibosClienteMigrator extends MigratorBase
     protected function newReceipt($row)
     {
         $newReceipt = new ReciboCliente($row);
-        $newReceipt->disablePaymentGeneration();
+        $newReceipt->disablePaymentGeneration(true);
         $newReceipt->idempresa = $this->toolBox()->appSettings()->get('default', 'idempresa');
         $newReceipt->fechapago = date('d-m-Y', strtotime($row['fechap']));
         $newReceipt->vencimiento = date('d-m-Y', strtotime($row['fechav']));
