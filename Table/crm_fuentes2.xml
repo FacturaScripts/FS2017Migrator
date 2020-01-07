@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Document   : crm_fuentes2.xml
+    Description:
+        Estructura de la tabla crm_fuentes2.
+-->
+<table>
+    <column>
+        <name>descripcion</name>
+        <type>text</type>
+    </column>
+    <column>
+        <name>fecha</name>
+        <type>date</type>
+    </column>
+    <column>
+        <name>id</name>
+        <type>serial</type>
+        <null>NO</null>
+    </column>
+    <column>
+        <name>nombre</name>
+        <type>character varying(50)</type>
+        <null>NO</null>
+    </column>
+    <column>
+        <name>numcontactos</name>
+        <type>integer</type>
+    </column>
+    <constraint>
+        <name>crm_fuentes2_pkey</name>
+        <type>PRIMARY KEY (id)</type>
+    </constraint>
+</table>

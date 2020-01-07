@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2020 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -20,6 +20,7 @@ namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
 use FacturaScripts\Dinamic\Model\Contacto;
+use FacturaScripts\Dinamic\Model\CrmFuente;
 
 /**
  * Description of ContactosMigrator
@@ -60,12 +61,7 @@ class ContactosMigrator extends MigratorBase
      */
     protected function getIdFuente($name)
     {
-        $className = '\\FacturaScripts\\Dinamic\\Model\\CrmFuente';
-        if (empty($name) || !class_exists($className)) {
-            return null;
-        }
-
-        $fuente = new $className();
+        $fuente = new CrmFuente();
         $where = [new DataBaseWhere('nombre', $this->toolBox()->utils()->noHtml($name))];
         if (!$fuente->loadFromCode('', $where)) {
             /// create source

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Document   : contactos.xml
+    Description:
+        Structure for the contactos table.
+-->
+<table>
+    <column>
+        <name>idfuente</name>
+        <type>integer</type>
+    </column>
+    <constraint>
+        <name>ca_contactos_crm_fuentes2</name>
+        <type>FOREIGN KEY (idfuente) REFERENCES crm_fuentes2 (id) ON DELETE SET NULL ON UPDATE CASCADE</type>
+    </constraint>
+</table>
