@@ -125,6 +125,16 @@ class EmpresaMigrator extends MigratorBase
         $formaPagoModel = new FormaPago();
         foreach ($formaPagoModel->all() as $formaPago) {
             $formaPago->idempresa = $idempresa;
+
+            if (isset($formaPago->codcuenta) && empty($formaPago->codcuentabanco)) {
+                $formaPago->codcuentabanco = $formaPago->codcuenta;
+            }
+
+            if (isset($formaPago->genrecibos)) {
+                $formaPago->pagado = ($formaPago->genrecibos == 'Pagados');
+            }
+
+            $this->setPaymentMehtodExpiration($formaPago);
             $formaPago->save();
 
             if ($formaPago->codpago == $codpago) {
@@ -160,6 +170,104 @@ class EmpresaMigrator extends MigratorBase
             if ($almacen->codalmacen == $codalmacen) {
                 $this->toolBox()->appSettings()->set('default', 'codalmacen', $codalmacen);
             }
+        }
+    }
+
+    /**
+     * 
+     * @param FormaPago $formaPago
+     */
+    protected function setPaymentMehtodExpiration(&$formaPago)
+    {
+        if (!isset($formaPago->vencimiento)) {
+            return;
+        }
+
+        switch ($formaPago->vencimiento) {
+            case '+0day':
+                $formaPago->plazovencimiento = 0;
+                $formaPago->tipovencimiento = 'days';
+                break;
+
+            case '+1day':
+                $formaPago->plazovencimiento = 1;
+                $formaPago->tipovencimiento = 'days';
+                break;
+
+            case '+1week':
+                $formaPago->plazovencimiento = 1;
+                $formaPago->tipovencimiento = 'weeks';
+                break;
+
+            case '+2week':
+                $formaPago->plazovencimiento = 2;
+                $formaPago->tipovencimiento = 'weeks';
+                break;
+
+            case '+3week':
+                $formaPago->plazovencimiento = 3;
+                $formaPago->tipovencimiento = 'weeks';
+                break;
+
+            case '+1month':
+                $formaPago->plazovencimiento = 1;
+                $formaPago->tipovencimiento = 'months';
+                break;
+
+            case '+2month':
+                $formaPago->plazovencimiento = 2;
+                $formaPago->tipovencimiento = 'months';
+                break;
+
+            case '+3month':
+                $formaPago->plazovencimiento = 3;
+                $formaPago->tipovencimiento = 'months';
+                break;
+
+            case '+4month':
+                $formaPago->plazovencimiento = 4;
+                $formaPago->tipovencimiento = 'months';
+                break;
+
+            case '+5month':
+                $formaPago->plazovencimiento = 5;
+                $formaPago->tipovencimiento = 'months';
+                break;
+
+            case '+6month':
+                $formaPago->plazovencimiento = 6;
+                $formaPago->tipovencimiento = 'months';
+                break;
+
+            case '+7month':
+                $formaPago->plazovencimiento = 7;
+                $formaPago->tipovencimiento = 'months';
+                break;
+
+            case '+8month':
+                $formaPago->plazovencimiento = 8;
+                $formaPago->tipovencimiento = 'months';
+                break;
+
+            case '+9month':
+                $formaPago->plazovencimiento = 9;
+                $formaPago->tipovencimiento = 'months';
+                break;
+
+            case '+10month':
+                $formaPago->plazovencimiento = 10;
+                $formaPago->tipovencimiento = 'months';
+                break;
+
+            case '+11month':
+                $formaPago->plazovencimiento = 11;
+                $formaPago->tipovencimiento = 'months';
+                break;
+
+            case '+12month':
+                $formaPago->plazovencimiento = 12;
+                $formaPago->tipovencimiento = 'months';
+                break;
         }
     }
 }
