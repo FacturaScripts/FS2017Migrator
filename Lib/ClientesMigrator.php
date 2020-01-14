@@ -67,6 +67,7 @@ class ClientesMigrator extends MigratorBase
     {
         $sql = "UPDATE clientes SET codpago = null WHERE codpago NOT IN (SELECT codpago FROM formaspago);"
             . "UPDATE clientes SET codserie = null WHERE codserie NOT IN (SELECT codserie FROM series);"
+            . "UPDATE gruposclientes SET codtarifa = null WHERE codtarifa NOT IN (SELECT codtarifa FROM tarifas);"
             . "UPDATE proveedores SET codpago = null WHERE codpago NOT IN (SELECT codpago FROM formaspago);"
             . "UPDATE proveedores SET codserie = null WHERE codserie NOT IN (SELECT codserie FROM series);";
         $this->dataBase->exec($sql);
