@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2020 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -87,6 +87,7 @@ class SubcuentasMigrator extends MigratorBase
     private function newSubcuenta($data)
     {
         $subcuenta = new Subcuenta();
+        $subcuenta->disableAditionalTest(true);
         $where = [
             new DataBaseWhere('codejercicio', $data['codejercicio']),
             new DataBaseWhere('codsubcuenta', $data['codsubcuenta']),
