@@ -25,10 +25,9 @@
         </div>
         {% if fsc.enableRun %}
             <form method="post">
-                <input type="hidden" name="action" value="Inicio"/>
                 <div class="row">
                     <div class="col">
-                        <button type="submit" class="btn btn-warning">
+                        <button type="button" class="btn btn-warning" onclick="executeMigration();">
                             <i class="fas fa-terminal fa-fw"></i> {{ i18n.trans('run') }}
                         </button>
                     </div>
@@ -36,9 +35,36 @@
             </form>
         {% endif %}
         {% if fsc.working %}
-            <button class ="btn btn-warning">
+            <button class="btn btn-warning">
                 <i class="fas fa-cog fa-spin fa-fw"></i> {{ i18n.trans('run') }}
             </button>
         {% endif %}
     </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script type="text/javascript">
+        function executeMigration() {
+            bootbox.confirm({
+                title: "{{ i18n.trans('confirm-migration') | raw }}",
+                message: "{{ i18n.trans('are-you-sure-migration') }}",
+                closeButton: false,
+                buttons: {
+                    cancel: {
+                        label: "<i class='fas fa-times'></i> {{ i18n.trans('cancel') }}"
+                    },
+                    confirm: {
+                        label: "<i class='fas fa-check'></i> {{ i18n.trans('continue') }}",
+                        className: 'btn-warning'
+                    }
+                },
+                callback: function (result) {
+                    if (result) {
+                        window.location = "{{fsc.url()}}?action=Inicio";
+                    }
+                }
+            });
+        }
+    </script>
 {% endblock %}

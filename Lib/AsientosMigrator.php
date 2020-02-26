@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2020 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -20,6 +20,7 @@ namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Dinamic\Model\Asiento;
 use FacturaScripts\Dinamic\Model\Diario;
+use FacturaScripts\Dinamic\Model\Ejercicio;
 use FacturaScripts\Dinamic\Model\Partida;
 
 /**
@@ -54,8 +55,42 @@ class AsientosMigrator extends MigratorBase
                 return true;
 
             case 3:
+                $offset++;
                 new Partida();
                 return true;
+
+            case 4:
+                $offset++;
+                $idempresa = (int) $this->toolBox()->appSettings()->get('default', 'idempresa');
+                $sql = "UPDATE asientos SET idempresa = " . $this->dataBase->var2str($idempresa)
+                    . " WHERE idempresa IS NULL;";
+                return $this->dataBase->exec($sql);
+
+            case 5:
+                return $this->migrateSpecialEntries();
+        }
+
+        return true;
+    }
+
+    private function migrateSpecialEntries()
+    {
+        $map = [
+            'idasientoapertura' => Asiento::OPERATION_OPENING,
+            'idasientocierre' => Asiento::OPERATION_CLOSING,
+            'idasientopyg' => Asiento::OPERATION_REGULARIZATION
+        ];
+
+        $exerciseModel = new Ejercicio();
+        foreach ($exerciseModel->all() as $exercise) {
+            foreach ($map as $key => $operation) {
+                $sql = "UPDATE " . Asiento::tableName()
+                    . " SET operacion = " . $this->dataBase->var2str($operation)
+                    . " WHERE idasiento = " . $this->dataBase->var2str($exercise->{$key});
+                if (!$this->dataBase->exec($sql)) {
+                    return false;
+                }
+            }
         }
 
         return true;
