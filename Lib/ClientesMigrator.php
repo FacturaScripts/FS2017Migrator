@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2020 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,6 +19,7 @@
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
+use FacturaScripts\Dinamic\Lib\RegimenIVA;
 use FacturaScripts\Dinamic\Model\Cliente;
 use FacturaScripts\Dinamic\Model\Contacto;
 
@@ -46,9 +47,14 @@ class ClientesMigrator extends MigratorBase
         $rows = $clienteModel->all([], ['codcliente' => 'ASC'], $offset);
         foreach ($rows as $cliente) {
             $cliente->codsubcuenta = $this->getSubcuenta($cliente->codcliente);
-            $cliente->email = filter_var($cliente->email, FILTER_VALIDATE_EMAIL) ? $cliente->email : '';
+            $cliente->email = \filter_var($cliente->email, \FILTER_VALIDATE_EMAIL) ? $cliente->email : '';
             $cliente->telefono1 = $this->fixString($cliente->telefono1, 20);
             $cliente->telefono2 = $this->fixString($cliente->telefono2, 20);
+
+            if (isset($cliente->recargo) && $cliente->recargo) {
+                $cliente->regimeniva = RegimenIVA::TAX_SYSTEM_SURCHARGE;
+            }
+
             if (!$cliente->save()) {
                 return false;
             }
