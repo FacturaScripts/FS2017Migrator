@@ -76,6 +76,9 @@ class ProductosMigrator extends MigratorBase
         if ($offset == 0 && !$this->dataBase->tableExists('stocks_old')) {
             $this->renameTable('stocks', 'stocks_old');
         }
+        if ($offset == 0) {
+            $this->removeDuplicatedAttributeValues();
+        }
 
         $sql = "SELECT * FROM articulos ORDER BY referencia ASC";
         $rows = $this->dataBase->selectLimit($sql, 300, $offset);
@@ -168,6 +171,21 @@ class ProductosMigrator extends MigratorBase
         }
 
         return true;
+    }
+
+    protected function removeDuplicatedAttributeValues()
+    {
+        $sql = "SELECT codatributo, valor, COUNT(*) repeticiones FROM atributos_valores"
+            . " GROUP BY codatributo, valor HAVING repeticiones > 1;";
+        foreach ($this->dataBase->select($sql) as $row) {
+            $sql2 = "SELECT * FROM atributos_valores WHERE codatributo = " . $this->dataBase->var2str($row['codatributo'])
+                . " AND valor = " . $this->dataBase->var2str($row['valor'])
+                . " ORDER BY id DESC;";
+            foreach ($this->dataBase->select($sql2) as $row2) {
+                $sql3 = "DELETE FROM atributos_valores WHERE id = " . $this->dataBase->var2str($row2['id']) . ";";
+                $this->dataBase->exec($sql);
+            }
+        }
     }
 
     /**
