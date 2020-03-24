@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2020 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -34,31 +34,6 @@ class InicioMigrator extends MigratorBase
 
     /**
      * 
-     * @param string $tableName
-     *
-     * @return bool
-     */
-    private function freeTable($tableName)
-    {
-        $primaryKey = '';
-
-        /// remove constransts (except primary keys)
-        foreach ($this->dataBase->getConstraints($tableName, true) as $constraint) {
-            if ($constraint['type'] == 'PRIMARY KEY') {
-                $primaryKey = $constraint['column_name'];
-                continue;
-            }
-
-            if (!$this->removeContraint($tableName, $constraint)) {
-                return false;
-            }
-        }
-
-        return $this->removeNotNullColumns($tableName, $primaryKey);
-    }
-
-    /**
-     * 
      * @param int $offset
      *
      * @return bool
@@ -66,7 +41,7 @@ class InicioMigrator extends MigratorBase
     protected function migrationProcess(&$offset = 0): bool
     {
         $exclude = [
-            'articulo_propiedades', 'attached_files', 'empresas',
+            'attached_files', 'empresas',
             'estados_documentos', 'fs_access', 'fs_extensions2', 'pages',
             'pages_filters', 'pages_options', 'productos', 'roles',
             'roles_access', 'roles_users', 'secuencias_documentos', 'settings',
@@ -75,41 +50,59 @@ class InicioMigrator extends MigratorBase
 
         $this->disableForeignKeys(true);
         foreach ($this->dataBase->getTables() as $tableName) {
-            if (!in_array($tableName, $exclude) && !$this->freeTable($tableName)) {
-                /// no return
+            if (\in_array($tableName, $exclude)) {
+                continue;
+            }
+
+            if (0 == $offset) {
+                $return = $this->removeForeignKeys($tableName);
+            } elseif (1 == $offset) {
+                $return = $this->removeUniques($tableName);
+            } else {
+                $return = $this->removeNotNulls($tableName);
+            }
+
+            if (false === $return) {
+                return false;
             }
         }
 
         $this->disableForeignKeys(false);
+        if ($offset < 2) {
+            $offset++;
+        }
+
         return true;
     }
 
     /**
      * 
      * @param string $tableName
-     * @param array  $constraint
      *
      * @return bool
      */
-    private function removeContraint($tableName, $constraint)
+    private function removeForeignKeys($tableName)
     {
-        $sql = '';
+        foreach ($this->dataBase->getConstraints($tableName, true) as $constraint) {
+            if ($constraint['type'] == 'PRIMARY KEY' || \in_array($constraint['name'], $this->removedConstraints)) {
+                continue;
+            }
 
-        if (in_array($constraint['name'], $this->removedConstraints)) {
-            return true;
-        } elseif (strtolower(FS_DB_TYPE) == 'postgresql') {
-            $sql .= 'ALTER TABLE ' . $tableName . ' DROP CONSTRAINT ' . $constraint['name'] . ';';
-        } elseif ($constraint['type'] == 'FOREIGN KEY') {
-            $sql .= 'ALTER TABLE ' . $tableName . ' DROP FOREIGN KEY ' . $constraint['name'] . ';';
-        } elseif ($constraint['type'] == 'UNIQUE') {
-            $sql .= 'ALTER TABLE ' . $tableName . ' DROP INDEX ' . $constraint['name'] . ';';
-        }
+            $sql = '';
+            if (\strtolower(FS_DB_TYPE) == 'postgresql') {
+                $sql .= 'ALTER TABLE ' . $tableName . ' DROP CONSTRAINT ' . $constraint['name'] . ';';
+            } elseif ($constraint['type'] == 'FOREIGN KEY') {
+                $sql .= 'ALTER TABLE ' . $tableName . ' DROP FOREIGN KEY ' . $constraint['name'] . ';';
+            } else {
+                continue;
+            }
 
-        $this->removedConstraints[] = $constraint['name'];
+            $this->removedConstraints[] = $constraint['name'];
 
-        if (!empty($sql) && !$this->dataBase->exec($sql)) {
-            $this->toolBox()->log()->warning('cant-remove-constraint: ' . $constraint['name']);
-            return false;
+            if (!empty($sql) && !$this->dataBase->exec($sql)) {
+                $this->toolBox()->log()->warning('cant-remove-constraint: ' . $constraint['name']);
+                return false;
+            }
         }
 
         return true;
@@ -118,22 +111,63 @@ class InicioMigrator extends MigratorBase
     /**
      * 
      * @param string $tableName
-     * @param string $exclude
+     *
+     * @return bool
      */
-    private function removeNotNullColumns($tableName, $exclude)
+    private function removeNotNulls($tableName)
     {
+        $primaryKey = [];
+        foreach ($this->dataBase->getConstraints($tableName, true) as $constraint) {
+            if ($constraint['type'] == 'PRIMARY KEY') {
+                $primaryKey[] = $constraint['column_name'];
+            }
+        }
+
         foreach ($this->dataBase->getColumns($tableName) as $column) {
-            if ($column['is_nullable'] == 'YES' || $column['name'] == $exclude) {
+            if ($column['is_nullable'] == 'YES' || \in_array($column['name'], $primaryKey)) {
                 continue;
             }
 
             $sql = 'ALTER TABLE ' . $tableName . ' MODIFY `' . $column['name'] . '` ' . $column['type'] . ' NULL;';
-            if (strtolower(FS_DB_TYPE) == 'postgresql') {
+            if (\strtolower(FS_DB_TYPE) == 'postgresql') {
                 $sql = 'ALTER TABLE ' . $tableName . ' ALTER COLUMN "' . $column['name'] . '" DROP NOT NULL;';
             }
 
             if (!$this->dataBase->exec($sql)) {
                 $this->toolBox()->log()->warning('cant-remove-not-null: ' . $tableName . ' ' . $column['name']);
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * 
+     * @param string $tableName
+     *
+     * @return bool
+     */
+    private function removeUniques($tableName)
+    {
+        foreach ($this->dataBase->getConstraints($tableName, true) as $constraint) {
+            if ($constraint['type'] == 'PRIMARY KEY' || \in_array($constraint['name'], $this->removedConstraints)) {
+                continue;
+            }
+
+            $sql = '';
+            if (\strtolower(FS_DB_TYPE) == 'postgresql') {
+                $sql .= 'ALTER TABLE ' . $tableName . ' DROP CONSTRAINT ' . $constraint['name'] . ';';
+            } elseif ($constraint['type'] == 'UNIQUE') {
+                $sql .= 'ALTER TABLE ' . $tableName . ' DROP INDEX ' . $constraint['name'] . ';';
+            } else {
+                continue;
+            }
+
+            $this->removedConstraints[] = $constraint['name'];
+
+            if (!empty($sql) && !$this->dataBase->exec($sql)) {
+                $this->toolBox()->log()->warning('cant-remove-constraint: ' . $constraint['name']);
                 return false;
             }
         }

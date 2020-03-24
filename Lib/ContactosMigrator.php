@@ -39,6 +39,10 @@ class ContactosMigrator extends MigratorBase
     protected function migrationProcess(&$offset = 0): bool
     {
         if ($this->dataBase->tableExists('crm_contactos')) {
+            if ($offset === 0) {
+                $this->fixContactos();
+            }
+
             $sql = "SELECT * FROM crm_contactos ORDER BY codcontacto ASC";
             $rows = $this->dataBase->selectLimit($sql, 300, $offset);
             foreach ($rows as $row) {
@@ -51,6 +55,13 @@ class ContactosMigrator extends MigratorBase
         }
 
         return true;
+    }
+
+    private function fixContactos()
+    {
+        $sql = "UPDATE crm_contactos SET codgrupo = null WHERE codgrupo NOT IN (SELECT codgrupo FROM gruposclientes);"
+            . "UPDATE crm_contactos SET codagente = null WHERE codagente NOT IN (SELECT codagente FROM agentes);";
+        $this->dataBase->exec($sql);
     }
 
     /**
@@ -91,7 +102,7 @@ class ContactosMigrator extends MigratorBase
         if (empty($data['nombre']) && empty($data['direccion'])) {
             $data['descripcion'] = $data['codcontacto'];
         }
-        $data['email'] = filter_var($data['email'], FILTER_VALIDATE_EMAIL) ? $data['email'] : '';
+        $data['email'] = \filter_var($data['email'], \FILTER_VALIDATE_EMAIL) ? $data['email'] : '';
 
         $contacto->loadFromData($data);
         if (isset($data['fuente'])) {

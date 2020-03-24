@@ -71,12 +71,22 @@ class ClientesMigrator extends MigratorBase
 
     protected function fixClientes()
     {
-        $sql = "UPDATE clientes SET codpago = null WHERE codpago NOT IN (SELECT codpago FROM formaspago);"
+        /// fix strange bug with 0000-00-00 dates on mysql
+        if (FS_DB_TYPE === 'mysql') {
+            $this->dataBase->exec("update clientes set fechaalta = NULL where fechaalta < '1000-01-01';");
+        }
+
+        $sql = "UPDATE clientes SET codagente = null WHERE codagente NOT IN (SELECT codagente FROM agentes);"
+            . "UPDATE clientes SET codpago = null WHERE codpago NOT IN (SELECT codpago FROM formaspago);"
             . "UPDATE clientes SET codserie = null WHERE codserie NOT IN (SELECT codserie FROM series);"
-            . "UPDATE clientes SET codtarifa = null WHERE codtarifa NOT IN (SELECT codtarifa FROM tarifas);"
-            . "UPDATE gruposclientes SET codtarifa = null WHERE codtarifa NOT IN (SELECT codtarifa FROM tarifas);"
             . "UPDATE proveedores SET codpago = null WHERE codpago NOT IN (SELECT codpago FROM formaspago);"
             . "UPDATE proveedores SET codserie = null WHERE codserie NOT IN (SELECT codserie FROM series);";
+
+        if ($this->dataBase->tableExists('tarifas')) {
+            $sql .= "UPDATE clientes SET codtarifa = null WHERE codtarifa NOT IN (SELECT codtarifa FROM tarifas);"
+                . "UPDATE gruposclientes SET codtarifa = null WHERE codtarifa NOT IN (SELECT codtarifa FROM tarifas);";
+        }
+
         $this->dataBase->exec($sql);
     }
 
@@ -115,7 +125,7 @@ class ClientesMigrator extends MigratorBase
         }
 
         $found = false;
-        $sql = "SELECT * FROM dirclientes WHERE codcliente = '" . $cliente->codcliente . "';";
+        $sql = "SELECT * FROM dirclientes WHERE codcliente = " . $this->dataBase->var2str($cliente->codcliente) . ";";
         foreach ($this->dataBase->select($sql) as $row) {
             $newContacto = new Contacto();
             foreach ($row as $key => $value) {

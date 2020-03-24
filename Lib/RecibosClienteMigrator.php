@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2020 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -29,6 +29,12 @@ use FacturaScripts\Dinamic\Model\ReciboCliente;
 class RecibosClienteMigrator extends MigratorBase
 {
 
+    private function fixRecibos()
+    {
+        $sql = "DELETE FROM reciboscli WHERE codcliente NOT IN (SELECT codcliente FROM clientes);";
+        $this->dataBase->exec($sql);
+    }
+
     /**
      * 
      * @param int $offset
@@ -39,6 +45,10 @@ class RecibosClienteMigrator extends MigratorBase
     {
         if (0 === $offset && !$this->dataBase->tableExists('reciboscli')) {
             return true;
+        }
+
+        if (0 === $offset) {
+            $this->fixRecibos();
         }
 
         $sql = 'SELECT * FROM reciboscli ORDER BY idrecibo ASC';

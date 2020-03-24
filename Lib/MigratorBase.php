@@ -18,6 +18,7 @@
  */
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
+use Exception;
 use FacturaScripts\Core\Base\DataBase;
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
 use FacturaScripts\Core\Base\ToolBox;
@@ -93,7 +94,7 @@ abstract class MigratorBase
      */
     protected function disableForeignKeys($disable = true)
     {
-        if (strtolower(FS_DB_TYPE) == 'mysql') {
+        if (\strtolower(FS_DB_TYPE) == 'mysql') {
             $value = $disable ? 0 : 1;
             $this->dataBase->exec('SET FOREIGN_KEY_CHECKS=' . $value . ';');
         }
@@ -124,7 +125,7 @@ abstract class MigratorBase
         }
 
         $string = $this->toolBox()->utils()->noHtml($txt);
-        return empty($len) ? $string : substr($string, 0, $len);
+        return empty($len) ? $string : \substr($string, 0, $len);
     }
 
     /**
@@ -222,7 +223,7 @@ abstract class MigratorBase
         }
 
         $sql = 'ALTER TABLE ' . $tableName . ' RENAME ' . $newName . ';';
-        if (strtolower(FS_DB_TYPE) == 'postgresql') {
+        if (\strtolower(FS_DB_TYPE) == 'postgresql') {
             $sql = 'ALTER TABLE ' . $tableName . ' RENAME TO "' . $newName . '";';
         }
 

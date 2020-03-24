@@ -24,6 +24,7 @@ use FacturaScripts\Dinamic\Model\CrmFuente;
 use FacturaScripts\Dinamic\Model\Diario;
 use FacturaScripts\Dinamic\Model\Producto;
 use FacturaScripts\Dinamic\Model\Retencion;
+use FacturaScripts\Dinamic\Model\Tarifa;
 
 /**
  * Description of Init
@@ -45,5 +46,6 @@ class Init extends InitClass
         new Producto();
         new Retencion();
         new CrmFuente();
+        new Tarifa();
     }
 }
