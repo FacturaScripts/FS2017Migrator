@@ -41,7 +41,7 @@ class InicioMigrator extends MigratorBase
     protected function migrationProcess(&$offset = 0): bool
     {
         $exclude = [
-            'attached_files', 'empresas',
+            'attached_files', 'cajas', 'empresas',
             'estados_documentos', 'fs_access', 'fs_extensions2', 'pages',
             'pages_filters', 'pages_options', 'productos', 'roles',
             'roles_access', 'roles_users', 'secuencias_documentos', 'settings',
