@@ -40,6 +40,11 @@ class InicioMigrator extends MigratorBase
      */
     protected function migrationProcess(&$offset = 0): bool
     {
+        if (0 === $offset && false === $this->dataBase->tableExists('fs_vars')) {
+            $this->toolBox()->i18nLog()->warning('no-db-2017');
+            return false;
+        }
+
         $exclude = [
             'attached_files', 'cajas', 'empresas',
             'estados_documentos', 'fs_access', 'fs_extensions2', 'pages',
