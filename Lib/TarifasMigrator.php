@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2020 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -72,23 +72,27 @@ class TarifasMigrator extends MigratorBase
 
     protected function migrateTarifasAv()
     {
-        $sql = "SELECT * FROM tarifasav WHERE madre IS NOT NULL;";
+        $sql = "SELECT * FROM tarifasav WHERE madre IS NULL;";
         foreach ($this->dataBase->select($sql) as $row) {
             $tarifa = new Tarifa();
+            if ($tarifa->loadFromCode($row['codtarifa'])) {
+                continue;
+            }
+
             $tarifa->codtarifa = $row['codtarifa'];
             $tarifa->nombre = $row['nombre'];
 
             if ($this->toolBox()->utils()->str2bool($row['margen'])) {
                 $tarifa->aplicar = Tarifa::APPLY_COST;
-                $tarifa->valorx = (float) $tarifa->incporcentual;
-                $tarifa->valory = (float) $tarifa->inclineal;
+                $tarifa->valorx = (float) $row['incporcentual'];
+                $tarifa->valory = (float) $row['inclineal'];
                 $tarifa->save();
                 continue;
             }
 
             $tarifa->aplicar = Tarifa::APPLY_PRICE;
-            $tarifa->valorx = 0 - (float) $tarifa->incporcentual;
-            $tarifa->valory = 0 - (float) $tarifa->inclineal;
+            $tarifa->valorx = 0 - (float) $row['incporcentual'];
+            $tarifa->valory = 0 - (float) $row['inclineal'];
             $tarifa->save();
         }
     }
