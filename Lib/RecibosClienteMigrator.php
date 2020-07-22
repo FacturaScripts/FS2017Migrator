@@ -31,7 +31,8 @@ class RecibosClienteMigrator extends MigratorBase
 
     private function fixRecibos()
     {
-        $sql = "DELETE FROM reciboscli WHERE codcliente NOT IN (SELECT codcliente FROM clientes);";
+        $sql = "DELETE FROM reciboscli WHERE codcliente IS NULL;"
+            . "DELETE FROM reciboscli WHERE codcliente NOT IN (SELECT codcliente FROM clientes);";
         $this->dataBase->exec($sql);
     }
 

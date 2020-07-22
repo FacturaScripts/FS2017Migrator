@@ -91,13 +91,14 @@ class FS2017Migrator extends Controller
     {
         $this->working = true;
         $steps = [
-            'Inicio', 'Empresa', 'GruposEpigrafes', 'Epigrafes', 'Cuentas',
-            'Subcuentas', 'Asientos', 'Tarifas', 'Clientes', 'Proveedores', 'Atributos',
-            'Productos', 'PedidosProveedor', 'AlbaranesProveedor',
-            'FacturasProveedor', 'RecibosProveedor', 'PagosProveedor',
-            'PresupuestosCliente', 'PedidosCliente', 'AlbaranesCliente',
-            'FacturasCliente', 'RecibosCliente', 'PagosCliente', 'Estados',
-            'Secuencias', 'Contactos', 'RegImpuestos', 'end'
+            'Inicio', 'Mysql', 'Empresa', 'GruposEpigrafes', 'Epigrafes',
+            'Cuentas', 'Subcuentas', 'Asientos', 'Tarifas', 'Clientes',
+            'Proveedores', 'Atributos', 'Productos', 'PedidosProveedor',
+            'AlbaranesProveedor', 'FacturasProveedor', 'RecibosProveedor',
+            'PagosProveedor', 'PresupuestosCliente', 'PedidosCliente',
+            'AlbaranesCliente', 'FacturasCliente', 'RecibosCliente',
+            'PagosCliente', 'Estados', 'Secuencias', 'Contactos',
+            'RegImpuestos', 'end'
         ];
 
         $next = false;

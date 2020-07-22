@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2020 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -73,17 +73,20 @@ class ProductosMigrator extends MigratorBase
     protected function migrationProcess(&$offset = 0): bool
     {
         /// rename stocks table
-        if ($offset == 0 && !$this->dataBase->tableExists('stocks_old')) {
+        if ($offset == 0 && false === $this->dataBase->tableExists('stocks_old')) {
             $this->renameTable('stocks', 'stocks_old');
         }
-        if ($offset == 0) {
-            $this->removeDuplicatedAttributeValues();
+        if ($offset == 0 && false === $this->removeDuplicatedAttributeValues()) {
+            return false;
+        }
+        if ($offset == 0 && false === $this->removeDuplicatedReferences()) {
+            return false;
         }
 
         $sql = "SELECT * FROM articulos ORDER BY referencia ASC";
         $rows = $this->dataBase->selectLimit($sql, 300, $offset);
         foreach ($rows as $row) {
-            if (!$this->newProduct($row)) {
+            if (false === $this->newProduct($row)) {
                 return false;
             }
 
@@ -173,7 +176,11 @@ class ProductosMigrator extends MigratorBase
         return true;
     }
 
-    protected function removeDuplicatedAttributeValues()
+    /**
+     * 
+     * @return bool
+     */
+    private function removeDuplicatedAttributeValues(): bool
     {
         $sql = "SELECT codatributo, valor, COUNT(*) repeticiones FROM atributos_valores"
             . " GROUP BY codatributo, valor HAVING repeticiones > 1;";
@@ -183,9 +190,24 @@ class ProductosMigrator extends MigratorBase
                 . " ORDER BY id DESC;";
             foreach ($this->dataBase->select($sql2) as $row2) {
                 $sql3 = "DELETE FROM atributos_valores WHERE id = " . $this->dataBase->var2str($row2['id']) . ";";
-                $this->dataBase->exec($sql);
+                if (false === $this->dataBase->exec($sql)) {
+                    return false;
+                }
             }
         }
+
+        return true;
+    }
+
+    /**
+     * 
+     * @return bool
+     */
+    private function removeDuplicatedReferences(): bool
+    {
+        $sql = "DELETE FROM articulo_combinaciones WHERE refcombinacion IS NOT NULL"
+            . " AND refcombinacion IN (SELECT referencia FROM articulos);";
+        return $this->dataBase->exec($sql);
     }
 
     /**

@@ -20,6 +20,7 @@ namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
 use FacturaScripts\Dinamic\Model\Cuenta;
+use FacturaScripts\Dinamic\Model\Ejercicio;
 use FacturaScripts\Dinamic\Model\Subcuenta;
 
 /**
@@ -42,10 +43,10 @@ class SubcuentasMigrator extends MigratorBase
     {
         $parentCuenta = new Cuenta();
         $where = [
-            new DataBaseWhere('codcuenta', substr($codcuenta, 1)),
+            new DataBaseWhere('codcuenta', \substr($codcuenta, 1)),
             new DataBaseWhere('codejercicio', $codejercicio),
         ];
-        if (!$parentCuenta->loadFromCode('', $where)) {
+        if (false === $parentCuenta->loadFromCode('', $where)) {
             return false;
         }
 
@@ -54,6 +55,19 @@ class SubcuentasMigrator extends MigratorBase
         $cuenta->descripcion = $codcuenta;
         $cuenta->parent_codcuenta = $parentCuenta->codcuenta;
         $cuenta->parent_idcuenta = $parentCuenta->idcuenta;
+
+        $ejercicio = $cuenta->getExercise();
+        if (false === $ejercicio->isOpened()) {
+            $ejercicio->estado = Ejercicio::EXERCISE_STATUS_OPEN;
+            $ejercicio->save();
+
+            $done = $cuenta->save();
+
+            $ejercicio->estado = Ejercicio::EXERCISE_STATUS_CLOSED;
+            $ejercicio->save();
+            return $done;
+        }
+
         return $cuenta->save();
     }
 

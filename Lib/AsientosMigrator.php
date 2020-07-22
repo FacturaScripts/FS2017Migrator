@@ -63,7 +63,9 @@ class AsientosMigrator extends MigratorBase
                 $offset++;
                 $idempresa = (int) $this->toolBox()->appSettings()->get('default', 'idempresa');
                 $sql = "UPDATE asientos SET idempresa = " . $this->dataBase->var2str($idempresa)
-                    . " WHERE idempresa IS NULL;";
+                    . " WHERE idempresa IS NULL;"
+                    . " UPDATE partidas SET idcontrapartida = null WHERE idcontrapartida IS NOT NULL"
+                    . " AND idcontrapartida NOT IN (SELECT idsubcuenta FROM subcuentas)";
                 return $this->dataBase->exec($sql);
 
             case 5:

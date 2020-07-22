@@ -46,37 +46,36 @@ class InicioMigrator extends MigratorBase
         }
 
         $exclude = [
-            'attached_files', 'cajas', 'empresas',
-            'estados_documentos', 'fs_access', 'fs_extensions2', 'pages',
-            'pages_filters', 'pages_options', 'productos', 'roles',
-            'roles_access', 'roles_users', 'secuencias_documentos', 'settings',
-            'users', 'variantes'
+            'attached_files', 'cajas', 'crm_calendario', 'empresas', 'estados_documentos',
+            'fs_access', 'fs_extensions2', 'pages', 'pages_filters',
+            'pages_options', 'productos', 'roles', 'roles_access',
+            'roles_users', 'secuencias_documentos', 'settings', 'users',
+            'variantes'
         ];
+        $tables = [];
+        foreach ($this->dataBase->getTables() as $tableName) {
+            if (false === \in_array($tableName, $exclude)) {
+                $tables[] = $tableName;
+            }
+        }
 
         $this->disableForeignKeys(true);
-        foreach ($this->dataBase->getTables() as $tableName) {
-            if (\in_array($tableName, $exclude)) {
+        foreach ($tables as $num => $tableName) {
+            if ($num != $offset) {
                 continue;
             }
 
-            if (0 == $offset) {
-                $return = $this->removeForeignKeys($tableName);
-            } elseif (1 == $offset) {
-                $return = $this->removeUniques($tableName);
-            } else {
-                $return = $this->removeNotNulls($tableName);
+            if ($this->removeForeignKeys($tableName) &&
+                $this->removeUniques($tableName) &&
+                $this->removeNotNulls($tableName)) {
+                $offset++;
+                return true;
             }
 
-            if (false === $return) {
-                return false;
-            }
+            return false;
         }
 
         $this->disableForeignKeys(false);
-        if ($offset < 2) {
-            $offset++;
-        }
-
         return true;
     }
 

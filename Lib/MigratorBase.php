@@ -77,7 +77,7 @@ abstract class MigratorBase
             // confirm data
             $this->dataBase->commit();
         } catch (Exception $exp) {
-            $this->toolBox()->log()->alert($exp->getMessage());
+            $this->toolBox()->log()->error($exp->getMessage());
             $return = false;
         } finally {
             if ($this->dataBase->inTransaction()) {
