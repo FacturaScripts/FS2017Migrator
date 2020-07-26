@@ -180,8 +180,12 @@ class AlbaranesProveedorMigrator extends MigratorBase
         $className = '\\FacturaScripts\\Dinamic\\Model\\' . $modelName;
         $model1 = new $className();
 
+        $codalmacen = $this->toolBox()->appSettings()->get('default', 'codalmacen');
         $idempresa = $this->toolBox()->appSettings()->get('default', 'idempresa');
-        $sql = "UPDATE " . $model1->tableName() . " set idempresa = " . $this->dataBase->var2str($idempresa);
+        $sql = "UPDATE " . $model1->tableName() . " SET idempresa = " . $this->dataBase->var2str($idempresa)
+            . " WHERE idempresa IS NULL;"
+            . "UPDATE " . $model1->tableName() . " SET codalmacen = " . $this->dataBase->var2str($codalmacen)
+            . " WHERE codalmacen IS NULL;";
         return $this->dataBase->exec($sql);
     }
 
