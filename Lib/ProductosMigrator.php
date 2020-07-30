@@ -190,7 +190,7 @@ class ProductosMigrator extends MigratorBase
                 . " ORDER BY id DESC;";
             foreach ($this->dataBase->select($sql2) as $row2) {
                 $sql3 = "DELETE FROM atributos_valores WHERE id = " . $this->dataBase->var2str($row2['id']) . ";";
-                if (false === $this->dataBase->exec($sql)) {
+                if (false === $this->dataBase->exec($sql3)) {
                     return false;
                 }
             }
@@ -205,9 +205,13 @@ class ProductosMigrator extends MigratorBase
      */
     private function removeDuplicatedReferences(): bool
     {
-        $sql = "DELETE FROM articulo_combinaciones WHERE refcombinacion IS NOT NULL"
-            . " AND refcombinacion IN (SELECT referencia FROM articulos);";
-        return $this->dataBase->exec($sql);
+        if ($this->dataBase->tableExists('articulo_combinaciones')) {
+            $sql = "DELETE FROM articulo_combinaciones WHERE refcombinacion IS NOT NULL"
+                . " AND refcombinacion IN (SELECT referencia FROM articulos);";
+            return $this->dataBase->exec($sql);
+        }
+
+        return true;
     }
 
     /**
