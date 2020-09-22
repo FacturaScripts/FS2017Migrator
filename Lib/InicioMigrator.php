@@ -47,10 +47,9 @@ class InicioMigrator extends MigratorBase
 
         $exclude = [
             'attached_files', 'cajas', 'crm_calendario', 'empresas', 'estados_documentos',
-            'fs_access', 'fs_extensions2', 'pages', 'pages_filters',
-            'pages_options', 'productos', 'roles', 'roles_access',
-            'roles_users', 'secuencias_documentos', 'settings', 'users',
-            'variantes'
+            'fs_access', 'fs_extensions2', 'pages', 'pages_filters', 'pages_options',
+            'productos', 'roles', 'roles_access', 'roles_users', 'secuencias_documentos',
+            'settings', 'users', 'variantes'
         ];
         $tables = [];
         foreach ($this->dataBase->getTables() as $tableName) {
@@ -103,7 +102,7 @@ class InicioMigrator extends MigratorBase
 
             $this->removedConstraints[] = $constraint['name'];
 
-            if (!empty($sql) && !$this->dataBase->exec($sql)) {
+            if ($sql && false === $this->dataBase->exec($sql)) {
                 $this->toolBox()->log()->warning('cant-remove-constraint: ' . $constraint['name']);
                 return false;
             }
@@ -132,12 +131,11 @@ class InicioMigrator extends MigratorBase
                 continue;
             }
 
-            $sql = 'ALTER TABLE ' . $tableName . ' MODIFY `' . $column['name'] . '` ' . $column['type'] . ' NULL;';
-            if (\strtolower(FS_DB_TYPE) == 'postgresql') {
-                $sql = 'ALTER TABLE ' . $tableName . ' ALTER COLUMN "' . $column['name'] . '" DROP NOT NULL;';
-            }
+            $sql = \strtolower(FS_DB_TYPE) == 'postgresql' ?
+                'ALTER TABLE ' . $tableName . ' ALTER COLUMN "' . $column['name'] . '" DROP NOT NULL;' :
+                'ALTER TABLE ' . $tableName . ' MODIFY `' . $column['name'] . '` ' . $column['type'] . ' NULL;';
 
-            if (!$this->dataBase->exec($sql)) {
+            if (false === $this->dataBase->exec($sql)) {
                 $this->toolBox()->log()->warning('cant-remove-not-null: ' . $tableName . ' ' . $column['name']);
                 return false;
             }
@@ -170,7 +168,7 @@ class InicioMigrator extends MigratorBase
 
             $this->removedConstraints[] = $constraint['name'];
 
-            if (!empty($sql) && !$this->dataBase->exec($sql)) {
+            if ($sql && false === $this->dataBase->exec($sql)) {
                 $this->toolBox()->log()->warning('cant-remove-constraint: ' . $constraint['name']);
                 return false;
             }
