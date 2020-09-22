@@ -18,6 +18,8 @@
  */
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
+use FacturaScripts\Core\Base\DataBase\DataBaseTools;
+
 /**
  * Description of MysqlMigrator
  *
@@ -32,7 +34,38 @@ class MysqlMigrator extends MigratorBase
      *
      * @return bool
      */
-    private function fixOldMysqlPKs($tableName): bool
+    private function fixMysqlPrimaryKey(string $tableName): bool
+    {
+        $filename = DataBaseTools::getXmlTableLocation($tableName);
+        if (false === \file_exists($filename)) {
+            return true;
+        }
+
+        $xmlCols = [];
+        $xmlCons = [];
+        if (false === DataBaseTools::getXmlTable($tableName, $xmlCols, $xmlCons)) {
+            return true;
+        }
+
+        foreach ($xmlCols as $col) {
+            if ($col['type'] != 'serial') {
+                continue;
+            }
+
+            $sql = 'ALTER TABLE `' . $tableName . '` MODIFY `' . $col['name'] . '` INTEGER NOT NULL AUTO_INCREMENT;';
+            return $this->dataBase->exec($sql);
+        }
+
+        return true;
+    }
+
+    /**
+     * 
+     * @param string $tableName
+     *
+     * @return bool
+     */
+    private function fixOldMysqlIntegers(string $tableName): bool
     {
         foreach ($this->dataBase->getColumns($tableName) as $colData) {
             if ($colData['type'] != 'int unsigned') {
@@ -62,10 +95,9 @@ class MysqlMigrator extends MigratorBase
 
         $exclude = [
             'attached_files', 'cajas', 'crm_calendario', 'empresas', 'estados_documentos',
-            'fs_access', 'fs_extensions2', 'pages', 'pages_filters',
-            'pages_options', 'productos', 'roles', 'roles_access',
-            'roles_users', 'secuencias_documentos', 'settings', 'users',
-            'variantes'
+            'fs_access', 'fs_extensions2', 'pages', 'pages_filters', 'pages_options',
+            'productos', 'roles', 'roles_access', 'roles_users', 'secuencias_documentos',
+            'settings', 'users', 'variantes'
         ];
         $tables = [];
         foreach ($this->dataBase->getTables() as $tableName) {
@@ -79,7 +111,7 @@ class MysqlMigrator extends MigratorBase
                 continue;
             }
 
-            if ($this->fixOldMysqlPKs($tableName)) {
+            if ($this->fixOldMysqlIntegers($tableName) && $this->fixMysqlPrimaryKey($tableName)) {
                 $offset++;
                 return true;
             }
