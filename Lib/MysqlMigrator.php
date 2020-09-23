@@ -36,14 +36,15 @@ class MysqlMigrator extends MigratorBase
      */
     private function fixMysqlPrimaryKey(string $tableName): bool
     {
-        $filename = DataBaseTools::getXmlTableLocation($tableName);
-        if (false === \file_exists($filename)) {
+        $fileName = \substr($tableName, 0, 3) === 'co_' ? \substr($tableName, 3) : $tableName;
+        $fileLocation = DataBaseTools::getXmlTableLocation($fileName);
+        if (false === \file_exists($fileLocation)) {
             return true;
         }
 
         $xmlCols = [];
         $xmlCons = [];
-        if (false === DataBaseTools::getXmlTable($tableName, $xmlCols, $xmlCons)) {
+        if (false === DataBaseTools::getXmlTable($fileName, $xmlCols, $xmlCons)) {
             return true;
         }
 
