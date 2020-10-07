@@ -34,6 +34,38 @@ class InicioMigrator extends MigratorBase
 
     /**
      * 
+     * @return array
+     */
+    private function getTables()
+    {
+        $exclude = [
+            'attached_files', 'cajas', 'crm_calendario', 'empresas', 'estados_documentos',
+            'fs_access', 'fs_extensions2', 'pages', 'pages_filters', 'pages_options',
+            'productos', 'roles', 'roles_access', 'roles_users', 'secuencias_documentos',
+            'settings', 'users', 'variantes'
+        ];
+        $tables = [];
+        foreach ($this->dataBase->getTables() as $tableName) {
+            if (\in_array($tableName, $exclude)) {
+                continue;
+            }
+
+            switch ($tableName) {
+                case 'beneficios':
+                    \array_unshift($tables, $tableName);
+                    break;
+
+                default:
+                    $tables[] = $tableName;
+                    break;
+            }
+        }
+
+        return $tables;
+    }
+
+    /**
+     * 
      * @param int $offset
      *
      * @return bool
@@ -45,21 +77,8 @@ class InicioMigrator extends MigratorBase
             return false;
         }
 
-        $exclude = [
-            'attached_files', 'cajas', 'crm_calendario', 'empresas', 'estados_documentos',
-            'fs_access', 'fs_extensions2', 'pages', 'pages_filters', 'pages_options',
-            'productos', 'roles', 'roles_access', 'roles_users', 'secuencias_documentos',
-            'settings', 'users', 'variantes'
-        ];
-        $tables = [];
-        foreach ($this->dataBase->getTables() as $tableName) {
-            if (false === \in_array($tableName, $exclude)) {
-                $tables[] = $tableName;
-            }
-        }
-
         $this->disableForeignKeys(true);
-        foreach ($tables as $num => $tableName) {
+        foreach ($this->getTables() as $num => $tableName) {
             if ($num != $offset) {
                 continue;
             }

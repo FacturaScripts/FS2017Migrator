@@ -38,20 +38,22 @@ class ContactosMigrator extends MigratorBase
      */
     protected function migrationProcess(&$offset = 0): bool
     {
-        if ($this->dataBase->tableExists('crm_contactos')) {
-            if ($offset === 0) {
-                $this->fixContactos();
+        if (false === $this->dataBase->tableExists('crm_contactos')) {
+            return true;
+        }
+
+        if ($offset === 0) {
+            $this->fixContactos();
+        }
+
+        $sql = "SELECT * FROM crm_contactos ORDER BY codcontacto ASC";
+        $rows = $this->dataBase->selectLimit($sql, 300, $offset);
+        foreach ($rows as $row) {
+            if (false === $this->newContact($row)) {
+                return false;
             }
 
-            $sql = "SELECT * FROM crm_contactos ORDER BY codcontacto ASC";
-            $rows = $this->dataBase->selectLimit($sql, 300, $offset);
-            foreach ($rows as $row) {
-                if (!$this->newContact($row)) {
-                    return false;
-                }
-
-                $offset++;
-            }
+            $offset++;
         }
 
         return true;
@@ -74,7 +76,7 @@ class ContactosMigrator extends MigratorBase
     {
         $fuente = new CrmFuente();
         $where = [new DataBaseWhere('nombre', $this->toolBox()->utils()->noHtml($name))];
-        if (!$fuente->loadFromCode('', $where)) {
+        if (false === $fuente->loadFromCode('', $where)) {
             /// create source
             $fuente->descripcion = $name;
             $fuente->nombre = $name;
@@ -92,17 +94,24 @@ class ContactosMigrator extends MigratorBase
      */
     protected function newContact($data)
     {
-        $where = empty($data['email']) ? [new DataBaseWhere('nombre', $data['nombre'])] : [new DataBaseWhere('email', $data['email'])];
         $contacto = new Contacto();
+        $where = empty($data['email']) ?
+            [new DataBaseWhere('nombre', $data['nombre'])] :
+            [new DataBaseWhere('email', $data['email'])];
         if ($contacto->loadFromCode('', $where)) {
             return true;
         }
 
         $data['cifnif'] = $data['nif'] ?? '';
+        $data['email'] = \filter_var($data['email'], \FILTER_VALIDATE_EMAIL) ? $data['email'] : '';
+
         if (empty($data['nombre']) && empty($data['direccion'])) {
             $data['descripcion'] = $data['codcontacto'];
         }
-        $data['email'] = \filter_var($data['email'], \FILTER_VALIDATE_EMAIL) ? $data['email'] : '';
+
+        if (empty($data['nombre'])) {
+            $data['nombre'] = '-';
+        }
 
         $contacto->loadFromData($data);
         if (isset($data['fuente'])) {

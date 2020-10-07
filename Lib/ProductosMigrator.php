@@ -40,20 +40,21 @@ class ProductosMigrator extends MigratorBase
      */
     protected function getCombinaciones($ref, $precio)
     {
-        if (!$this->dataBase->tableExists('articulo_combinaciones')) {
+        if (false === $this->dataBase->tableExists('articulo_combinaciones')) {
             return [];
         }
 
         $combinaciones = [];
-        $sql = "SELECT * FROM articulo_combinaciones WHERE referencia = " . $this->dataBase->var2str($ref) . " ORDER BY codigo ASC;";
+        $sql = "SELECT * FROM articulo_combinaciones WHERE referencia = " . $this->dataBase->var2str($ref)
+            . " ORDER BY codigo ASC;";
         foreach ($this->dataBase->select($sql) as $row) {
             if (!isset($combinaciones[$row['codigo']])) {
                 $combinaciones[$row['codigo']] = [
                     'codbarras' => $this->fixString($row['codbarras'], 20),
                     'idatributovalor1' => $row['idvalor'],
-                    'precio' => floatval($row['impactoprecio']) + $precio,
+                    'precio' => \floatval($row['impactoprecio']) + $precio,
                     'referencia' => empty($row['refcombinacion']) ? $ref . '-' . $row['codigo'] : $row['refcombinacion'],
-                    'stockfis' => floatval($row['stockfis'])
+                    'stockfis' => \floatval($row['stockfis'])
                 ];
                 continue;
             }
@@ -105,42 +106,43 @@ class ProductosMigrator extends MigratorBase
     protected function newProduct($data)
     {
         /// fix referencia
-        if (strlen($data['referencia']) > 30) {
-            $data['referencia'] = trim(substr($data['referencia'], 0, 30));
-        } else if (empty($data['referencia'])) {
+        if (\strlen($data['referencia']) > 30) {
+            $data['referencia'] = \trim(\substr($data['referencia'], 0, 30));
+        } elseif (empty($data['referencia'])) {
             $data['referencia'] = '-';
         }
 
         $producto = new Producto();
-        $where = [new DataBaseWhere('referencia', trim($data['referencia']))];
-        if ($producto->loadFromCode('', $where)) {
+        $variante = new Variante();
+        $where = [new DataBaseWhere('referencia', \trim($data['referencia']))];
+        if ($producto->loadFromCode('', $where) || $variante->loadFromCode('', $where)) {
             return true;
         }
 
         $producto->loadFromData($data, ['stockfis']);
         $producto->ventasinstock = $this->toolBox()->utils()->str2bool($data['controlstock']);
-        if ($producto->save()) {
-            if ($data['tipo'] == 'atributos') {
-                return $this->newProductVariants($producto, $data);
-            }
-
-            /// type: simple
-            foreach ($producto->getVariants() as $variante) {
-                $variante->codbarras = $this->fixString($data['codbarras'], 20);
-                $variante->coste = $data['costemedio'];
-                $variante->precio = $data['pvp'];
-                $variante->save();
-                break;
-            }
-
-            if (0 !== (int) $data['stockfis'] && !$this->updateStock($producto)) {
-                return false;
-            }
-
-            return true;
+        if (false === $producto->save()) {
+            return false;
         }
 
-        return false;
+        if ($data['tipo'] == 'atributos') {
+            return $this->newProductVariants($producto, $data);
+        }
+
+        /// type: simple
+        foreach ($producto->getVariants() as $vari) {
+            $vari->codbarras = $this->fixString($data['codbarras'], 20);
+            $vari->coste = $data['costemedio'];
+            $vari->precio = $data['pvp'];
+            $vari->save();
+            break;
+        }
+
+        if (0 !== (int) $data['stockfis'] && false === $this->updateStock($producto)) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -153,9 +155,15 @@ class ProductosMigrator extends MigratorBase
     protected function newProductVariants($producto, $data)
     {
         foreach ($this->getCombinaciones($producto->referencia, (float) $data['pvp']) as $combi) {
+            $variante = new Variante();
+            $where = [new DataBaseWhere('referencia', \trim($combi['referencia']))];
+            if ($combi['referencia'] && $variante->loadFromCode('', $where)) {
+                continue;
+            }
+
             $newVariante = new Variante($combi);
             $newVariante->idproducto = $producto->idproducto;
-            if (!$newVariante->save()) {
+            if (false === $newVariante->save()) {
                 return false;
             }
 
@@ -164,11 +172,16 @@ class ProductosMigrator extends MigratorBase
             }
 
             $newStock = new Stock();
+            $where[] = new DataBaseWhere('codalmacen', $this->toolBox()->appSettings()->get('default', 'codalmacen'));
+            if (false === $newStock->loadFromCode('', $where)) {
+                continue;
+            }
+
             $newStock->cantidad = $newVariante->stockfis;
             $newStock->codalmacen = $this->toolBox()->appSettings()->get('default', 'codalmacen');
             $newStock->idproducto = $newVariante->idproducto;
             $newStock->referencia = $newVariante->referencia;
-            if (!$newStock->save()) {
+            if (false === $newStock->save()) {
                 return false;
             }
         }
@@ -185,7 +198,8 @@ class ProductosMigrator extends MigratorBase
         $sql = "SELECT codatributo, valor, COUNT(*) repeticiones FROM atributos_valores"
             . " GROUP BY codatributo, valor HAVING repeticiones > 1;";
         foreach ($this->dataBase->select($sql) as $row) {
-            $sql2 = "SELECT * FROM atributos_valores WHERE codatributo = " . $this->dataBase->var2str($row['codatributo'])
+            $sql2 = "SELECT * FROM atributos_valores"
+                . " WHERE codatributo = " . $this->dataBase->var2str($row['codatributo'])
                 . " AND valor = " . $this->dataBase->var2str($row['valor'])
                 . " ORDER BY id DESC;";
             foreach ($this->dataBase->select($sql2) as $row2) {
@@ -226,7 +240,7 @@ class ProductosMigrator extends MigratorBase
         foreach ($this->dataBase->select($sql) as $row) {
             $stock = new Stock($row);
             $stock->idproducto = $producto->idproducto;
-            if (!$stock->save()) {
+            if (false === $stock->save()) {
                 return false;
             }
         }
