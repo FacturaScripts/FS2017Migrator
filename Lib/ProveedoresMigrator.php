@@ -45,7 +45,7 @@ class ProveedoresMigrator extends MigratorBase
      */
     protected function getSubcuenta($codproveedor)
     {
-        if (!$this->dataBase->tableExists('co_subcuentasprov')) {
+        if (false === $this->dataBase->tableExists('co_subcuentasprov')) {
             return '';
         }
 
@@ -67,7 +67,7 @@ class ProveedoresMigrator extends MigratorBase
     {
         $contacto = new Contacto();
         $where = [new DataBaseWhere('codproveedor', $proveedor->codproveedor)];
-        if ($contacto->loadFromCode('', $where)) {
+        if ($contacto->loadFromCode('', $where) || false === $this->dataBase->tableExists('dirproveedores')) {
             return true;
         }
 
@@ -81,7 +81,7 @@ class ProveedoresMigrator extends MigratorBase
 
             $newContacto->email = $proveedor->email;
             $newContacto->nombre = $proveedor->nombre;
-            if (!$newContacto->save()) {
+            if (false === $newContacto->save()) {
                 return false;
             }
 
@@ -114,11 +114,11 @@ class ProveedoresMigrator extends MigratorBase
             $proveedor->email = filter_var($proveedor->email, FILTER_VALIDATE_EMAIL) ? $proveedor->email : '';
             $proveedor->telefono1 = $this->fixString($proveedor->telefono1, 20);
             $proveedor->telefono2 = $this->fixString($proveedor->telefono2, 20);
-            if (!$proveedor->save()) {
+            if (false === $proveedor->save()) {
                 return false;
             }
 
-            if (!$this->migrateAddress($proveedor)) {
+            if (false === $this->migrateAddress($proveedor)) {
                 return false;
             }
 

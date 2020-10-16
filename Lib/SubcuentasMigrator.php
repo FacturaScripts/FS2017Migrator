@@ -79,14 +79,23 @@ class SubcuentasMigrator extends MigratorBase
      */
     protected function migrationProcess(&$offset = 0): bool
     {
+        if (false === $this->dataBase->tableExists('co_subcuentas')) {
+            return true;
+        }
+
         $sql = "SELECT * FROM co_subcuentas ORDER BY idsubcuenta ASC";
         $rows = $this->dataBase->selectLimit($sql, 600, $offset);
         foreach ($rows as $row) {
-            if (!$this->newSubcuenta($row)) {
+            if (false === $this->newSubcuenta($row)) {
                 return false;
             }
 
             $offset++;
+        }
+
+        if (empty($rows)) {
+            /// forze table creation
+            new Subcuenta();
         }
 
         return true;
@@ -115,7 +124,8 @@ class SubcuentasMigrator extends MigratorBase
             new DataBaseWhere('codcuenta', $data['codcuenta']),
             new DataBaseWhere('codejercicio', $data['codejercicio']),
         ];
-        if (!$cuenta->loadFromCode('', $where2) && !$this->fixMissingCuenta($cuenta, $data['codcuenta'], $data['codejercicio'])) {
+        if (false === $cuenta->loadFromCode('', $where2) &&
+            false === $this->fixMissingCuenta($cuenta, $data['codcuenta'], $data['codejercicio'])) {
             $this->toolBox()->log()->warning('account-missing');
             return false;
         }

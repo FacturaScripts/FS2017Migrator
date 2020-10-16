@@ -55,11 +55,11 @@ class ClientesMigrator extends MigratorBase
                 $cliente->regimeniva = RegimenIVA::TAX_SYSTEM_SURCHARGE;
             }
 
-            if (!$cliente->save()) {
+            if (false === $cliente->save()) {
                 return false;
             }
 
-            if (!$this->migrateAddress($cliente)) {
+            if (false === $this->migrateAddress($cliente)) {
                 return false;
             }
 
@@ -98,7 +98,7 @@ class ClientesMigrator extends MigratorBase
      */
     protected function getSubcuenta($codcliente)
     {
-        if (!$this->dataBase->tableExists('co_subcuentascli')) {
+        if (false === $this->dataBase->tableExists('co_subcuentascli')) {
             return '';
         }
 
@@ -134,7 +134,7 @@ class ClientesMigrator extends MigratorBase
 
             $newContacto->email = $cliente->email;
             $newContacto->nombre = $cliente->nombre;
-            if (!$newContacto->save()) {
+            if (false === $newContacto->save()) {
                 return false;
             }
 
