@@ -38,7 +38,7 @@ class AlbaranesProveedorMigrator extends MigratorBase
      */
     protected function fixCustomers($tableName)
     {
-        if (!$this->dataBase->tableExists($tableName)) {
+        if (false === $this->dataBase->tableExists($tableName)) {
             return true;
         }
 
@@ -55,18 +55,18 @@ class AlbaranesProveedorMigrator extends MigratorBase
      */
     protected function fixLinesTable($tableName)
     {
-        if (!$this->dataBase->tableExists($tableName)) {
+        if (false === $this->dataBase->tableExists($tableName)) {
             return true;
         }
 
         $values = [];
-        foreach (array_keys($this->impuestos) as $value) {
+        foreach (\array_keys($this->impuestos) as $value) {
             $values[] = "'" . $value . "'";
         }
 
         $sql = "UPDATE " . $tableName . " SET recargo = 0 WHERE recargo IS null;"
             . " UPDATE " . $tableName . " SET codimpuesto = null WHERE codimpuesto IS NOT null"
-            . " AND codimpuesto NOT IN (" . implode(',', $values) . ");";
+            . " AND codimpuesto NOT IN (" . \implode(',', $values) . ");";
         return $this->dataBase->exec($sql);
     }
 
@@ -78,7 +78,7 @@ class AlbaranesProveedorMigrator extends MigratorBase
      */
     protected function fixSuppliers($tableName)
     {
-        if (!$this->dataBase->tableExists($tableName)) {
+        if (false === $this->dataBase->tableExists($tableName)) {
             return true;
         }
 
@@ -95,19 +95,19 @@ class AlbaranesProveedorMigrator extends MigratorBase
      */
     protected function migrationProcess(&$offset = 0): bool
     {
-        if (0 === $offset && !$this->fixLinesTable('lineasalbaranesprov')) {
+        if (0 === $offset && false === $this->fixLinesTable('lineasalbaranesprov')) {
             return false;
         }
 
-        if (0 === $offset && !$this->fixSuppliers('albaranesprov')) {
+        if (0 === $offset && false === $this->fixSuppliers('albaranesprov')) {
             return false;
         }
 
-        if (0 === $offset && !$this->setModelCompany('AlbaranProveedor')) {
+        if (0 === $offset && false === $this->setModelCompany('AlbaranProveedor')) {
             return false;
         }
 
-        if (0 === $offset && !$this->setModelStatusAll('AlbaranProveedor', 'idfactura', true)) {
+        if (0 === $offset && false === $this->setModelStatusAll('AlbaranProveedor', 'idfactura', true)) {
             return false;
         }
 
@@ -119,9 +119,10 @@ class AlbaranesProveedorMigrator extends MigratorBase
         $rows = $this->dataBase->selectLimit($sql, 300, $offset);
         foreach ($rows as $row) {
             $done = $this->newDocTransformation(
-                'PedidoProveedor', $row['idpedido'], $row['idlineapedido'], 'AlbaranProveedor', $row['idalbaran'], $row['idlinea']
+                'PedidoProveedor', $row['idpedido'], $row['idlineapedido'],
+                'AlbaranProveedor', $row['idalbaran'], $row['idlinea']
             );
-            if (!$done) {
+            if (false === $done) {
                 return false;
             }
 
@@ -150,7 +151,7 @@ class AlbaranesProveedorMigrator extends MigratorBase
             new DataBaseWhere('iddoc2', $id2),
             new DataBaseWhere('idlinea2', $idlinea2),
             new DataBaseWhere('model1', $model1),
-            new DataBaseWhere('model2', $model2),
+            new DataBaseWhere('model2', $model2)
         ];
         if ($docTransformation->loadFromCode('', $where)) {
             return true;
@@ -185,7 +186,7 @@ class AlbaranesProveedorMigrator extends MigratorBase
         $sql = "UPDATE " . $model1->tableName() . " SET idempresa = " . $this->dataBase->var2str($idempresa)
             . " WHERE idempresa IS NULL;"
             . "UPDATE " . $model1->tableName() . " SET codalmacen = " . $this->dataBase->var2str($codalmacen)
-            . " WHERE codalmacen IS NULL;";
+            . " WHERE codalmacen IS NULL OR codalmacen NOT IN (SELECT codalmacen FROM almacenes);";
         return $this->dataBase->exec($sql);
     }
 
@@ -202,7 +203,7 @@ class AlbaranesProveedorMigrator extends MigratorBase
         $estadoDocModel = new EstadoDocumento();
         $where = [
             new DataBaseWhere('generadoc', $modelName2),
-            new DataBaseWhere('tipodoc', $modelName1),
+            new DataBaseWhere('tipodoc', $modelName1)
         ];
         foreach ($estadoDocModel->all($where) as $estado) {
             $className = '\\FacturaScripts\\Dinamic\\Model\\' . $modelName1;
@@ -230,7 +231,7 @@ class AlbaranesProveedorMigrator extends MigratorBase
         $model1 = new $className();
 
         /// is ptefactura column present?
-        if (!\in_array('ptefactura', \array_keys($model1->getModelFields()))) {
+        if (false === \in_array('ptefactura', \array_keys($model1->getModelFields()))) {
             return true;
         }
 
@@ -249,7 +250,7 @@ class AlbaranesProveedorMigrator extends MigratorBase
                 $sql .= empty($estado->generadoc) ? " AND " . $docNextColumn . " IS null;" : " AND " . $docNextColumn . " IS NOT null;";
             }
 
-            if (!$this->dataBase->exec($sql)) {
+            if (false === $this->dataBase->exec($sql)) {
                 return false;
             }
         }

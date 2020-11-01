@@ -125,7 +125,8 @@ abstract class MigratorBase
         }
 
         $string = $this->toolBox()->utils()->noHtml($txt);
-        return empty($len) ? $string : \substr($string, 0, $len);
+        $fixed = \preg_replace('/[[:^print:]]/', '', $string);
+        return empty($len) ? $fixed : \substr($fixed, 0, $len);
     }
 
     /**
@@ -141,7 +142,7 @@ abstract class MigratorBase
         }
 
         $specialAccount = new CuentaEspecial();
-        if (!$specialAccount->loadFromCode($code)) {
+        if (false === $specialAccount->loadFromCode($code)) {
             /// create a new special account
             $specialAccount->codcuentaesp = $code;
             $specialAccount->descripcion = $code;
@@ -214,7 +215,7 @@ abstract class MigratorBase
      */
     protected function renameTable($tableName, $newName)
     {
-        if (!$this->dataBase->tableExists($tableName)) {
+        if (false === $this->dataBase->tableExists($tableName)) {
             return true;
         }
 
