@@ -43,7 +43,9 @@ class AlbaranesProveedorMigrator extends MigratorBase
         }
 
         $sql = "UPDATE " . $tableName . " SET codcliente = null WHERE codcliente IS NOT null"
-            . " AND codcliente NOT IN (SELECT codcliente FROM clientes);";
+            . " AND codcliente NOT IN (SELECT codcliente FROM clientes);"
+            . "UPDATE " . $tableName . " SET codagente = null WHERE codagente IS NOT null"
+            . " AND codagente NOT IN (SELECT codagente FROM agentes);";
         return $this->dataBase->exec($sql);
     }
 

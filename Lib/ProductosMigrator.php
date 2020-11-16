@@ -19,6 +19,7 @@
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
+use FacturaScripts\Dinamic\Model\AtributoValor;
 use FacturaScripts\Dinamic\Model\Producto;
 use FacturaScripts\Dinamic\Model\Stock;
 use FacturaScripts\Dinamic\Model\Variante;
@@ -30,6 +31,28 @@ use FacturaScripts\Dinamic\Model\Variante;
  */
 class ProductosMigrator extends MigratorBase
 {
+
+    /**
+     *
+     * @var array
+     */
+    private $attributeValues;
+
+    /**
+     * 
+     * @param int $id
+     *
+     * @return int
+     */
+    private function checkAttributeValue($id)
+    {
+        if (null === $this->attributeValues) {
+            $attValue = new AtributoValor();
+            $this->attributeValues = $attValue->all([], [], 0, 0);
+        }
+
+        return \in_array($id, $this->attributeValues, true) ? $id : null;
+    }
 
     /**
      * 
@@ -51,7 +74,7 @@ class ProductosMigrator extends MigratorBase
             if (!isset($combinaciones[$row['codigo']])) {
                 $combinaciones[$row['codigo']] = [
                     'codbarras' => $this->fixString($row['codbarras'], 20),
-                    'idatributovalor1' => $row['idvalor'],
+                    'idatributovalor1' => $this->checkAttributeValue($row['idvalor']),
                     'precio' => \floatval($row['impactoprecio']) + $precio,
                     'referencia' => empty($row['refcombinacion']) ? $ref . '-' . $row['codigo'] : $row['refcombinacion'],
                     'stockfis' => \floatval($row['stockfis'])
