@@ -88,18 +88,46 @@ class ContactosMigrator extends MigratorBase
 
     /**
      * 
+     * @param Contacto $contact
+     * @param string   $codcontacto
+     *
+     * @return bool
+     */
+    protected function migrateNotes($contact, $codcontacto)
+    {
+        $class = '\\FacturaScripts\\Dinamic\\Model\\CrmNota';
+        if (false === $this->dataBase->tableExists('crm_notas') ||
+            false === \class_exists($class)) {
+            return true;
+        }
+
+        $crmNote = new $class();
+        $where = [
+            new DataBaseWhere('codcontacto', $codcontacto),
+            new DataBaseWhere('idcontacto', null, 'IS')
+        ];
+        foreach ($crmNote->all($where, [], 0, 0) as $note) {
+            $note->idcontacto = $contact->idcontacto;
+            $note->save();
+        }
+
+        return true;
+    }
+
+    /**
+     * 
      * @param array $data
      *
      * @return bool
      */
     protected function newContact($data)
     {
-        $contacto = new Contacto();
+        $contact = new Contacto();
         $where = empty($data['email']) ?
             [new DataBaseWhere('nombre', $data['nombre'])] :
             [new DataBaseWhere('email', $data['email'])];
-        if ($contacto->loadFromCode('', $where)) {
-            return true;
+        if ($contact->loadFromCode('', $where)) {
+            return $this->migrateNotes($contact, $data['codcontacto']);
         }
 
         $data['cifnif'] = $data['nif'] ?? '';
@@ -113,11 +141,15 @@ class ContactosMigrator extends MigratorBase
             $data['nombre'] = '-';
         }
 
-        $contacto->loadFromData($data);
+        $contact->loadFromData($data);
         if (isset($data['fuente'])) {
-            $contacto->idfuente = $this->getIdFuente($data['fuente']);
+            $contact->idfuente = $this->getIdFuente($data['fuente']);
         }
 
-        return $contacto->save();
+        if ($contact->save()) {
+            return $this->migrateNotes($contact, $data['codcontacto']);
+        }
+
+        return false;
     }
 }
