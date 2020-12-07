@@ -82,7 +82,7 @@ class ProductosMigrator extends MigratorBase
                 continue;
             }
 
-            $combinaciones[$row['codigo']]['idatributovalor2'] = $row['idvalor'];
+            $combinaciones[$row['codigo']]['idatributovalor2'] = $this->checkAttributeValue($row['idvalor']);
         }
 
         return $combinaciones;
