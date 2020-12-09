@@ -55,6 +55,10 @@ class ClientesMigrator extends MigratorBase
                 $cliente->regimeniva = RegimenIVA::TAX_SYSTEM_SURCHARGE;
             }
 
+            if (isset($cliente->debaja) && false == $cliente->debaja) {
+                $cliente->fechabaja = null;
+            }
+
             if (false === $cliente->save()) {
                 return false;
             }
