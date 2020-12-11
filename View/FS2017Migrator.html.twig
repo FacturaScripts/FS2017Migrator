@@ -1,19 +1,26 @@
 {% extends "Master/MenuTemplate.html.twig" %}
 
 {% block body %}
-    <div class="container">
+    <div class="bg-light pt-4 pb-2">
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <h1 class="h2">
+                        {% if fsc.working %}
+                            <i class="fas fa-sync fa-spin fa-fw"></i>
+                        {% else %}
+                            <i class="fas fa-database fa-fw"></i>
+                        {% endif %}
+                        {{ i18n.trans('2017-migrator') }}
+                    </h1>
+                    <p>{{ i18n.trans('2017-migrator-paragraph') }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container mt-3">
         <div class="row">
             <div class="col">
-                <h1 class="h2">
-                    {% if fsc.working %}
-                        <i class="fas fa-sync fa-spin fa-fw"></i>
-                    {% else %}
-                        <i class="fas fa-database fa-fw"></i>
-                    {% endif %}
-                    {{ i18n.trans('2017-migrator') }}
-                </h1>
-                <p>{{ i18n.trans('2017-migrator-paragraph') }}</p>
-                <hr/>
                 <ul>
                     {% for log in fsc.migrationLog %}
                         <li>
@@ -40,6 +47,15 @@
             </button>
         {% endif %}
     </div>
+{% endblock %}
+
+{% block css %}
+    {{ parent() }}
+    <style>
+        .bg-header {
+            background-color: #FAFBFC;
+        }
+    </style>
 {% endblock %}
 
 {% block javascripts %}
