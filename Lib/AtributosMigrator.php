@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2020 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -36,12 +36,32 @@ class AtributosMigrator extends MigratorBase
      */
     protected function migrationProcess(&$offset = 0): bool
     {
-        $AtributoValorModel = new AtributoValor();
-        foreach ($AtributoValorModel->all([], ['id' => 'ASC'], $offset) as $valor) {
-            $valor->save();
+        $this->removeDuplicatedValues();
+
+        $attValorModel = new AtributoValor();
+        foreach ($attValorModel->all([], ['id' => 'ASC'], $offset) as $valor) {
+            if (false === $valor->save()) {
+                return false;
+            }
+
             $offset++;
         }
 
         return true;
+    }
+
+    private function removeDuplicatedValues()
+    {
+        $sql = 'select codatributo,valor from atributos_valores group by codatributo,valor having count(*) > 1;';
+        foreach ($this->dataBase->select($sql) as $row) {
+            $sql2 = 'select * from atributos_valores'
+                . ' where codatributo = ' . $this->dataBase->var2str($row['codatributo'])
+                . ' and valor = ' . $this->dataBase->var2str($row['valor']) . ';';
+            foreach ($this->dataBase->select($sql2) as $row2) {
+                $sql3 = 'delete from atributos_valores where id = ' . $this->dataBase->var2str($row2['id']) . ';';
+                $this->dataBase->exec($sql3);
+                break;
+            }
+        }
     }
 }

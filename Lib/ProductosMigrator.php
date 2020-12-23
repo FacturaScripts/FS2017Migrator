@@ -51,7 +51,13 @@ class ProductosMigrator extends MigratorBase
             $this->attributeValues = $attValue->all([], [], 0, 0);
         }
 
-        return \in_array($id, $this->attributeValues, true) ? $id : null;
+        foreach ($this->attributeValues as $att) {
+            if ($att->id == $id) {
+                return $id;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -71,18 +77,22 @@ class ProductosMigrator extends MigratorBase
         $sql = "SELECT * FROM articulo_combinaciones WHERE referencia = " . $this->dataBase->var2str($ref)
             . " ORDER BY codigo ASC;";
         foreach ($this->dataBase->select($sql) as $row) {
-            if (!isset($combinaciones[$row['codigo']])) {
-                $combinaciones[$row['codigo']] = [
+            $codigo = $row['codigo'];
+            if (!isset($combinaciones[$codigo])) {
+                $combinaciones[$codigo] = [
                     'codbarras' => $this->fixString($row['codbarras'], 20),
                     'idatributovalor1' => $this->checkAttributeValue($row['idvalor']),
                     'precio' => \floatval($row['impactoprecio']) + $precio,
                     'referencia' => empty($row['refcombinacion']) ? $ref . '-' . $row['codigo'] : $row['refcombinacion'],
                     'stockfis' => \floatval($row['stockfis'])
                 ];
-                continue;
+            } elseif (!isset($combinaciones[$codigo]['idatributovalor2'])) {
+                $combinaciones[$codigo]['idatributovalor2'] = $this->checkAttributeValue($row['idvalor']);
+            } elseif (!isset($combinaciones[$codigo]['idatributovalor3'])) {
+                $combinaciones[$codigo]['idatributovalor3'] = $this->checkAttributeValue($row['idvalor']);
+            } elseif (!isset($combinaciones[$codigo]['idatributovalor4'])) {
+                $combinaciones[$codigo]['idatributovalor4'] = $this->checkAttributeValue($row['idvalor']);
             }
-
-            $combinaciones[$row['codigo']]['idatributovalor2'] = $this->checkAttributeValue($row['idvalor']);
         }
 
         return $combinaciones;
