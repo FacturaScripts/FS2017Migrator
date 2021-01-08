@@ -20,9 +20,13 @@ namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
 use FacturaScripts\Dinamic\Model\AlbaranCliente;
+use FacturaScripts\Dinamic\Model\AlbaranProveedor;
 use FacturaScripts\Dinamic\Model\FacturaCliente;
+use FacturaScripts\Dinamic\Model\FacturaProveedor;
 use FacturaScripts\Dinamic\Model\PedidoCliente;
+use FacturaScripts\Dinamic\Model\PedidoProveedor;
 use FacturaScripts\Dinamic\Model\PresupuestoCliente;
+use FacturaScripts\Dinamic\Model\PresupuestoProveedor;
 use FacturaScripts\Dinamic\Model\SecuenciaDocumento;
 use FacturaScripts\Dinamic\Model\Serie;
 
@@ -45,10 +49,14 @@ class SecuenciasMigrator extends MigratorBase
         /// create sequences for every serie
         $serieModel = new Serie();
         foreach ($serieModel->all() as $serie) {
-            $this->invoices($serie->codserie);
-            $this->deliveryNotes($serie->codserie);
-            $this->orders($serie->codserie);
-            $this->estimations($serie->codserie);
+            $this->migrateSequence($serie->codserie, new FacturaCliente(), true);
+            $this->migrateSequence($serie->codserie, new FacturaProveedor(), false);
+            $this->migrateSequence($serie->codserie, new AlbaranCliente(), false);
+            $this->migrateSequence($serie->codserie, new AlbaranProveedor(), false);
+            $this->migrateSequence($serie->codserie, new PedidoCliente(), false);
+            $this->migrateSequence($serie->codserie, new PedidoProveedor(), false);
+            $this->migrateSequence($serie->codserie, new PresupuestoCliente(), false);
+            $this->migrateSequence($serie->codserie, new PresupuestoProveedor(), false);
         }
 
         return true;
@@ -56,11 +64,14 @@ class SecuenciasMigrator extends MigratorBase
 
     /**
      * 
-     * @param string $codserie
-     * @param string $tipodoc
+     * @param string         $codserie
+     * @param FacturaCliente $model
+     * @param bool           $usarhuecos
      */
-    protected function deliveryNotes(string $codserie, string $tipodoc = 'AlbaranCliente')
+    protected function migrateSequence(string $codserie, $model, bool $usarhuecos)
     {
+        $tipodoc = $model->modelClassName();
+
         /// sequence exists for this serie?
         $secuencia = new SecuenciaDocumento();
         $where = [
@@ -71,130 +82,19 @@ class SecuenciasMigrator extends MigratorBase
             return;
         }
 
-        /// find delivery notes
-        $albaranClienteModel = new AlbaranCliente();
+        /// find previous data
         $where2 = [new DataBaseWhere('codserie', $codserie)];
-        $order = ['numero' => 'DESC'];
-        foreach ($albaranClienteModel->all($where2, $order, 0, 1) as $albaran) {
-            if (\substr($albaran->codigo, 0, 3) == 'ALB') {
-                $secuencia->codejercicio = $albaran->codejercicio;
-                $secuencia->codserie = $albaran->codserie;
-                $secuencia->idempresa = $albaran->idempresa;
-                $secuencia->numero = 1 + $albaran->numero;
-                $secuencia->patron = 'ALB{EJE}{SERIE}{NUM}';
+        $order = \strtolower(\FS_DB_TYPE) == 'postgresql' ? ['CAST(numero as integer)' => 'DESC'] : ['CAST(numero as unsigned)' => 'DESC'];
+        foreach ($model->all($where2, $order, 0, 1) as $doc) {
+            $prefix = \substr(\strtoupper($tipodoc), 0, 3);
+            if (\substr($doc->codigo, 0, 3) == $prefix) {
+                $secuencia->codejercicio = $doc->codejercicio;
+                $secuencia->codserie = $doc->codserie;
+                $secuencia->idempresa = $doc->idempresa;
+                $secuencia->numero = 1 + $doc->numero;
+                $secuencia->patron = $prefix . '{EJE}{SERIE}{NUM}';
                 $secuencia->tipodoc = $tipodoc;
-                $secuencia->usarhuecos = false;
-                $secuencia->save();
-            }
-
-            break;
-        }
-    }
-
-    /**
-     * 
-     * @param string $codserie
-     * @param string $tipodoc
-     */
-    protected function estimations(string $codserie, string $tipodoc = 'PresupuestoCliente')
-    {
-        /// sequence exists for this serie?
-        $secuencia = new SecuenciaDocumento();
-        $where = [
-            new DataBaseWhere('codserie', $codserie),
-            new DataBaseWhere('tipodoc', $tipodoc)
-        ];
-        if ($secuencia->loadFromCode('', $where)) {
-            return;
-        }
-
-        /// find delivery notes
-        $presupuestoClienteModel = new PresupuestoCliente();
-        $where2 = [new DataBaseWhere('codserie', $codserie)];
-        $order = ['numero' => 'DESC'];
-        foreach ($presupuestoClienteModel->all($where2, $order, 0, 1) as $presupuesto) {
-            if (\substr($presupuesto->codigo, 0, 3) == 'PRE') {
-                $secuencia->codejercicio = $presupuesto->codejercicio;
-                $secuencia->codserie = $presupuesto->codserie;
-                $secuencia->idempresa = $presupuesto->idempresa;
-                $secuencia->numero = 1 + $presupuesto->numero;
-                $secuencia->patron = 'PRE{EJE}{SERIE}{NUM}';
-                $secuencia->tipodoc = $tipodoc;
-                $secuencia->usarhuecos = false;
-                $secuencia->save();
-            }
-
-            break;
-        }
-    }
-
-    /**
-     * 
-     * @param string $codserie
-     * @param string $tipodoc
-     */
-    protected function invoices(string $codserie, string $tipodoc = 'FacturaCliente')
-    {
-        /// sequence exists for this serie?
-        $secuencia = new SecuenciaDocumento();
-        $where = [
-            new DataBaseWhere('codserie', $codserie),
-            new DataBaseWhere('tipodoc', $tipodoc)
-        ];
-        if ($secuencia->loadFromCode('', $where)) {
-            return;
-        }
-
-        /// find invoices
-        $facturaClienteModel = new FacturaCliente();
-        $where2 = [new DataBaseWhere('codserie', $codserie)];
-        $order = ['numero' => 'DESC'];
-        foreach ($facturaClienteModel->all($where2, $order, 0, 1) as $factura) {
-            if (\substr($factura->codigo, 0, 3) == 'FAC') {
-                $secuencia->codejercicio = $factura->codejercicio;
-                $secuencia->codserie = $factura->codserie;
-                $secuencia->idempresa = $factura->idempresa;
-                $secuencia->numero = 1 + $factura->numero;
-                $secuencia->patron = 'FAC{EJE}{SERIE}{NUM}';
-                $secuencia->tipodoc = $tipodoc;
-                $secuencia->usarhuecos = true;
-                $secuencia->save();
-            }
-
-            break;
-        }
-    }
-
-    /**
-     * 
-     * @param string $codserie
-     * @param string $tipodoc
-     */
-    protected function orders(string $codserie, string $tipodoc = 'PedidoCliente')
-    {
-        /// sequence exists for this serie?
-        $secuencia = new SecuenciaDocumento();
-        $where = [
-            new DataBaseWhere('codserie', $codserie),
-            new DataBaseWhere('tipodoc', $tipodoc)
-        ];
-        if ($secuencia->loadFromCode('', $where)) {
-            return;
-        }
-
-        /// find delivery notes
-        $pedidoClienteModel = new PedidoCliente();
-        $where2 = [new DataBaseWhere('codserie', $codserie)];
-        $order = ['numero' => 'DESC'];
-        foreach ($pedidoClienteModel->all($where2, $order, 0, 1) as $pedido) {
-            if (\substr($pedido->codigo, 0, 3) == 'PED') {
-                $secuencia->codejercicio = $pedido->codejercicio;
-                $secuencia->codserie = $pedido->codserie;
-                $secuencia->idempresa = $pedido->idempresa;
-                $secuencia->numero = 1 + $pedido->numero;
-                $secuencia->patron = 'PED{EJE}{SERIE}{NUM}';
-                $secuencia->tipodoc = $tipodoc;
-                $secuencia->usarhuecos = false;
+                $secuencia->usarhuecos = $usarhuecos;
                 $secuencia->save();
             }
 
