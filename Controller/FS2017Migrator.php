@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2020 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2021 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,6 +19,8 @@
 namespace FacturaScripts\Plugins\FS2017Migrator\Controller;
 
 use FacturaScripts\Core\Base\Controller;
+use FacturaScripts\Core\Base\FileManager;
+use ZipArchive;
 
 /**
  * Description of FS2017Migrator
@@ -66,6 +68,27 @@ class FS2017Migrator extends Controller
         return $data;
     }
 
+    /**
+     * 
+     * @return bool
+     */
+    public function findFileBackup(): bool
+    {
+        $path = 'MyFiles' . DIRECTORY_SEPARATOR . 'FS2017Migrator';
+        if (false === \file_exists($path)) {
+            FileManager::createFolder($path);
+            return false;
+        }
+
+        foreach (FileManager::scanFolder($path) as $file) {
+            if ('.zip' === \substr($file, -4)) {
+                return $this->extractBackup($file);
+            }
+        }
+
+        return \file_exists(\FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR . 'FS2017Migrator' . DIRECTORY_SEPARATOR . 'FOUND.lock');
+    }
+
     public function privateCore(&$response, $user, $permissions)
     {
         parent::privateCore($response, $user, $permissions);
@@ -74,6 +97,11 @@ class FS2017Migrator extends Controller
         $action = $this->request->get('action', '');
         switch ($action) {
             case '':
+                $this->findFileBackup();
+                break;
+
+            case 'remove-backup':
+                $this->removeBackupAction();
                 break;
 
             default:
@@ -98,7 +126,7 @@ class FS2017Migrator extends Controller
             'PagosProveedor', 'PresupuestosCliente', 'PedidosCliente',
             'AlbaranesCliente', 'FacturasCliente', 'RecibosCliente',
             'PagosCliente', 'Estados', 'Secuencias', 'Contactos',
-            'RegImpuestos', 'end'
+            'RegImpuestos', 'Files', 'FilesExpedientes', 'end'
         ];
 
         $next = false;
@@ -138,5 +166,38 @@ class FS2017Migrator extends Controller
                 break;
             }
         }
+    }
+
+    /**
+     * 
+     * @param string $fileName
+     *
+     * @return bool
+     */
+    private function extractBackup(string $fileName): bool
+    {
+        $zip = new ZipArchive();
+        $filePath = \FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR . 'FS2017Migrator' . DIRECTORY_SEPARATOR . $fileName;
+        $zipStatus = $zip->open($filePath, ZipArchive::CHECKCONS);
+        if ($zipStatus !== true) {
+            $this->toolBox()->log()->critical('ZIP ERROR: ' . $zipStatus);
+            return false;
+        }
+
+        if (false === $zip->extractTo(\FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR . 'FS2017Migrator')) {
+            $this->toolBox()->log()->critical('ZIP EXTRACT ERROR: ' . $fileName);
+            $zip->close();
+            return false;
+        }
+
+        \unlink($filePath);
+        \touch(\FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR . 'FS2017Migrator' . DIRECTORY_SEPARATOR . 'FOUND.lock');
+        return true;
+    }
+
+    private function removeBackupAction()
+    {
+        $path = 'MyFiles' . DIRECTORY_SEPARATOR . 'FS2017Migrator';
+        FileManager::delTree($path);
     }
 }

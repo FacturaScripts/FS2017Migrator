@@ -1,7 +1,7 @@
 {% extends "Master/MenuTemplate.html.twig" %}
 
 {% block body %}
-    <div class="bg-light pt-4 pb-2">
+    <div class="bg-light pt-5 pb-5">
         <div class="container">
             <div class="row">
                 <div class="col">
@@ -13,38 +13,69 @@
                         {% endif %}
                         {{ i18n.trans('2017-migrator') }}
                     </h1>
-                    <p>{{ i18n.trans('2017-migrator-paragraph') }}</p>
                 </div>
             </div>
         </div>
     </div>
-    <div class="container mt-3">
-        <div class="row">
-            <div class="col">
-                <ul>
-                    {% for log in fsc.migrationLog %}
-                        <li>
-                            {{ log }}
-                        </li>
-                    {% endfor %}
-                </ul>
-            </div>
-        </div>
-        {% if fsc.enableRun %}
-            <form method="post">
-                <div class="row">
-                    <div class="col">
-                        <button type="button" class="btn btn-warning" onclick="executeMigration();">
-                            <i class="fas fa-terminal fa-fw"></i> {{ i18n.trans('run') }}
-                        </button>
+    <div class="container" style="margin-top: -40px;">
+        {% if fsc.migrationLog %}
+            <div class="row">
+                <div class="col">
+                    <div class="card shadow mb-4">
+                        <div class="card-body">
+                            <ul>
+                                {% for log in fsc.migrationLog %}
+                                    <li>
+                                        {{ log }}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                            {% if fsc.working %}
+                                <button class="btn btn-warning">
+                                    <i class="fas fa-cog fa-spin fa-fw"></i> {{ i18n.trans('run') }}
+                                </button>
+                            {% elseif fsc.findFileBackup() %}
+                                <a class="btn btn-danger" href="{{ fsc.url() }}?action=remove-backup">
+                                    <i class="fas fa-trash-alt fa-fw"></i> {{ i18n.trans('remove-backup') }}
+                                </a>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
-            </form>
+            </div>
         {% endif %}
-        {% if fsc.working %}
-            <button class="btn btn-warning">
-                <i class="fas fa-cog fa-spin fa-fw"></i> {{ i18n.trans('run') }}
-            </button>
+        {% if fsc.enableRun %}
+            <div class="row">
+                <div class="col">
+                    <div class="card shadow mb-4">
+                        <div class="card-body">
+                            <p>{{ i18n.trans('2017-migrator-paragraph') }}</p>
+                            <form method="post">
+                                <button type="button" class="btn btn-warning" onclick="executeMigration();">
+                                    <i class="fas fa-terminal fa-fw"></i> {{ i18n.trans('run') }}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="card shadow mb-4">
+                        <div class="card-body">
+                            <h2 class="h5 card-title">
+                                <i class="fas fa-save fa-fw"></i> {{ i18n.trans('files') }}
+                            </h2>
+                            <p class="card-text">{{ i18n.trans('2017-files-paragraph') }}</p>
+                            {% if fsc.findFileBackup() %}
+                                <span class="badge badge-success">
+                                    <i class="fas fa-check fa-fw"></i> {{ i18n.trans('backup-found') }}
+                                </span>
+                            {% else %}
+                                <span class="badge badge-danger">
+                                    <i class="fas fa-times fa-fw"></i> {{ i18n.trans('backup-not-found') }}
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
         {% endif %}
     </div>
 {% endblock %}
