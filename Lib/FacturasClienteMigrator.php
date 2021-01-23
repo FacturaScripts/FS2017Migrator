@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2021 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -36,23 +36,27 @@ class FacturasClienteMigrator extends FacturasProveedorMigrator
      */
     protected function migrationProcess(&$offset = 0): bool
     {
-        if (0 === $offset && !$this->fixLinesTable('lineasfacturascli')) {
+        if (0 === $offset && false === $this->fixLinesTable('lineasfacturascli')) {
             return false;
         }
 
-        if (0 === $offset && !$this->fixCustomers('facturascli')) {
+        if (0 === $offset && false === $this->fixCustomers('facturascli')) {
             return false;
         }
 
-        if (0 === $offset && !$this->fixAccounting('facturascli')) {
+        if (0 === $offset && false === $this->fixVencimiento()) {
             return false;
         }
 
-        if (0 === $offset && !$this->setModelCompany('FacturaCliente')) {
+        if (0 === $offset && false === $this->fixAccounting('facturascli')) {
             return false;
         }
 
-        if (0 === $offset && !$this->setModelStatusAll('FacturaCliente')) {
+        if (0 === $offset && false === $this->setModelCompany('FacturaCliente')) {
+            return false;
+        }
+
+        if (0 === $offset && false === $this->setModelStatusAll('FacturaCliente')) {
             return false;
         }
 
@@ -68,10 +72,7 @@ class FacturasClienteMigrator extends FacturasProveedorMigrator
 
         $rows = $this->dataBase->selectLimit($sql, 300, $offset);
         foreach ($rows as $row) {
-            $done = $this->newDocTransformation(
-                'AlbaranCliente', $row['idalbaran'], $row['idlineaalbaran'], 'FacturaCliente', $row['idfactura'], $row['idlinea']
-            );
-            if (!$done) {
+            if (false === $this->newDocTransformation('AlbaranCliente', $row['idalbaran'], $row['idlineaalbaran'], 'FacturaCliente', $row['idfactura'], $row['idlinea'])) {
                 return false;
             }
 
@@ -79,5 +80,15 @@ class FacturasClienteMigrator extends FacturasProveedorMigrator
         }
 
         return true;
+    }
+
+    /**
+     * 
+     * @return bool
+     */
+    private function fixVencimiento(): bool
+    {
+        $sql = "update facturascli set vencimiento = '1999-12-31' where vencimiento < '1999-01-01';";
+        return $this->dataBase->exec($sql);
     }
 }

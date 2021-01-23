@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2020 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2021 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -135,7 +135,7 @@ class SubcuentasMigrator extends MigratorBase
         $subcuenta->codimpuesto = empty($data['codimpuesto']) ? null : $this->fixImpuesto($data['codimpuesto']);
         $subcuenta->codsubcuenta = $data['codsubcuenta'];
         $subcuenta->debe = $data['debe'];
-        $subcuenta->descripcion = $data['descripcion'];
+        $subcuenta->descripcion = empty($data['descripcion']) ? $data['codsubcuenta'] : $data['descripcion'];
         $subcuenta->haber = $data['haber'];
         $subcuenta->idcuenta = $cuenta->primaryColumnValue();
         $subcuenta->idsubcuenta = $data['idsubcuenta'];

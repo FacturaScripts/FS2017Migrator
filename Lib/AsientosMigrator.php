@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2020 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2021 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -52,12 +52,12 @@ class AsientosMigrator extends MigratorBase
                 $offset++;
                 new Diario();
                 new Asiento();
-                return true;
+                return $this->dataBase->tableExists('asientos');
 
             case 3:
                 $offset++;
                 new Partida();
-                return true;
+                return $this->dataBase->tableExists('partidas');
 
             case 4:
                 $offset++;
@@ -89,7 +89,7 @@ class AsientosMigrator extends MigratorBase
                 $sql = "UPDATE " . Asiento::tableName()
                     . " SET operacion = " . $this->dataBase->var2str($operation)
                     . " WHERE idasiento = " . $this->dataBase->var2str($exercise->{$key});
-                if (!$this->dataBase->exec($sql)) {
+                if (false === $this->dataBase->exec($sql)) {
                     return false;
                 }
             }
