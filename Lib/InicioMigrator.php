@@ -39,10 +39,11 @@ class InicioMigrator extends MigratorBase
     private function getTables()
     {
         $exclude = [
-            'attached_files', 'cajas', 'cajas_general', 'crm_calendario', 'empresas', 'estados_documentos',
-            'fs_access', 'fs_extensions2', 'pages', 'pages_filters', 'pages_options',
-            'productos', 'roles', 'roles_access', 'roles_users', 'secuencias_documentos',
-            'settings', 'users', 'variantes'
+            'attached_files', 'cajas', 'cajas_general', 'cajas_general_mov',
+            'crm_calendario', 'empresas', 'estados_documentos', 'fs_access',
+            'fs_extensions2', 'pages', 'pages_filters', 'pages_options',
+            'productos', 'roles', 'roles_access', 'roles_users',
+            'secuencias_documentos', 'settings', 'users', 'variantes'
         ];
         $tables = [];
         foreach ($this->dataBase->getTables() as $tableName) {
