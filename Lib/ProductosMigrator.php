@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2020 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2021 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -252,13 +252,18 @@ class ProductosMigrator extends MigratorBase
      */
     private function removeDuplicatedReferences(): bool
     {
-        if ($this->dataBase->tableExists('articulo_combinaciones')) {
-            $sql = "DELETE FROM articulo_combinaciones WHERE refcombinacion IS NOT NULL"
-                . " AND refcombinacion IN (SELECT referencia FROM articulos);";
-            return $this->dataBase->exec($sql);
+        if (false === $this->dataBase->tableExists('articulo_combinaciones')) {
+            return true;
         }
 
-        return true;
+        $data = $this->dataBase->select("SELECT * FROM articulo_combinaciones");
+        if (empty($data)) {
+            return true;
+        }
+
+        $sql = "DELETE FROM articulo_combinaciones WHERE refcombinacion IS NOT NULL"
+            . " AND refcombinacion IN (SELECT referencia FROM articulos);";
+        return $this->dataBase->exec($sql);
     }
 
     /**
