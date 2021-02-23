@@ -100,6 +100,36 @@ class ProductosMigrator extends MigratorBase
 
     /**
      * 
+     * @return bool
+     */
+    private function fixFamilies(): bool
+    {
+        if (false === $this->dataBase->tableExists('familias')) {
+            return true;
+        }
+
+        $sql = 'UPDATE articulos SET codfamilia = NULL WHERE codfamilia IS NOT NULL'
+            . ' AND codfamilia NOT IN (SELECT codfamilia FROM familias)';
+        return $this->dataBase->exec($sql);
+    }
+
+    /**
+     * 
+     * @return bool
+     */
+    private function fixManufacturers(): bool
+    {
+        if (false === $this->dataBase->tableExists('fabricantes')) {
+            return true;
+        }
+
+        $sql = 'UPDATE articulos SET codfabricante = NULL WHERE codfabricante IS NOT NULL'
+            . ' AND codfabricante NOT IN (SELECT codfabricante FROM fabricantes)';
+        return $this->dataBase->exec($sql);
+    }
+
+    /**
+     * 
      * @param int $offset
      *
      * @return bool
@@ -109,6 +139,12 @@ class ProductosMigrator extends MigratorBase
         /// rename stocks table
         if ($offset == 0 && false === $this->dataBase->tableExists('stocks_old')) {
             $this->renameTable('stocks', 'stocks_old');
+        }
+        if ($offset == 0 && false === $this->fixFamilies()) {
+            return false;
+        }
+        if ($offset == 0 && false === $this->fixManufacturers()) {
+            return false;
         }
         if ($offset == 0 && false === $this->removeDuplicatedAttributeValues()) {
             return false;
