@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2020 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2021 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -21,6 +21,7 @@ namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
 use FacturaScripts\Dinamic\Model\Contacto;
 use FacturaScripts\Dinamic\Model\CrmFuente;
+use FacturaScripts\Dinamic\Model\GrupoClientes;
 
 /**
  * Description of ContactosMigrator
@@ -89,6 +90,46 @@ class ContactosMigrator extends MigratorBase
     /**
      * 
      * @param Contacto $contact
+     *
+     * @return bool
+     */
+    protected function migrateGroup($contact): bool
+    {
+        if (!isset($contact->codgrupo) || empty($contact->codgrupo)) {
+            return true;
+        }
+
+        $listClass = '\\FacturaScripts\\Dinamic\\Model\\CrmLista';
+        $memberClass = '\\FacturaScripts\\Dinamic\\Model\\CrmListaContacto';
+        if (false === \class_exists($listClass) || false === \class_exists($memberClass)) {
+            return true;
+        }
+
+        $crmLista = new $listClass();
+        $grupo = new GrupoClientes();
+        if (false === $grupo->loadFromCode($contact->codgrupo) ||
+            false === $crmLista->loadFromCode('', [new DataBaseWhere('nombre', $grupo->nombre)])) {
+            $crmLista->nombre = $grupo->nombre;
+            $crmLista->save();
+        }
+
+        $member = new $memberClass();
+        $where = [
+            new DataBaseWhere('idcontacto', $contact->idcontacto),
+            new DataBaseWhere('idlista', $crmLista->id)
+        ];
+        if (false === $member->loadFromCode('', $where)) {
+            $member->idcontacto = $contact->idcontacto;
+            $member->idlista = $crmLista->id;
+            $member->save();
+        }
+
+        return true;
+    }
+
+    /**
+     * 
+     * @param Contacto $contact
      * @param string   $codcontacto
      *
      * @return bool
@@ -120,14 +161,12 @@ class ContactosMigrator extends MigratorBase
      *
      * @return bool
      */
-    protected function newContact($data)
+    protected function newContact($data): bool
     {
         $contact = new Contacto();
-        $where = empty($data['email']) ?
-            [new DataBaseWhere('nombre', $data['nombre'])] :
-            [new DataBaseWhere('email', $data['email'])];
+        $where = empty($data['email']) ? [new DataBaseWhere('nombre', $data['nombre'])] : [new DataBaseWhere('email', $data['email'])];
         if ($contact->loadFromCode('', $where)) {
-            return $this->migrateNotes($contact, $data['codcontacto']);
+            return $this->migrateNotes($contact, $data['codcontacto']) && $this->migrateGroup($contact);
         }
 
         $data['cifnif'] = $data['nif'] ?? '';
@@ -146,10 +185,6 @@ class ContactosMigrator extends MigratorBase
             $contact->idfuente = $this->getIdFuente($data['fuente']);
         }
 
-        if ($contact->save()) {
-            return $this->migrateNotes($contact, $data['codcontacto']);
-        }
-
-        return false;
+        return $contact->save() && $this->migrateNotes($contact, $data['codcontacto']) && $this->migrateGroup($contact);
     }
 }
