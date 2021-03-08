@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2021 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,6 +19,7 @@
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
+use FacturaScripts\Dinamic\Model\Asiento;
 use FacturaScripts\Dinamic\Model\PagoCliente;
 use FacturaScripts\Dinamic\Model\ReciboCliente;
 
@@ -39,11 +40,9 @@ class PagosClienteMigrator extends MigratorBase
     protected function migrationProcess(&$offset = 0): bool
     {
         $sql = 'SELECT * FROM facturascli WHERE idasientop IS NOT NULL ORDER BY idfactura ASC';
-
         $rows = $this->dataBase->selectLimit($sql, 300, $offset);
         foreach ($rows as $row) {
-            $done = $this->newReceipt($row);
-            if (!$done) {
+            if (false === $this->newReceipt($row)) {
                 return false;
             }
 
@@ -65,14 +64,15 @@ class PagosClienteMigrator extends MigratorBase
         $newPayment = new PagoCliente();
         $newPayment->codpago = $receipt->codpago;
         $newPayment->fecha = $receipt->fechapago;
-        $newPayment->idasiento = $idasientop;
         $newPayment->idrecibo = $receipt->idrecibo;
         $newPayment->importe = $receipt->importe;
-        if (!$newPayment->save()) {
-            return false;
+
+        $asiento = new Asiento();
+        if ($idasientop && $asiento->loadFromCode($idasientop)) {
+            $newPayment->idasiento = $idasientop;
         }
 
-        return true;
+        return $newPayment->save();
     }
 
     /**
@@ -93,12 +93,12 @@ class PagosClienteMigrator extends MigratorBase
         $newReceipt->codcliente = $row['codcliente'];
         $newReceipt->coddivisa = $row['coddivisa'];
         $newReceipt->codpago = $row['codpago'];
-        $newReceipt->fecha = date('d-m-Y', strtotime($row['fecha']));
-        $newReceipt->fechapago = date('d-m-Y', strtotime($row['fecha']));
+        $newReceipt->fecha = \date('d-m-Y', \strtotime($row['fecha']));
+        $newReceipt->fechapago = \date('d-m-Y', \strtotime($row['fecha']));
         $newReceipt->idfactura = $row['idfactura'];
         $newReceipt->importe = $row['total'];
         $newReceipt->pagado = $this->toolBox()->utils()->str2bool($row['pagada']);
-        $newReceipt->vencimiento = date('d-m-Y', strtotime($row['vencimiento']));
+        $newReceipt->vencimiento = \date('d-m-Y', \strtotime($row['vencimiento']));
         return $newReceipt->save() ? $this->newPayment($newReceipt, $row['idasientop']) : false;
     }
 }
