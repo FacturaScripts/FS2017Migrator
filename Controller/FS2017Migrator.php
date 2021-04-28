@@ -86,7 +86,8 @@ class FS2017Migrator extends Controller
             }
         }
 
-        return \file_exists(\FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR . 'FS2017Migrator' . DIRECTORY_SEPARATOR . 'FOUND.lock');
+        return \file_exists(\FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR
+            . 'FS2017Migrator' . DIRECTORY_SEPARATOR . 'FOUND.lock');
     }
 
     public function privateCore(&$response, $user, $permissions)
@@ -120,7 +121,7 @@ class FS2017Migrator extends Controller
         $this->working = true;
         $steps = [
             'Inicio', 'Mysql', 'Empresa', 'GruposEpigrafes', 'Epigrafes',
-            'Cuentas', 'Subcuentas', 'Asientos', 'Tarifas', 'Clientes',
+            'Cuentas', 'Subcuentas', 'Balances', 'Asientos', 'Tarifas', 'Clientes',
             'Proveedores', 'Atributos', 'Productos', 'PedidosProveedor',
             'AlbaranesProveedor', 'FacturasProveedor', 'RecibosProveedor',
             'PagosProveedor', 'PresupuestosCliente', 'PedidosCliente',
