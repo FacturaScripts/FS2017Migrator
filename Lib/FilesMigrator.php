@@ -20,6 +20,7 @@ namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Dinamic\Model\AttachedFile;
 use FacturaScripts\Dinamic\Model\AttachedFileRelation;
+use FacturaScripts\Dinamic\Model\Empresa;
 
 /**
  * Description of FilesMigrator
@@ -39,6 +40,10 @@ class FilesMigrator extends MigratorBase
      */
     protected function migrationProcess(&$offset = 0): bool
     {
+        if (0 === $offset) {
+            $this->migrateLogo();
+        }
+
         if (false === $this->dataBase->tableExists(static::TABLE_NAME)) {
             return true;
         }
@@ -69,6 +74,39 @@ class FilesMigrator extends MigratorBase
     {
         $filePath = FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR . 'FS2017Migrator' . DIRECTORY_SEPARATOR . $ruta;
         return false === empty($ruta) && \file_exists($filePath);
+    }
+
+    /**
+     * 
+     * @return bool
+     */
+    private function migrateLogo()
+    {
+        foreach (['logo.png', 'logo.jpg'] as $name) {
+            $filePath = FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR . 'FS2017Migrator' . DIRECTORY_SEPARATOR . 'images';
+            if (false === \file_exists($filePath . DIRECTORY_SEPARATOR . $name)) {
+                continue;
+            }
+
+            $newPath = FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR . $name;
+            if (false === \rename($filePath . DIRECTORY_SEPARATOR . $name, $newPath)) {
+                return false;
+            }
+
+            $newAttFile = new AttachedFile();
+            $newAttFile->path = $name;
+            if (false === $newAttFile->save()) {
+                return false;
+            }
+
+            $empresaModel = new Empresa();
+            foreach ($empresaModel->all() as $empresa) {
+                $empresa->idlogo = $newAttFile->idfile;
+                return $empresa->save();
+            }
+        }
+
+        return false;
     }
 
     /**
