@@ -19,7 +19,7 @@
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Dinamic\Model\AttachedFile;
-use FacturaScripts\Core\Model\AttachedFileRelation;
+use FacturaScripts\Dinamic\Model\AttachedFileRelation;
 
 /**
  * Description of FilesMigrator
@@ -45,11 +45,15 @@ class FilesMigrator extends MigratorBase
 
         $sql = "SELECT * FROM " . static::TABLE_NAME . " ORDER BY id ASC";
         foreach ($this->dataBase->selectLimit($sql, 50, $offset) as $row) {
-            if ($this->fileExists($row['ruta'])) {
-                $this->moveFile($row);
+            $offset++;
+
+            if (false === $this->fileExists($row['ruta'])) {
+                continue;
             }
 
-            $offset++;
+            if (false === $this->moveFile($row)) {
+                return false;
+            }
         }
 
         return true;

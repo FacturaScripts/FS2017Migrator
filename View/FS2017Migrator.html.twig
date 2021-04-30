@@ -64,13 +64,16 @@
                             </h2>
                             <p class="card-text">{{ i18n.trans('2017-files-paragraph') }}</p>
                             {% if fsc.findFileBackup() %}
-                                <span class="badge badge-success">
+                                <div class="alert alert-success mb-0">
                                     <i class="fas fa-check fa-fw"></i> {{ i18n.trans('backup-found') }}
-                                </span>
+                                </div>
                             {% else %}
-                                <span class="badge badge-danger">
+                                <div class="alert alert-warning">
                                     <i class="fas fa-times fa-fw"></i> {{ i18n.trans('backup-not-found') }}
-                                </span>
+                                </div>
+                                <a href="{{ fsc.url() }}" class="btn btn-light">
+                                    <i class="fas fa-redo fa-fw"></i> {{ i18n.trans('refresh') }}
+                                </a>
                             {% endif %}
                         </div>
                     </div>
