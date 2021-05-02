@@ -75,12 +75,15 @@ class ServiciosMigrator extends MigratorBase
         $servicio->hora = $row['hora'];
         $servicio->idempresa = $this->toolBox()->appSettings()->get('default', 'idempresa');
         $servicio->idservicio = (int) $row['idservicio'];
+        $servicio->material = $row['material'];
         $servicio->observaciones = $row['observaciones'];
+        $servicio->solucion = $row['solucion'];
 
         if (\in_array($row['idestado'], ['1', '2'])) {
             $servicio->idestado = (int) $row['idestado'];
         } else {
             $servicio->idestado = 3;
+            $servicio->editable = false;
         }
 
         if (false === $servicio->save()) {
@@ -131,7 +134,7 @@ class ServiciosMigrator extends MigratorBase
 
         foreach ($this->dataBase->select($sql) as $row) {
             $newTrabajo = new \FacturaScripts\Plugins\Servicios\Model\TrabajoAT();
-            $newTrabajo->descripcion = $row['descripcion'] . ' #' . $row['nick'];
+            $newTrabajo->observaciones = $row['descripcion'] . ' #' . $row['nick'];
             $newTrabajo->fechainicio = \date(Variante::DATE_STYLE, \strtotime($row['fecha']));
             $newTrabajo->horainicio = $row['hora'];
             $newTrabajo->idservicio = $servicio->idservicio;
