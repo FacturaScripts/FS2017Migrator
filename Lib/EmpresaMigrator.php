@@ -41,13 +41,16 @@ class EmpresaMigrator extends MigratorBase
      */
     protected function migrationProcess(&$offset = 0): bool
     {
-        $sql = "SELECT * FROM empresa;";
-        foreach ($this->dataBase->select($sql) as $row) {
+        foreach ($this->dataBase->select('SELECT * FROM empresa;') as $row) {
             $this->updateCompany($row);
         }
-
         $this->updateCountries();
         $this->updateSeries();
+
+        foreach ($this->dataBase->select('SELECT * FROM fs_vars;') as $row) {
+            $this->updatePreferences($row);
+        }
+        $this->toolBox()->appSettings()->save();
         return true;
     }
 
@@ -89,22 +92,22 @@ class EmpresaMigrator extends MigratorBase
         $empresaModel = new Empresa();
         foreach ($empresaModel->all() as $empresa) {
             foreach ($data as $key => $value) {
-                if (!in_array($key, $exclude)) {
+                if (false === \in_array($key, $exclude)) {
                     $empresa->{$key} = $value;
                 }
             }
 
-            if (!$empresa->save()) {
+            if (false === $empresa->save()) {
                 $this->toolBox()->i18nLog()->error('record-save-error');
                 return;
             }
 
             $this->toolBox()->appSettings()->set('default', 'idempresa', $empresa->idempresa);
+            $this->toolBox()->appSettings()->set('email', 'email', $empresa->email);
             $this->updateWarehouses($empresa->idempresa, $data['codalmacen']);
             $this->updatePaymentMethods($empresa->idempresa, $data['codpago']);
             $this->updateBankAccounts($empresa->idempresa);
             $this->updateAccounting($empresa->idempresa);
-            $this->toolBox()->appSettings()->save();
             break;
         }
     }
@@ -140,6 +143,47 @@ class EmpresaMigrator extends MigratorBase
             if ($formaPago->codpago == $codpago) {
                 $this->toolBox()->appSettings()->set('default', 'codpago', $codpago);
             }
+        }
+    }
+
+    /**
+     * 
+     * @param array $row
+     */
+    protected function updatePreferences($row)
+    {
+        switch ($row['name']) {
+            case 'mail_bcc':
+                $this->toolBox()->appSettings()->set('email', 'emailbcc', $row['varchar']);
+                break;
+
+            case 'mail_enc':
+                $this->toolBox()->appSettings()->set('email', 'enc', $row['varchar']);
+                break;
+
+            case 'mail_firma':
+                $this->toolBox()->appSettings()->set('email', 'signature', $row['varchar']);
+                break;
+
+            case 'mail_host':
+                $this->toolBox()->appSettings()->set('email', 'host', $row['varchar']);
+                break;
+
+            case 'mail_mailer':
+                $this->toolBox()->appSettings()->set('email', 'mailer', $row['varchar']);
+                break;
+
+            case 'mail_password':
+                $this->toolBox()->appSettings()->set('email', 'password', $row['varchar']);
+                break;
+
+            case 'mail_port':
+                $this->toolBox()->appSettings()->set('email', 'port', $row['varchar']);
+                break;
+
+            case 'mail_user':
+                $this->toolBox()->appSettings()->set('email', 'user', $row['varchar']);
+                break;
         }
     }
 
