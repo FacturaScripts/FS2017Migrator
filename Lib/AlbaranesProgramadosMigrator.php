@@ -124,8 +124,7 @@ class AlbaranesProgramadosMigrator extends MigratorBase
 
         $lastdate = $this->getLastData($row['ultimo_idalbaran']);
         if ($lastdate) {
-            $docRecurring->lastdate = $lastdate;
-            $docRecurring->startdate = \date(AlbaranCliente::DATE_STYLE, \strtotime($row['fecha']));
+            $docRecurring->startdate = \date(AlbaranCliente::DATE_STYLE, \strtotime($lastdate));
         } else {
             $day = \date('d', \strtotime($row['fecha']));
             $docRecurring->startdate = \date($day . '-m-Y', \strtotime($row['fecha']));
