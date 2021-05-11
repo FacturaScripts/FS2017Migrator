@@ -113,6 +113,11 @@ class ServiciosMigrator extends MigratorBase
             return true;
         }
 
+        if (\property_exists($albaran, 'idservicio')) {
+            $albaran->idservicio = $servicio->idservicio;
+            return $albaran->save();
+        }
+
         foreach ($albaran->childrenDocuments() as $child) {
             $child->idservicio = $servicio->idservicio;
             return $child->save();
