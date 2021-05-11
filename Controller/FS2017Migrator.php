@@ -128,7 +128,7 @@ class FS2017Migrator extends Controller
             'AlbaranesCliente', 'FacturasCliente', 'RecibosCliente',
             'PagosCliente', 'Estados', 'Secuencias', 'Contactos',
             'RegImpuestos', 'Files', 'FilesExpedientes', 'FilesProCli',
-            'Servicios', 'Expedientes', 'end'
+            'Servicios', 'Expedientes', 'AlbaranesProgramados', 'end'
         ];
 
         $next = false;
