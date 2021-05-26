@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2020 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2021 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -127,6 +127,29 @@ abstract class MigratorBase
         $string = $this->toolBox()->utils()->noHtml($txt);
         $fixed = \preg_replace('/[[:^print:]]/', '', $string);
         return empty($len) ? $fixed : \substr($fixed, 0, $len);
+    }
+
+    /**
+     * 
+     * @param string $text
+     *
+     * @return array
+     */
+    protected function getEmails($text)
+    {
+        if (empty($text)) {
+            return [];
+        }
+
+        $emails = [];
+        $text2 = \str_replace([',', ';'], [' ', ' '], $text);
+        foreach (\explode(' ', $text2) as $aux) {
+            $email = \trim($aux);
+            if (\filter_var($aux, \FILTER_VALIDATE_EMAIL)) {
+                $emails[] = $email;
+            }
+        }
+        return $emails;
     }
 
     /**

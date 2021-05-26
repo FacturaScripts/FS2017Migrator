@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2020 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2021 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -111,9 +111,16 @@ class ProveedoresMigrator extends MigratorBase
         $rows = $proveedorModel->all([], ['codproveedor' => 'ASC'], $offset);
         foreach ($rows as $proveedor) {
             $proveedor->codsubcuenta = $this->getSubcuenta($proveedor->codproveedor);
-            $proveedor->email = filter_var($proveedor->email, FILTER_VALIDATE_EMAIL) ? $proveedor->email : '';
             $proveedor->telefono1 = $this->fixString($proveedor->telefono1, 20);
             $proveedor->telefono2 = $this->fixString($proveedor->telefono2, 20);
+
+            $emails = $this->getEmails($proveedor->email);
+            $proveedor->email = empty($emails) ? '' : $emails[0];
+            foreach ($emails as $num => $email) {
+                if ($num > 0) {
+                    $proveedor->observaciones .= "\n" . $email;
+                }
+            }
 
             if (isset($proveedor->debaja) && false == $proveedor->debaja) {
                 $proveedor->fechabaja = null;

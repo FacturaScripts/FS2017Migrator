@@ -157,6 +157,59 @@ class ContactosMigrator extends MigratorBase
 
     /**
      * 
+     * @param Contacto $contact
+     * @param string   $codcontacto
+     *
+     * @return bool
+     */
+    protected function migrateOportunities($contact, $codcontacto)
+    {
+        $class = '\\FacturaScripts\\Dinamic\\Model\\CrmOportunidad';
+        if (false === $this->dataBase->tableExists('crm_oportunidades') ||
+            false === \class_exists($class)) {
+            return true;
+        }
+
+        $crmOportunity = new $class();
+        $where = [
+            new DataBaseWhere('codcontacto', $codcontacto),
+            new DataBaseWhere('idcontacto', null, 'IS')
+        ];
+        foreach ($crmOportunity->all($where, [], 0, 0) as $opo) {
+            $opo->idcontacto = $contact->idcontacto;
+
+            switch ($opo->estado) {
+                case 'nuevo':
+                    $opo->idestado = 1;
+                    break;
+
+                case 'negociando':
+                case 'presupuestando':
+                    $opo->idestado = 2;
+                    break;
+
+                case 'enviado':
+                case 'espera':
+                    $opo->idestado = 3;
+                    break;
+
+                case 'aceptado':
+                    $opo->idestado = 4;
+                    break;
+
+                case 'rechazado':
+                    $opo->idestado = 5;
+                    break;
+            }
+
+            $opo->save();
+        }
+
+        return true;
+    }
+
+    /**
+     * 
      * @param array $data
      *
      * @return bool
@@ -166,11 +219,21 @@ class ContactosMigrator extends MigratorBase
         $contact = new Contacto();
         $where = empty($data['email']) ? [new DataBaseWhere('nombre', $data['nombre'])] : [new DataBaseWhere('email', $data['email'])];
         if ($contact->loadFromCode('', $where)) {
-            return $this->migrateNotes($contact, $data['codcontacto']) && $this->migrateGroup($contact);
+            return $this->migrateNotes($contact, $data['codcontacto']) &&
+                $this->migrateGroup($contact) &&
+                $this->migrateOportunities($contact, $data['codcontacto']);
         }
 
         $data['cifnif'] = $data['nif'] ?? '';
         $data['email'] = \filter_var($data['email'], \FILTER_VALIDATE_EMAIL) ? $data['email'] : '';
+
+        $emails = $this->getEmails($data['email']);
+        $data['email'] = empty($emails) ? '' : $emails[0];
+        foreach ($emails as $num => $email) {
+            if ($num > 0) {
+                $data['observaciones'] .= "\n" . $email;
+            }
+        }
 
         if (empty($data['nombre']) && empty($data['direccion'])) {
             $data['descripcion'] = $data['codcontacto'];
@@ -185,6 +248,8 @@ class ContactosMigrator extends MigratorBase
             $contact->idfuente = $this->getIdFuente($data['fuente']);
         }
 
-        return $contact->save() && $this->migrateNotes($contact, $data['codcontacto']) && $this->migrateGroup($contact);
+        return $contact->save() && $this->migrateNotes($contact, $data['codcontacto']) &&
+            $this->migrateGroup($contact) &&
+            $this->migrateOportunities($contact, $data['codcontacto']);
     }
 }
