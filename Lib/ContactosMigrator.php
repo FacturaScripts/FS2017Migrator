@@ -216,16 +216,7 @@ class ContactosMigrator extends MigratorBase
      */
     protected function newContact($data): bool
     {
-        $contact = new Contacto();
-        $where = empty($data['email']) ? [new DataBaseWhere('nombre', $data['nombre'])] : [new DataBaseWhere('email', $data['email'])];
-        if ($contact->loadFromCode('', $where)) {
-            return $this->migrateNotes($contact, $data['codcontacto']) &&
-                $this->migrateGroup($contact) &&
-                $this->migrateOportunities($contact, $data['codcontacto']);
-        }
-
         $data['cifnif'] = $data['nif'] ?? '';
-        $data['email'] = \filter_var($data['email'], \FILTER_VALIDATE_EMAIL) ? $data['email'] : '';
 
         $emails = $this->getEmails($data['email']);
         $data['email'] = empty($emails) ? '' : $emails[0];
@@ -241,6 +232,25 @@ class ContactosMigrator extends MigratorBase
 
         if (empty($data['nombre'])) {
             $data['nombre'] = '-';
+        }
+
+        $contact = new Contacto();
+        $where = empty($data['email']) ? [new DataBaseWhere('nombre', $data['nombre'])] : [new DataBaseWhere('email', $data['email'])];
+        if ($contact->loadFromCode('', $where)) {
+
+            if (empty($contact->email) && !empty($data['email'])) {
+                $contact->email = $data['email'];
+            }
+            if (empty($contact->telefono1) && !empty($data['telefono1'])) {
+                $contact->telefono1 = $data['telefono1'];
+            }
+            if (empty($contact->telefono2) && !empty($data['telefono2'])) {
+                $contact->telefono2 = $data['telefono2'];
+            }
+
+            return $contact->save() && $this->migrateNotes($contact, $data['codcontacto']) &&
+                $this->migrateGroup($contact) &&
+                $this->migrateOportunities($contact, $data['codcontacto']);
         }
 
         $contact->loadFromData($data);
