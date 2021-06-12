@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2020 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2021 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -233,7 +233,7 @@ class AlbaranesProveedorMigrator extends MigratorBase
         $model1 = new $className();
 
         /// is ptefactura column present?
-        if (false === \in_array('ptefactura', \array_keys($model1->getModelFields()))) {
+        if ($ptfactura && false === \in_array('ptefactura', \array_keys($model1->getModelFields()))) {
             return true;
         }
 
@@ -243,9 +243,9 @@ class AlbaranesProveedorMigrator extends MigratorBase
             $sql = "UPDATE " . $model1->tableName() . " SET idestado = " . $this->dataBase->var2str($estado->idestado);
 
             if ($ptfactura) {
-                $sql .= " WHERE ptefactura = " . $this->dataBase->var2str($estado->editable);
+                $sql .= " WHERE idestado IS NULL AND ptefactura = " . $this->dataBase->var2str($estado->editable);
             } else {
-                $sql .= " WHERE editable = " . $this->dataBase->var2str($estado->editable);
+                $sql .= " WHERE idestado IS NULL AND editable = " . $this->dataBase->var2str($estado->editable);
             }
 
             if (!empty($docNextColumn)) {
@@ -253,6 +253,14 @@ class AlbaranesProveedorMigrator extends MigratorBase
             }
 
             if (false === $this->dataBase->exec($sql)) {
+                return false;
+            }
+
+            /// update lines
+            $sql2 = "UPDATE " . $model1->getNewLine()->tableName() . " SET actualizastock = " . $this->dataBase->var2str($estado->actualizastock)
+                . " WHERE " . $model1->primaryColumn() . " IN (SELECT " . $model1->primaryColumn()
+                . " FROM " . $model1->tableName() . " WHERE idestado = " . $this->dataBase->var2str($estado->idestado) . ")";
+            if (false === $this->dataBase->exec($sql2)) {
                 return false;
             }
         }

@@ -62,7 +62,6 @@ class FS2017Migrator extends Controller
     {
         $data = parent::getPageData();
         $data['menu'] = 'admin';
-        $data['submenu'] = 'control-panel';
         $data['title'] = '2017-migrator';
         $data['icon'] = 'fas fa-database';
         return $data;
@@ -158,7 +157,7 @@ class FS2017Migrator extends Controller
             $initial = $this->offset;
             $className = '\\FacturaScripts\\Plugins\\FS2017Migrator\\Lib\\' . $step . 'Migrator';
             $migrator = new $className();
-            if (!$migrator->migrate($this->offset)) {
+            if (false === $migrator->migrate($this->offset)) {
                 /// migration error
                 $this->working = false;
                 break;
