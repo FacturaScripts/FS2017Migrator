@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
@@ -32,7 +33,6 @@ class ClientesMigrator extends MigratorBase
 {
 
     /**
-     * 
      * @param int $offset
      *
      * @return bool
@@ -66,6 +66,10 @@ class ClientesMigrator extends MigratorBase
                 $cliente->fechabaja = null;
             }
 
+            if (empty($cliente->nombre)) {
+                $cliente->nombre = '?';
+            }
+
             if (false === $cliente->save()) {
                 return false;
             }
@@ -82,7 +86,7 @@ class ClientesMigrator extends MigratorBase
 
     protected function fixClientes()
     {
-        /// fix strange bug with 0000-00-00 dates on mysql
+        // fix strange bug with 0000-00-00 dates on mysql
         if (FS_DB_TYPE === 'mysql') {
             $this->dataBase->exec("update clientes set fechaalta = NULL where fechaalta < '1000-01-01';");
         }
@@ -102,12 +106,11 @@ class ClientesMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param string $codcliente
      *
      * @return string
      */
-    protected function getSubcuenta($codcliente)
+    protected function getSubcuenta($codcliente): string
     {
         if (false === $this->dataBase->tableExists('co_subcuentascli')) {
             return '';
@@ -122,12 +125,11 @@ class ClientesMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param Cliente $cliente
      *
      * @return bool
      */
-    protected function migrateAddress(&$cliente)
+    protected function migrateAddress(&$cliente): bool
     {
         $contacto = new Contacto();
         $where = [new DataBaseWhere('codcliente', $cliente->codcliente)];
@@ -164,12 +166,11 @@ class ClientesMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param Cliente $cliente
      *
      * @return bool
      */
-    protected function newContacto(&$cliente)
+    protected function newContacto(&$cliente): bool
     {
         $contact = new Contacto();
         $contact->cifnif = $cliente->cifnif;

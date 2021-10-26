@@ -16,7 +16,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
+
+use FacturaScripts\Core\Base\Cache;
 
 /**
  * Description of InicioMigrator
@@ -27,13 +30,11 @@ class InicioMigrator extends MigratorBase
 {
 
     /**
-     *
      * @var array
      */
     private $removedConstraints = [];
 
     /**
-     * 
      * @return array
      */
     private function getTables()
@@ -47,13 +48,13 @@ class InicioMigrator extends MigratorBase
         ];
         $tables = [];
         foreach ($this->dataBase->getTables() as $tableName) {
-            if (\in_array($tableName, $exclude)) {
+            if (in_array($tableName, $exclude)) {
                 continue;
             }
 
             switch ($tableName) {
                 case 'beneficios':
-                    \array_unshift($tables, $tableName);
+                    array_unshift($tables, $tableName);
                     break;
 
                 default:
@@ -66,7 +67,6 @@ class InicioMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param int $offset
      *
      * @return bool
@@ -76,6 +76,9 @@ class InicioMigrator extends MigratorBase
         if (0 === $offset && false === $this->dataBase->tableExists('fs_vars')) {
             $this->toolBox()->i18nLog()->warning('no-db-2017');
             return false;
+        } elseif (0 === $offset) {
+            $cache = new Cache();
+            $cache->clear();
         }
 
         $this->disableForeignKeys(true);
@@ -99,7 +102,6 @@ class InicioMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param string $tableName
      *
      * @return bool
@@ -107,12 +109,12 @@ class InicioMigrator extends MigratorBase
     private function removeForeignKeys($tableName)
     {
         foreach ($this->dataBase->getConstraints($tableName, true) as $constraint) {
-            if ($constraint['type'] == 'PRIMARY KEY' || \in_array($constraint['name'], $this->removedConstraints)) {
+            if ($constraint['type'] == 'PRIMARY KEY' || in_array($constraint['name'], $this->removedConstraints)) {
                 continue;
             }
 
             $sql = '';
-            if (\strtolower(FS_DB_TYPE) == 'postgresql') {
+            if (strtolower(FS_DB_TYPE) == 'postgresql') {
                 $sql .= 'ALTER TABLE ' . $tableName . ' DROP CONSTRAINT ' . $constraint['name'] . ';';
             } elseif ($constraint['type'] == 'FOREIGN KEY') {
                 $sql .= 'ALTER TABLE ' . $tableName . ' DROP FOREIGN KEY ' . $constraint['name'] . ';';
@@ -132,7 +134,6 @@ class InicioMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param string $tableName
      *
      * @return bool
@@ -147,11 +148,11 @@ class InicioMigrator extends MigratorBase
         }
 
         foreach ($this->dataBase->getColumns($tableName) as $column) {
-            if ($column['is_nullable'] == 'YES' || \in_array($column['name'], $primaryKey)) {
+            if ($column['is_nullable'] == 'YES' || in_array($column['name'], $primaryKey)) {
                 continue;
             }
 
-            $sql = \strtolower(FS_DB_TYPE) == 'postgresql' ?
+            $sql = strtolower(FS_DB_TYPE) == 'postgresql' ?
                 'ALTER TABLE ' . $tableName . ' ALTER COLUMN "' . $column['name'] . '" DROP NOT NULL;' :
                 'ALTER TABLE ' . $tableName . ' MODIFY `' . $column['name'] . '` ' . $column['type'] . ' NULL;';
 
@@ -165,7 +166,6 @@ class InicioMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param string $tableName
      *
      * @return bool
@@ -173,12 +173,12 @@ class InicioMigrator extends MigratorBase
     private function removeUniques($tableName)
     {
         foreach ($this->dataBase->getConstraints($tableName, true) as $constraint) {
-            if ($constraint['type'] == 'PRIMARY KEY' || \in_array($constraint['name'], $this->removedConstraints)) {
+            if ($constraint['type'] == 'PRIMARY KEY' || in_array($constraint['name'], $this->removedConstraints)) {
                 continue;
             }
 
             $sql = '';
-            if (\strtolower(FS_DB_TYPE) == 'postgresql') {
+            if (strtolower(FS_DB_TYPE) == 'postgresql') {
                 $sql .= 'ALTER TABLE ' . $tableName . ' DROP CONSTRAINT ' . $constraint['name'] . ';';
             } elseif ($constraint['type'] == 'UNIQUE') {
                 $sql .= 'ALTER TABLE ' . $tableName . ' DROP INDEX ' . $constraint['name'] . ';';

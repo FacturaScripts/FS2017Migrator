@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Dinamic\Model\Asiento;
@@ -32,7 +33,6 @@ class AsientosMigrator extends MigratorBase
 {
 
     /**
-     * 
      * @param int $offset
      *
      * @return bool
@@ -56,23 +56,40 @@ class AsientosMigrator extends MigratorBase
 
             case 3:
                 $offset++;
-                new Partida();
-                return $this->dataBase->tableExists('partidas');
+                return $this->fixPartidas();
 
             case 4:
                 $offset++;
-                $idempresa = (int) $this->toolBox()->appSettings()->get('default', 'idempresa');
+                new Partida();
+                return $this->dataBase->tableExists('partidas');
+
+            case 5:
+                $offset++;
+                $idempresa = (int)$this->toolBox()->appSettings()->get('default', 'idempresa');
                 $sql = "UPDATE asientos SET idempresa = " . $this->dataBase->var2str($idempresa)
                     . " WHERE idempresa IS NULL;"
                     . " UPDATE partidas SET idcontrapartida = null WHERE idcontrapartida IS NOT NULL"
                     . " AND idcontrapartida NOT IN (SELECT idsubcuenta FROM subcuentas)";
                 return $this->dataBase->exec($sql);
 
-            case 5:
+            case 6:
                 return $this->migrateSpecialEntries();
         }
 
         return true;
+    }
+
+    /**
+     * @return bool
+     */
+    private function fixPartidas(): bool
+    {
+        if (false === $this->dataBase->tableExists('partidas')) {
+            return true;
+        }
+
+        $sql = 'DELETE FROM partidas WHERE idasiento NOT IN (SELECT idasiento FROM asientos)';
+        return $this->dataBase->exec($sql);
     }
 
     private function migrateSpecialEntries()

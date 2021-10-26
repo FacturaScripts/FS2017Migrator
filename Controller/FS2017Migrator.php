@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace FacturaScripts\Plugins\FS2017Migrator\Controller;
 
 use FacturaScripts\Core\Base\Controller;
@@ -31,31 +32,26 @@ class FS2017Migrator extends Controller
 {
 
     /**
-     *
      * @var bool
      */
     public $enableRun = true;
 
     /**
-     *
      * @var array
      */
     public $migrationLog = [];
 
     /**
-     *
      * @var int
      */
     public $offset;
 
     /**
-     *
      * @var bool
      */
     public $working = false;
 
     /**
-     * 
      * @return array
      */
     public function getPageData()
@@ -68,7 +64,6 @@ class FS2017Migrator extends Controller
     }
 
     /**
-     * 
      * @return bool
      */
     public function findFileBackup(): bool
@@ -92,7 +87,7 @@ class FS2017Migrator extends Controller
     public function privateCore(&$response, $user, $permissions)
     {
         parent::privateCore($response, $user, $permissions);
-        $this->offset = (int) $this->request->get('offset', '0');
+        $this->offset = (int)$this->request->get('offset', '0');
 
         $action = $this->request->get('action', '');
         switch ($action) {
@@ -112,7 +107,6 @@ class FS2017Migrator extends Controller
     }
 
     /**
-     * 
      * @param string $name
      */
     private function executeStep($name)
@@ -135,18 +129,18 @@ class FS2017Migrator extends Controller
             if ($next) {
                 $this->toolBox()->cache()->clear();
 
-                /// redirect to next step
+                // redirect to next step
                 $this->redirect($this->url() . '?action=' . $step, 1);
                 break;
             } elseif ($name != $step) {
-                /// step done
+                // step done
                 $this->migrationLog[] = $step;
                 continue;
             }
 
             $this->migrationLog[] = empty($this->offset) ? $step : $step . ' (' . $this->offset . ')';
 
-            /// selected step
+            // selected step
             $next = true;
             if ($step == 'end') {
                 $this->toolBox()->cache()->clear();
@@ -158,11 +152,11 @@ class FS2017Migrator extends Controller
             $className = '\\FacturaScripts\\Plugins\\FS2017Migrator\\Lib\\' . $step . 'Migrator';
             $migrator = new $className();
             if (false === $migrator->migrate($this->offset)) {
-                /// migration error
+                // migration error
                 $this->working = false;
                 break;
             } elseif ($this->offset > $initial) {
-                /// reload with next offset
+                // reload with next offset
                 $this->redirect($this->url() . '?action=' . $step . '&offset=' . $this->offset, 1);
                 break;
             }
@@ -170,7 +164,6 @@ class FS2017Migrator extends Controller
     }
 
     /**
-     * 
      * @param string $fileName
      *
      * @return bool
@@ -178,21 +171,21 @@ class FS2017Migrator extends Controller
     private function extractBackup(string $fileName): bool
     {
         $zip = new ZipArchive();
-        $filePath = \FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR . 'FS2017Migrator' . DIRECTORY_SEPARATOR . $fileName;
+        $filePath = FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR . 'FS2017Migrator' . DIRECTORY_SEPARATOR . $fileName;
         $zipStatus = $zip->open($filePath, ZipArchive::CHECKCONS);
         if ($zipStatus !== true) {
             $this->toolBox()->log()->critical('ZIP ERROR: ' . $zipStatus);
             return false;
         }
 
-        if (false === $zip->extractTo(\FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR . 'FS2017Migrator')) {
+        if (false === $zip->extractTo(FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR . 'FS2017Migrator')) {
             $this->toolBox()->log()->critical('ZIP EXTRACT ERROR: ' . $fileName);
             $zip->close();
             return false;
         }
 
-        \unlink($filePath);
-        \touch(\FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR . 'FS2017Migrator' . DIRECTORY_SEPARATOR . 'FOUND.lock');
+        unlink($filePath);
+        touch(FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR . 'FS2017Migrator' . DIRECTORY_SEPARATOR . 'FOUND.lock');
         return true;
     }
 

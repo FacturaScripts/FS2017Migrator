@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
@@ -29,14 +30,17 @@ use FacturaScripts\Dinamic\Model\EstadoDocumento;
  */
 class AlbaranesProveedorMigrator extends MigratorBase
 {
+    /**
+     * @var array
+     */
+    private static $availableStatus = [];
 
     /**
-     * 
      * @param string $tableName
      *
      * @return bool
      */
-    protected function fixCustomers($tableName)
+    protected function fixCustomers(string $tableName): bool
     {
         if (false === $this->dataBase->tableExists($tableName)) {
             return true;
@@ -50,12 +54,11 @@ class AlbaranesProveedorMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param string $tableName
      *
      * @return bool
      */
-    protected function fixLinesTable($tableName)
+    protected function fixLinesTable(string $tableName): bool
     {
         if (false === $this->dataBase->tableExists($tableName)) {
             return true;
@@ -73,12 +76,11 @@ class AlbaranesProveedorMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param string $tableName
      *
      * @return bool
      */
-    protected function fixSuppliers($tableName)
+    protected function fixSuppliers(string $tableName): bool
     {
         if (false === $this->dataBase->tableExists($tableName)) {
             return true;
@@ -90,7 +92,6 @@ class AlbaranesProveedorMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param int $offset
      *
      * @return bool
@@ -113,13 +114,8 @@ class AlbaranesProveedorMigrator extends MigratorBase
             return false;
         }
 
-        $sql = "SELECT * FROM lineasalbaranesprov"
-            . " WHERE idpedido IS NOT null"
-            . " AND idpedido != '0'"
-            . " ORDER BY idlinea ASC";
-
-        $rows = $this->dataBase->selectLimit($sql, 300, $offset);
-        foreach ($rows as $row) {
+        $sql = "SELECT * FROM lineasalbaranesprov WHERE idpedido IS NOT null AND idpedido != '0' ORDER BY idlinea ASC";
+        foreach ($this->dataBase->selectLimit($sql, 300, $offset) as $row) {
             $done = $this->newDocTransformation(
                 'PedidoProveedor', $row['idpedido'], $row['idlineapedido'],
                 'AlbaranProveedor', $row['idalbaran'], $row['idlinea']
@@ -135,17 +131,16 @@ class AlbaranesProveedorMigrator extends MigratorBase
     }
 
     /**
-     * 
-     * @param int    $model1
-     * @param int    $id1
-     * @param int    $idlinea1
-     * @param int    $model2
+     * @param int $model1
+     * @param int $id1
+     * @param int $idlinea1
+     * @param int $model2
      * @param string $id2
      * @param string $idlinea2
      *
      * @return bool
      */
-    protected function newDocTransformation($model1, $id1, $idlinea1, $model2, $id2, $idlinea2)
+    protected function newDocTransformation($model1, $id1, $idlinea1, $model2, $id2, $idlinea2): bool
     {
         $docTransformation = new DocTransformation();
         $where = [
@@ -173,12 +168,11 @@ class AlbaranesProveedorMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param string $modelName
      *
      * @return bool
      */
-    protected function setModelCompany($modelName)
+    protected function setModelCompany(string $modelName): bool
     {
         $className = '\\FacturaScripts\\Dinamic\\Model\\' . $modelName;
         $model1 = new $className();
@@ -193,21 +187,24 @@ class AlbaranesProveedorMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param string $modelName1
-     * @param int    $id
+     * @param int $id
      * @param string $modelName2
      *
      * @return bool
      */
-    protected function setModelStatus($modelName1, $id, $modelName2)
+    protected function setModelStatus($modelName1, $id, $modelName2): bool
     {
-        $estadoDocModel = new EstadoDocumento();
-        $where = [
-            new DataBaseWhere('generadoc', $modelName2),
-            new DataBaseWhere('tipodoc', $modelName1)
-        ];
-        foreach ($estadoDocModel->all($where) as $estado) {
+        if (empty(self::$availableStatus)) {
+            $estadoDocModel = new EstadoDocumento();
+            $where = [
+                new DataBaseWhere('generadoc', $modelName2),
+                new DataBaseWhere('tipodoc', $modelName1)
+            ];
+            self::$availableStatus = $estadoDocModel->all($where);
+        }
+
+        foreach (self::$availableStatus as $estado) {
             $className = '\\FacturaScripts\\Dinamic\\Model\\' . $modelName1;
             $model1 = new $className();
             $sql = "UPDATE " . $model1->tableName() . " set idestado = '" . $estado->idestado
@@ -220,19 +217,18 @@ class AlbaranesProveedorMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param string $modelName
      * @param string $docNextColumn
-     * @param bool   $ptfactura
+     * @param bool $ptfactura
      *
      * @return bool
      */
-    protected function setModelStatusAll($modelName, $docNextColumn = '', $ptfactura = false)
+    protected function setModelStatusAll($modelName, $docNextColumn = '', $ptfactura = false): bool
     {
         $className = '\\FacturaScripts\\Dinamic\\Model\\' . $modelName;
         $model1 = new $className();
 
-        /// is ptefactura column present?
+        // is ptefactura column present?
         if ($ptfactura && false === \in_array('ptefactura', \array_keys($model1->getModelFields()))) {
             return true;
         }
@@ -256,7 +252,7 @@ class AlbaranesProveedorMigrator extends MigratorBase
                 return false;
             }
 
-            /// update lines
+            // update lines
             $sql2 = "UPDATE " . $model1->getNewLine()->tableName() . " SET actualizastock = " . $this->dataBase->var2str($estado->actualizastock)
                 . " WHERE " . $model1->primaryColumn() . " IN (SELECT " . $model1->primaryColumn()
                 . " FROM " . $model1->tableName() . " WHERE idestado = " . $this->dataBase->var2str($estado->idestado) . ")";

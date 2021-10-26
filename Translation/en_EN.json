@@ -1,0 +1,11 @@
+{
+    "2017-files-paragraph": "Do you have a backup of the FacturaScripts 2017 files? Copy the zip to the MyFiles \/ FS2017Migrator folder in FacturaScripts.",
+    "2017-migrator": "2017 migrator",
+    "2017-migrator-paragraph": "This wizard allows you to migrate the data from the 2017 version to the new 2021 structure.",
+    "are-you-sure-migration": "Remember that the changes cannot be undone, and that you will not be able to use FacturaScripts 2017 with this same database. Do you want to continue?",
+    "backup-found": "Backup found",
+    "backup-not-found": "Backup not found",
+    "confirm-migration": "Confirm migration",
+    "no-db-2017": "No database from 2017 found",
+    "remove-backup": "Remove backup"
+}

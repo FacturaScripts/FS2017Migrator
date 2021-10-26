@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
@@ -33,13 +34,11 @@ class ProductosMigrator extends MigratorBase
 {
 
     /**
-     *
      * @var array
      */
     private $attributeValues;
 
     /**
-     * 
      * @param int $id
      *
      * @return int
@@ -61,9 +60,8 @@ class ProductosMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param string $ref
-     * @param float  $precio
+     * @param float $precio
      *
      * @return array
      */
@@ -82,9 +80,9 @@ class ProductosMigrator extends MigratorBase
                 $combinaciones[$codigo] = [
                     'codbarras' => $this->fixString($row['codbarras'], 20),
                     'idatributovalor1' => $this->checkAttributeValue($row['idvalor']),
-                    'precio' => \floatval($row['impactoprecio']) + $precio,
+                    'precio' => floatval($row['impactoprecio']) + $precio,
                     'referencia' => empty($row['refcombinacion']) ? $ref . '-' . $row['codigo'] : $row['refcombinacion'],
-                    'stockfis' => \floatval($row['stockfis'])
+                    'stockfis' => floatval($row['stockfis'])
                 ];
             } elseif (!isset($combinaciones[$codigo]['idatributovalor2'])) {
                 $combinaciones[$codigo]['idatributovalor2'] = $this->checkAttributeValue($row['idvalor']);
@@ -99,7 +97,6 @@ class ProductosMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @return bool
      */
     private function fixFamilies(): bool
@@ -114,7 +111,6 @@ class ProductosMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @return bool
      */
     private function fixManufacturers(): bool
@@ -129,14 +125,13 @@ class ProductosMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param int $offset
      *
      * @return bool
      */
     protected function migrationProcess(&$offset = 0): bool
     {
-        /// rename stocks table
+        // rename stocks table
         if ($offset == 0 && false === $this->dataBase->tableExists('stocks_old')) {
             $this->renameTable('stocks', 'stocks_old');
         }
@@ -167,23 +162,22 @@ class ProductosMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param array $data
      *
      * @return bool
      */
-    protected function newProduct($data)
+    protected function newProduct(array $data): bool
     {
-        /// fix referencia
-        if (\strlen($data['referencia']) > 30) {
-            $data['referencia'] = \trim(\substr($data['referencia'], 0, 30));
+        // fix referencia
+        if (strlen($data['referencia']) > 30) {
+            $data['referencia'] = trim(substr($data['referencia'], 0, 30));
         } elseif (empty($data['referencia'])) {
             $data['referencia'] = '-';
         }
 
         $producto = new Producto();
         $variante = new Variante();
-        $where = [new DataBaseWhere('referencia', \trim($data['referencia']))];
+        $where = [new DataBaseWhere('referencia', trim($data['referencia']))];
         if ($producto->loadFromCode('', $where) || $variante->loadFromCode('', $where)) {
             return true;
         }
@@ -198,7 +192,7 @@ class ProductosMigrator extends MigratorBase
             return $this->newProductVariants($producto, $data);
         }
 
-        /// type: simple
+        // type: simple
         foreach ($producto->getVariants() as $vari) {
             $vari->codbarras = $this->fixString($data['codbarras'], 20);
             $vari->coste = $data['costemedio'];
@@ -207,7 +201,7 @@ class ProductosMigrator extends MigratorBase
             break;
         }
 
-        if (0 !== (int) $data['stockfis'] && false === $this->updateStock($producto)) {
+        if (!empty($data['stockfis']) && false === $this->updateStock($producto, $data)) {
             return false;
         }
 
@@ -215,17 +209,16 @@ class ProductosMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param Producto $producto
-     * @param array    $data
+     * @param array $data
      *
      * @return bool
      */
-    protected function newProductVariants($producto, $data)
+    protected function newProductVariants($producto, array $data): bool
     {
-        foreach ($this->getCombinaciones($producto->referencia, (float) $data['pvp']) as $combi) {
+        foreach ($this->getCombinaciones($producto->referencia, (float)$data['pvp']) as $combi) {
             $variante = new Variante();
-            $where = [new DataBaseWhere('referencia', \trim($combi['referencia']))];
+            $where = [new DataBaseWhere('referencia', trim($combi['referencia']))];
             if ($combi['referencia'] && $variante->loadFromCode('', $where)) {
                 continue;
             }
@@ -259,7 +252,6 @@ class ProductosMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @return bool
      */
     private function removeDuplicatedAttributeValues(): bool
@@ -283,7 +275,6 @@ class ProductosMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @return bool
      */
     private function removeDuplicatedReferences(): bool
@@ -303,17 +294,19 @@ class ProductosMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param Producto $producto
+     * @param array $data
      *
      * @return bool
      */
-    protected function updateStock(&$producto)
+    protected function updateStock(&$producto, array $data): bool
     {
         $sql = "SELECT * FROM stocks_old WHERE referencia = " . $this->dataBase->var2str($producto->referencia) . ";";
         foreach ($this->dataBase->select($sql) as $row) {
             $stock = new Stock($row);
             $stock->idproducto = $producto->idproducto;
+            $stock->stockmax = $data['stockmax'];
+            $stock->stockmin = $data['stockmin'];
             if (false === $stock->save()) {
                 return false;
             }

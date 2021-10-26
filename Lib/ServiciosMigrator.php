@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
@@ -31,14 +32,13 @@ class ServiciosMigrator extends MigratorBase
 {
 
     /**
-     * 
      * @param int $offset
      *
      * @return bool
      */
     protected function migrationProcess(&$offset = 0): bool
     {
-        if (false === $this->dataBase->tableExists('servicioscli') || false === \class_exists('\FacturaScripts\Dinamic\Model\ServicioAT')) {
+        if (false === $this->dataBase->tableExists('servicioscli') || false === class_exists('\FacturaScripts\Dinamic\Model\ServicioAT')) {
             return true;
         }
 
@@ -55,12 +55,11 @@ class ServiciosMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param array $row
      *
      * @return bool
      */
-    private function newServicio($row): bool
+    private function newServicio(array $row): bool
     {
         $servicio = new \FacturaScripts\Plugins\Servicios\Model\ServicioAT();
         if ($servicio->loadFromCode($row['idservicio'])) {
@@ -69,18 +68,23 @@ class ServiciosMigrator extends MigratorBase
 
         $servicio->codagente = $row['codagente'];
         $servicio->codalmacen = $row['codalmacen'];
-        $servicio->codcliente = $row['codcliente'];
         $servicio->descripcion = $row['descripcion'];
         $servicio->fecha = $row['fecha'];
         $servicio->hora = $row['hora'];
         $servicio->idempresa = $this->toolBox()->appSettings()->get('default', 'idempresa');
-        $servicio->idservicio = (int) $row['idservicio'];
+        $servicio->idservicio = (int)$row['idservicio'];
         $servicio->material = $row['material'];
         $servicio->observaciones = $row['observaciones'];
         $servicio->solucion = $row['solucion'];
 
-        if (\in_array($row['idestado'], ['1', '2'])) {
-            $servicio->idestado = (int) $row['idestado'];
+        // set customer, if exists
+        $servicio->codcliente = $row['codcliente'];
+        if (false === $servicio->getSubject()->exists()) {
+            return true;
+        }
+
+        if (in_array($row['idestado'], ['1', '2'])) {
+            $servicio->idestado = (int)$row['idestado'];
         } else {
             $servicio->idestado = 3;
             $servicio->editable = false;
@@ -90,19 +94,18 @@ class ServiciosMigrator extends MigratorBase
             return false;
         }
 
-        return $this->migrateLines($servicio, (bool) $row['idalbaran']) &&
+        return $this->migrateLines($servicio, (bool)$row['idalbaran']) &&
             $this->migrateDetails($servicio) &&
             $this->linkInvoice($servicio, $row);
     }
 
     /**
-     * 
      * @param \FacturaScripts\Plugins\Servicios\Model\ServicioAT $servicio
-     * @param array                                              $row
+     * @param array $row
      *
      * @return bool
      */
-    private function linkInvoice($servicio, $row): bool
+    private function linkInvoice($servicio, array $row): bool
     {
         if (empty($row['idalbaran'])) {
             return true;
@@ -127,7 +130,6 @@ class ServiciosMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param \FacturaScripts\Plugins\Servicios\Model\ServicioAT $servicio
      *
      * @return bool
@@ -153,20 +155,20 @@ class ServiciosMigrator extends MigratorBase
     }
 
     /**
-     * 
+     *
      * @param \FacturaScripts\Plugins\Servicios\Model\ServicioAT $servicio
-     * @param bool                                               $invoice
+     * @param bool $invoice
      *
      * @return bool
      */
-    private function migrateLines($servicio, $invoice): bool
+    private function migrateLines($servicio, bool $invoice): bool
     {
         $sql = 'SELECT * FROM lineasservicioscli WHERE idservicio = '
             . $this->dataBase->var2str($servicio->idservicio) . ' ORDER BY idlinea ASC';
 
         foreach ($this->dataBase->select($sql) as $row) {
             $newTrabajo = new \FacturaScripts\Plugins\Servicios\Model\TrabajoAT();
-            $newTrabajo->cantidad = (float) $row['cantidad'];
+            $newTrabajo->cantidad = (float)$row['cantidad'];
             $newTrabajo->codagente = $servicio->codagente;
             $newTrabajo->descripcion = $row['descripcion'];
             $newTrabajo->fechainicio = $servicio->fecha;
@@ -183,7 +185,8 @@ class ServiciosMigrator extends MigratorBase
                 $newTrabajo->referencia = $row['referencia'];
             }
 
-            $newTrabajo->estado = $invoice ? \FacturaScripts\Plugins\Servicios\Model\TrabajoAT::STATUS_INVOICED :
+            $newTrabajo->estado = $invoice ?
+                \FacturaScripts\Plugins\Servicios\Model\TrabajoAT::STATUS_INVOICED :
                 \FacturaScripts\Plugins\Servicios\Model\TrabajoAT::STATUS_NONE;
 
             if (false === $newTrabajo->save()) {

@@ -34,7 +34,7 @@ class ExpedientesMigrator extends MigratorBase
      */
     protected function migrationProcess(&$offset = 0): bool
     {
-        if (false === $this->dataBase->tableExists('expedientes') || false === \class_exists('\FacturaScripts\Plugins\Proyectos\Model\Proyecto')) {
+        if (false === $this->dataBase->tableExists('expedientes') || false === class_exists('\FacturaScripts\Dinamic\Model\Proyecto')) {
             return true;
         }
 

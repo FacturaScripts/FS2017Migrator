@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
@@ -32,7 +33,6 @@ class PagosClienteMigrator extends MigratorBase
 {
 
     /**
-     * 
      * @param int $offset
      *
      * @return bool
@@ -53,9 +53,8 @@ class PagosClienteMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param ReciboCliente $receipt
-     * @param string        $idasientop
+     * @param string $idasientop
      *
      * @return bool
      */
@@ -76,7 +75,6 @@ class PagosClienteMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param array $row
      *
      * @return bool
@@ -93,12 +91,12 @@ class PagosClienteMigrator extends MigratorBase
         $newReceipt->codcliente = $row['codcliente'];
         $newReceipt->coddivisa = $row['coddivisa'];
         $newReceipt->codpago = $row['codpago'];
-        $newReceipt->fecha = \date('d-m-Y', \strtotime($row['fecha']));
-        $newReceipt->fechapago = \date('d-m-Y', \strtotime($row['fecha']));
+        $newReceipt->fecha = date('d-m-Y', strtotime($row['fecha']));
+        $newReceipt->fechapago = date('d-m-Y', strtotime($row['fecha']));
         $newReceipt->idfactura = $row['idfactura'];
         $newReceipt->importe = $row['total'];
         $newReceipt->pagado = $this->toolBox()->utils()->str2bool($row['pagada']);
-        $newReceipt->vencimiento = \date('d-m-Y', \strtotime($row['vencimiento']));
-        return $newReceipt->save() ? $this->newPayment($newReceipt, $row['idasientop']) : false;
+        $newReceipt->vencimiento = date('d-m-Y', strtotime($row['vencimiento']));
+        return $newReceipt->save() && $this->newPayment($newReceipt, $row['idasientop']);
     }
 }

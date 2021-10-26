@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Dinamic\Model\AtributoValor;
@@ -29,7 +30,7 @@ class AtributosMigrator extends MigratorBase
 {
 
     /**
-     * 
+     *
      * @param int $offset
      *
      * @return bool
@@ -52,6 +53,10 @@ class AtributosMigrator extends MigratorBase
 
     private function removeDuplicatedValues()
     {
+        if (false === $this->dataBase->tableExists('atributos_valores')) {
+            return;
+        }
+
         $sql = 'select codatributo,valor from atributos_valores group by codatributo,valor having count(*) > 1;';
         foreach ($this->dataBase->select($sql) as $row) {
             $sql2 = 'select * from atributos_valores'

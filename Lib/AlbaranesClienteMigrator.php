@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2021 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Dinamic\Model\LiquidacionComision;
@@ -29,45 +30,40 @@ class AlbaranesClienteMigrator extends AlbaranesProveedorMigrator
 {
 
     /**
-     * 
      * @param int $offset
      *
      * @return bool
      */
     protected function migrationProcess(&$offset = 0): bool
     {
-        if (0 === $offset && !$this->fixLinesTable('lineasalbaranescli')) {
+        if (0 === $offset && false === $this->fixLinesTable('lineasalbaranescli')) {
             return false;
         }
 
-        if (0 === $offset && !$this->fixCustomers('albaranescli')) {
+        if (0 === $offset && false === $this->fixCustomers('albaranescli')) {
             return false;
         }
 
-        if (0 === $offset && !$this->setModelCompany('AlbaranCliente')) {
+        if (0 === $offset && false === $this->setModelCompany('AlbaranCliente')) {
             return false;
         }
 
-        if (0 === $offset && !$this->setModelStatusAll('AlbaranCliente', 'idfactura', true)) {
+        if (0 === $offset && false === $this->setModelStatusAll('AlbaranCliente', 'idfactura', true)) {
             return false;
         }
 
         if (0 === $offset) {
-            /// needed dependency
+            // needed dependency
             new LiquidacionComision();
         }
 
-        $sql = "SELECT * FROM lineasalbaranescli"
-            . " WHERE idpedido IS NOT null"
-            . " AND idpedido != '0'"
-            . " ORDER BY idlinea ASC";
-
-        $rows = $this->dataBase->selectLimit($sql, 300, $offset);
-        foreach ($rows as $row) {
+        $sql = "SELECT * FROM lineasalbaranescli WHERE idpedido IS NOT null AND idpedido != '0' ORDER BY idlinea ASC";
+        foreach ($this->dataBase->selectLimit($sql, 300, $offset) as $row) {
             $done = $this->newDocTransformation(
-                'PedidoCliente', $row['idpedido'], $row['idlineapedido'], 'AlbaranCliente', $row['idalbaran'], $row['idlinea']
+                'PedidoCliente', $row['idpedido'], $row['idlineapedido'], 'AlbaranCliente',
+                $row['idalbaran'], $row['idlinea']
             );
-            if (!$done) {
+            if (false === $done) {
                 return false;
             }
 

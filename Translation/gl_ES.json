@@ -1,0 +1,11 @@
+{
+    "2017-files-paragraph": "Ten unha copia de seguridade dos arquivos de FacturaScripts 2017? Copie o  zip ao cartafol MyFiles\/ FS2017 Migrator de FacturaScripts.",
+    "2017-migrator": "MIgrador 2017",
+    "2017-migrator-paragraph": "Este asistente permite migrar los datos de la versión 2017 a la nueva estructura de 2021.",
+    "are-you-sure-migration": "Lembre que os cambios non se poden desfacer, e que non poderá usar FacturaScripts 2017 con esta mesma base de datos. Desexa continuar?",
+    "backup-found": "Copia de seguridade atopada",
+    "backup-not-found": "Copia de seguridade non atopada",
+    "confirm-migration": "Confirmar migración",
+    "no-db-2017": "Esta base de datos non contén información de FacturaScripts 2017.",
+    "remove-backup": "Eliminar copia de seguridade"
+}

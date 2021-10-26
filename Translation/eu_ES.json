@@ -1,0 +1,11 @@
+{
+    "2017-files-paragraph": "FacturaScripts 2017 artxiboen segurtasun kopiarik ba daukazu? Kopiatu zip-a FacturaScripts-eko MyFiles\/FS2017Migrator karpera.",
+    "2017-migrator": "2017 Migratzailea",
+    "2017-migrator-paragraph": "Morroi honi esker 2017 bertsioko datuak 2021eko egitura berrira migratu ditzakezu.",
+    "are-you-sure-migration": "Gogoratu aldaketak ezin direla desegin, eta ezingo duzula FacturaScripts 2017 datu base honekin erabili. ¿Jarraitu nahi duzu?",
+    "backup-found": "Segurtasun kopia aurkituta",
+    "backup-not-found": "Ez da segurtasun kopia aurkitu",
+    "confirm-migration": "Migrazioa konfirmatu",
+    "no-db-2017": "Datu base honek ez du FacturaScripts 2017ren informaziorik",
+    "remove-backup": "Segurtasun kopia ezabatu"
+}

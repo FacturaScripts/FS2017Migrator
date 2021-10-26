@@ -1,0 +1,11 @@
+{
+    "2017-files-paragraph": "Avez-vous une sauvegarde des fichiers FacturaScripts 2017? Copiez le zip dans le dossier MyFiles \/ FS2017Migrator dans FacturaScripts.",
+    "2017-migrator": "Migrateur 2017",
+    "2017-migrator-paragraph": "Cet assistant permet de migrer les données de la version 2017 vers la nouvelle structure 2021.",
+    "are-you-sure-migration": "are-you-sure-migration",
+    "backup-found": "backup-found",
+    "backup-not-found": "backup-not-found",
+    "confirm-migration": "confirm-migration",
+    "no-db-2017": "no-db-2017",
+    "remove-backup": "remove-backup"
+}

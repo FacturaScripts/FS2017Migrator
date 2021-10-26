@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
@@ -32,7 +33,6 @@ class PagosProveedorMigrator extends MigratorBase
 {
 
     /**
-     * 
      * @param int $offset
      *
      * @return bool
@@ -53,17 +53,16 @@ class PagosProveedorMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param ReciboProveedor $receipt
-     * @param string          $idasientop
+     * @param string $idasientop
      *
      * @return bool
      */
-    protected function newPayment($receipt, $idasientop)
+    protected function newPayment($receipt, $idasientop): bool
     {
         $newPayment = new PagoProveedor();
         $newPayment->codpago = $receipt->codpago;
-        $newPayment->fecha = $receipt->fechapago;
+        $newPayment->fecha = $receipt->fecha;
         $newPayment->idrecibo = $receipt->idrecibo;
         $newPayment->importe = $receipt->importe;
 
@@ -76,12 +75,11 @@ class PagosProveedorMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param array $row
      *
      * @return bool
      */
-    protected function newReceipt($row)
+    protected function newReceipt(array $row): bool
     {
         $newReceipt = new ReciboProveedor();
         $where = [new DataBaseWhere('idfactura', $row['idfactura'])];
@@ -93,12 +91,12 @@ class PagosProveedorMigrator extends MigratorBase
         $newReceipt->codproveedor = $row['codproveedor'];
         $newReceipt->coddivisa = $row['coddivisa'];
         $newReceipt->codpago = $row['codpago'];
-        $newReceipt->fecha = \date('d-m-Y', \strtotime($row['fecha']));
-        $newReceipt->fechapago = \date('d-m-Y', \strtotime($row['fecha']));
+        $newReceipt->fecha = date('d-m-Y', strtotime($row['fecha']));
+        $newReceipt->fechapago = date('d-m-Y', strtotime($row['fecha']));
         $newReceipt->idfactura = $row['idfactura'];
         $newReceipt->importe = $row['total'];
         $newReceipt->pagado = $this->toolBox()->utils()->str2bool($row['pagada']);
-        $newReceipt->vencimiento = \date('d-m-Y', \strtotime($row['fecha']));
-        return $newReceipt->save() ? $this->newPayment($newReceipt, $row['idasientop']) : false;
+        $newReceipt->vencimiento = date('d-m-Y', strtotime($row['fecha']));
+        return $newReceipt->save() && $this->newPayment($newReceipt, $row['idasientop']);
     }
 }
