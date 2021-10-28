@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2021 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Dinamic\Model\PagoProveedor;
@@ -29,8 +30,15 @@ use FacturaScripts\Dinamic\Model\ReciboProveedor;
 class RecibosProveedorMigrator extends MigratorBase
 {
 
+    private function fixRecibos()
+    {
+        $sql = "DELETE FROM recibosprov WHERE codproveedor IS NULL;"
+            . "DELETE FROM recibosprov WHERE codproveedor NOT IN (SELECT codproveedor FROM proveedores);"
+            . "DELETE FROM recibosprov WHERE idfactura NOT IN (SELECT idfactura FROM facturasprov)";
+        $this->dataBase->exec($sql);
+    }
+
     /**
-     * 
      * @param int $offset
      *
      * @return bool
@@ -41,11 +49,14 @@ class RecibosProveedorMigrator extends MigratorBase
             return true;
         }
 
+        if (0 === $offset) {
+            $this->fixRecibos();
+        }
+
         $sql = 'SELECT * FROM recibosprov ORDER BY idrecibo ASC';
         $rows = $this->dataBase->selectLimit($sql, 300, $offset);
         foreach ($rows as $row) {
-            $done = $this->newReceipt($row);
-            if (!$done) {
+            if (false === $this->newReceipt($row)) {
                 return false;
             }
 
@@ -56,12 +67,11 @@ class RecibosProveedorMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param ReciboCliente $receipt
      *
      * @return bool
      */
-    protected function newPayment($receipt)
+    protected function newPayment($receipt): bool
     {
         $sql = 'SELECT * FROM pagosdevolprov WHERE idrecibo = '
             . $this->dataBase->var2str($receipt->idrecibo) . ' ORDER BY idpagodevol ASC';
@@ -70,7 +80,12 @@ class RecibosProveedorMigrator extends MigratorBase
             $newPayment->codpago = $receipt->codpago;
             $newPayment->disableAccountingGeneration(true);
             $newPayment->importe = $row['tipo'] == 'Pago' ? $receipt->importe : 0 - $receipt->importe;
-            if (!$newPayment->save()) {
+
+            if (false === $newPayment->getAccountingEntry()->exists()) {
+                $newPayment->idasiento = null;
+            }
+
+            if (false === $newPayment->save()) {
                 return false;
             }
         }
@@ -79,12 +94,11 @@ class RecibosProveedorMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param array $row
      *
      * @return bool
      */
-    protected function newReceipt($row)
+    protected function newReceipt($row): bool
     {
         $newReceipt = new ReciboProveedor($row);
         $newReceipt->disablePaymentGeneration(true);
@@ -96,6 +110,6 @@ class RecibosProveedorMigrator extends MigratorBase
             return true;
         }
 
-        return $newReceipt->save() ? $this->newPayment($newReceipt) : false;
+        return $newReceipt->save() && $this->newPayment($newReceipt);
     }
 }
