@@ -39,7 +39,7 @@ class PagosClienteMigrator extends MigratorBase
      */
     protected function migrationProcess(&$offset = 0): bool
     {
-        $sql = 'SELECT * FROM facturascli WHERE idasientop IS NOT NULL ORDER BY idfactura ASC';
+        $sql = 'SELECT * FROM facturascli WHERE pagada = TRUE OR idasientop IS NOT NULL ORDER BY idfactura ASC';
         $rows = $this->dataBase->selectLimit($sql, 300, $offset);
         foreach ($rows as $row) {
             if (false === $this->newReceipt($row)) {
@@ -58,7 +58,7 @@ class PagosClienteMigrator extends MigratorBase
      *
      * @return bool
      */
-    protected function newPayment($receipt, $idasientop)
+    protected function newPayment($receipt, $idasientop): bool
     {
         $newPayment = new PagoCliente();
         $newPayment->codpago = $receipt->codpago;
@@ -79,7 +79,7 @@ class PagosClienteMigrator extends MigratorBase
      *
      * @return bool
      */
-    protected function newReceipt($row)
+    protected function newReceipt($row): bool
     {
         $newReceipt = new ReciboCliente();
         $where = [new DataBaseWhere('idfactura', $row['idfactura'])];

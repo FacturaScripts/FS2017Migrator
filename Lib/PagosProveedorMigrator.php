@@ -39,7 +39,7 @@ class PagosProveedorMigrator extends MigratorBase
      */
     protected function migrationProcess(&$offset = 0): bool
     {
-        $sql = 'SELECT * FROM facturasprov WHERE idasientop IS NOT NULL ORDER BY idfactura ASC';
+        $sql = 'SELECT * FROM facturasprov WHERE pagada = TRUE OR idasientop IS NOT NULL ORDER BY idfactura ASC';
         $rows = $this->dataBase->selectLimit($sql, 300, $offset);
         foreach ($rows as $row) {
             if (false === $this->newReceipt($row)) {
