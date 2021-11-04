@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Dinamic\Model\AlbaranCliente;
@@ -30,7 +31,6 @@ class AlbaranesProgramadosMigrator extends MigratorBase
 {
 
     /**
-     * 
      * @param int $offset
      *
      * @return bool
@@ -38,7 +38,7 @@ class AlbaranesProgramadosMigrator extends MigratorBase
     protected function migrationProcess(&$offset = 0): bool
     {
         if (false === $this->dataBase->tableExists('albaranescli_prog') ||
-            false === \class_exists('\FacturaScripts\Dinamic\Model\DocRecurringSale')) {
+            false === class_exists('\FacturaScripts\Dinamic\Model\DocRecurringSale')) {
             return true;
         }
 
@@ -55,7 +55,6 @@ class AlbaranesProgramadosMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param int $idalbaran
      *
      * @return string
@@ -67,7 +66,6 @@ class AlbaranesProgramadosMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param array $row
      *
      * @return bool
@@ -79,7 +77,7 @@ class AlbaranesProgramadosMigrator extends MigratorBase
             return true;
         }
 
-        if ($row['fechafin'] && \strtotime($row['fechafin']) < \time()) {
+        if ($row['fechafin'] && strtotime($row['fechafin']) < \time()) {
             return true;
         }
 
@@ -124,20 +122,19 @@ class AlbaranesProgramadosMigrator extends MigratorBase
 
         $lastdate = $this->getLastData($row['ultimo_idalbaran']);
         if ($lastdate) {
-            $docRecurring->startdate = \date(AlbaranCliente::DATE_STYLE, \strtotime($lastdate));
+            $docRecurring->startdate = date(AlbaranCliente::DATE_STYLE, strtotime($lastdate));
         } else {
-            $day = \date('d', \strtotime($row['fecha']));
-            $docRecurring->startdate = \date($day . '-m-Y', \strtotime($row['fecha']));
+            $day = date('d', strtotime($row['fecha']));
+            $docRecurring->startdate = date($day . '-m-Y', strtotime($row['fecha']));
         }
 
         return $docRecurring->save() && $this->newDocRecurringSaleLines($docRecurring, $albaran, $row);
     }
 
     /**
-     * 
      * @param \FacturaScripts\Plugins\DocumentosRecurrentes\Model\DocRecurringSale $docRecurring
-     * @param AlbaranCliente                                                       $albaran
-     * @param array                                                                $row
+     * @param AlbaranCliente $albaran
+     * @param array $row
      *
      * @return bool
      */
@@ -154,7 +151,7 @@ class AlbaranesProgramadosMigrator extends MigratorBase
                 $newLine->price = $this->toolBox()->utils()->str2bool($row['actualizar_precios']) ? 0 : $line->pvpunitario;
                 $newLine->reference = $line->referencia;
             } else {
-                $newLine->name = $line->descripcion;
+                $newLine->name = empty($line->descripcion) ? '-' : $line->descripcion;
                 $newLine->price = $line->pvpunitario;
             }
 

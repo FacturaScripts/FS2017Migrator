@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\Base\FileManager;
@@ -33,7 +34,6 @@ class FilesProCliMigrator extends MigratorBase
     const FOLDER_NAME = 'documentos_procli';
 
     /**
-     * 
      * @param int $offset
      *
      * @return bool
@@ -41,13 +41,13 @@ class FilesProCliMigrator extends MigratorBase
     protected function migrationProcess(&$offset = 0): bool
     {
         $tmpFolder = FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR . 'FS2017Migrator' . DIRECTORY_SEPARATOR . 'tmp';
-        if (false === \file_exists($tmpFolder)) {
+        if (false === file_exists($tmpFolder)) {
             return true;
         }
 
         foreach (FileManager::scanFolder($tmpFolder, true) as $file) {
-            $path = \explode(DIRECTORY_SEPARATOR, $file);
-            if (\count($path) !== 5) {
+            $path = explode(DIRECTORY_SEPARATOR, $file);
+            if (count($path) !== 5) {
                 continue;
             }
 
@@ -60,7 +60,6 @@ class FilesProCliMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param string $fromPath
      * @param string $fileName
      * @param string $modelName
@@ -71,7 +70,7 @@ class FilesProCliMigrator extends MigratorBase
     private function moveFile(string $fromPath, string $fileName, string $modelName, string $modelCode): bool
     {
         $newPath = FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR . $fileName;
-        if (false === \rename($fromPath, $newPath)) {
+        if (false === rename($fromPath, $newPath)) {
             return false;
         }
 
@@ -93,8 +92,7 @@ class FilesProCliMigrator extends MigratorBase
     }
 
     /**
-     * 
-     * @param int    $idfile
+     * @param int $idfile
      * @param string $model
      * @param string $modelcode
      *
@@ -106,7 +104,7 @@ class FilesProCliMigrator extends MigratorBase
         $newRelation->idfile = $idfile;
         $newRelation->model = $model;
         $newRelation->modelcode = $modelcode;
-        $newRelation->modelid = (int) $modelcode;
+        $newRelation->modelid = (int)$modelcode;
         return $newRelation->save();
     }
 }
