@@ -91,7 +91,7 @@ class AlbaranesProgramadosMigrator extends MigratorBase
             return true;
         }
 
-        /// new recurring document
+        // new recurring document
         $docRecurring->codagente = $albaran->codagente;
         $docRecurring->codalmacen = $albaran->codalmacen;
         $docRecurring->codcliente = $customer->codcliente;
@@ -150,6 +150,7 @@ class AlbaranesProgramadosMigrator extends MigratorBase
             if ($product) {
                 $newLine->price = $this->toolBox()->utils()->str2bool($row['actualizar_precios']) ? 0 : $line->pvpunitario;
                 $newLine->reference = $line->referencia;
+                $newLine->name = $product->descripcion;
             } else {
                 $newLine->name = empty($line->descripcion) ? '-' : $line->descripcion;
                 $newLine->price = $line->pvpunitario;
