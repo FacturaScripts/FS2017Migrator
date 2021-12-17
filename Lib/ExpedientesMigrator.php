@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 /**
@@ -27,14 +28,14 @@ class ExpedientesMigrator extends MigratorBase
 {
 
     /**
-     * 
      * @param int $offset
      *
      * @return bool
      */
     protected function migrationProcess(&$offset = 0): bool
     {
-        if (false === $this->dataBase->tableExists('expedientes') || false === class_exists('\FacturaScripts\Dinamic\Model\Proyecto')) {
+        if (false === $this->dataBase->tableExists('expedientes') ||
+            false === class_exists('\FacturaScripts\Dinamic\Model\Proyecto')) {
             return true;
         }
 
@@ -51,11 +52,10 @@ class ExpedientesMigrator extends MigratorBase
     }
 
     /**
-     * 
-     * @param int    $id
+     * @param int $id
      * @param string $tableName
      * @param string $colName
-     * @param int    $iddoc
+     * @param int $iddoc
      */
     private function linkDocument(int $id, string $tableName, string $colName, $iddoc)
     {
@@ -85,29 +85,28 @@ class ExpedientesMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param array $row
      *
      * @return bool
      */
-    private function newProyecto($row): bool
+    private function newProyecto(array $row): bool
     {
         $proyecto = new \FacturaScripts\Plugins\Proyectos\Model\Proyecto();
         if ($proyecto->loadFromCode($row['id'])) {
             return true;
         }
 
-        $proyecto->descripcion = \trim($row['descripcion'] . "\n" . $row['numero2'] . "\n" . $row['observaciones']);
+        $proyecto->descripcion = trim($row['descripcion'] . "\n" . $row['numero2'] . "\n" . $row['observaciones']);
         if ($this->toolBox()->utils()->str2bool($row['finalizado'])) {
             $proyecto->editable = true;
             $proyecto->idestado = 3;
         }
 
-        $proyecto->fecha = \date($proyecto::DATE_STYLE, \strtotime($row['fecha']));
-        $proyecto->fechafin = empty($row['fecha_fin']) ? null : \date($proyecto::DATE_STYLE, \strtotime($row['fecha_fin']));
-        $proyecto->fechainicio = empty($row['fecha_inicio']) ? null : \date($proyecto::DATE_STYLE, \strtotime($row['fecha_inicio']));
+        $proyecto->fecha = date($proyecto::DATE_STYLE, strtotime($row['fecha']));
+        $proyecto->fechafin = empty($row['fecha_fin']) ? null : date($proyecto::DATE_STYLE, strtotime($row['fecha_fin']));
+        $proyecto->fechainicio = empty($row['fecha_inicio']) ? null : date($proyecto::DATE_STYLE, strtotime($row['fecha_inicio']));
         $proyecto->idempresa = $this->toolBox()->appSettings()->get('default', 'idempresa');
-        $proyecto->idproyecto = (int) $row['id'];
+        $proyecto->idproyecto = (int)$row['id'];
         $proyecto->nombre = $row['nombre'];
         return $proyecto->save() && $this->linkDocuments($proyecto->idproyecto);
     }

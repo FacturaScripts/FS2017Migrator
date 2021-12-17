@@ -69,18 +69,18 @@ class FS2017Migrator extends Controller
     public function findFileBackup(): bool
     {
         $path = 'MyFiles' . DIRECTORY_SEPARATOR . 'FS2017Migrator';
-        if (false === \file_exists($path)) {
+        if (false === file_exists($path)) {
             FileManager::createFolder($path);
             return false;
         }
 
         foreach (FileManager::scanFolder($path) as $file) {
-            if ('.zip' === \substr($file, -4)) {
+            if ('.zip' === substr($file, -4)) {
                 return $this->extractBackup($file);
             }
         }
 
-        return \file_exists(\FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR
+        return file_exists(FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR
             . 'FS2017Migrator' . DIRECTORY_SEPARATOR . 'FOUND.lock');
     }
 
@@ -149,7 +149,7 @@ class FS2017Migrator extends Controller
             }
 
             $initial = $this->offset;
-            $className = '\\FacturaScripts\\Plugins\\FS2017Migrator\\Lib\\' . $step . 'Migrator';
+            $className = '\\FacturaScripts\\Dinamic\\Lib\\' . $step . 'Migrator';
             $migrator = new $className();
             if (false === $migrator->migrate($this->offset)) {
                 // migration error
