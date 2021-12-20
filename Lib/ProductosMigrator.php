@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
  * Copyright (C) 2019-2021 Carlos Garcia Gomez <carlos@facturascripts.com>
@@ -179,6 +180,10 @@ class ProductosMigrator extends MigratorBase
         $variante = new Variante();
         $where = [new DataBaseWhere('referencia', trim($data['referencia']))];
         if ($producto->loadFromCode('', $where) || $variante->loadFromCode('', $where)) {
+            // set codsubcuentaven from articulo_propiedades->name codsubcuentaventa
+            $producto->codsubcuentaven = $this->getSubcuentaVen($producto->referencia);
+            if ($producto->codsubcuentaven !== null)
+                return $producto->save();
             return true;
         }
 
@@ -206,6 +211,15 @@ class ProductosMigrator extends MigratorBase
         }
 
         return true;
+    }
+
+    private function getSubcuentaVen($referencia)
+    {
+        $data = $this->dataBase->select("Select text from articulo_propiedades where name='codsubcuentaventa' and referencia='" . $referencia . "'");
+        if (count($data) == 1) {
+            return $data[0]['text'];
+        }
+        return null;
     }
 
     /**
