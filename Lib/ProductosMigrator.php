@@ -66,7 +66,7 @@ class ProductosMigrator extends MigratorBase
      *
      * @return array
      */
-    protected function getCombinaciones($ref, $precio)
+    protected function getCombinaciones($ref, $precio): array
     {
         if (false === $this->dataBase->tableExists('articulo_combinaciones')) {
             return [];
@@ -180,15 +180,13 @@ class ProductosMigrator extends MigratorBase
         $variante = new Variante();
         $where = [new DataBaseWhere('referencia', trim($data['referencia']))];
         if ($producto->loadFromCode('', $where) || $variante->loadFromCode('', $where)) {
-            // set codsubcuentaven from articulo_propiedades->name codsubcuentaventa
-            $producto->codsubcuentaven = $this->getSubcuentaVen($producto->referencia);
-            if ($producto->codsubcuentaven !== null)
-                return $producto->save();
             return true;
         }
 
         $producto->loadFromData($data, ['stockfis']);
         $producto->ventasinstock = $this->toolBox()->utils()->str2bool($data['controlstock']);
+        $this->setSubcuentas($producto);
+
         if (false === $producto->save()) {
             return false;
         }
@@ -211,15 +209,6 @@ class ProductosMigrator extends MigratorBase
         }
 
         return true;
-    }
-
-    private function getSubcuentaVen($referencia)
-    {
-        $data = $this->dataBase->select("Select text from articulo_propiedades where name='codsubcuentaventa' and referencia='" . $referencia . "'");
-        if (count($data) == 1) {
-            return $data[0]['text'];
-        }
-        return null;
     }
 
     /**
@@ -305,6 +294,33 @@ class ProductosMigrator extends MigratorBase
         $sql = "DELETE FROM articulo_combinaciones WHERE refcombinacion IS NOT NULL"
             . " AND refcombinacion IN (SELECT referencia FROM articulos);";
         return $this->dataBase->exec($sql);
+    }
+
+    /**
+     * @param Producto $producto
+     */
+    protected function setSubcuentas(&$producto)
+    {
+        if (false === $this->dataBase->tableExists('articulo_propiedades')) {
+            return;
+        }
+
+        $sql = "SELECT * FROM articulo_propiedades WHERE referencia = " . $this->dataBase->var2str($producto->referencia);
+        foreach ($this->dataBase->select($sql) as $row) {
+            switch ($row['name']) {
+                case 'codsubcuentaventa':
+                    $producto->codsubcuentaven = $row['text'];
+                    break;
+
+                case 'codsubcuentacom':
+                    $producto->codsubcuentacom = $row['text'];
+                    break;
+
+                case 'codsubcuentairpfcom':
+                    $producto->codsubcuentairpfcom = $row['text'];
+                    break;
+            }
+        }
     }
 
     /**

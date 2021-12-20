@@ -96,18 +96,28 @@ class ExpedientesMigrator extends MigratorBase
             return true;
         }
 
-        $proyecto->descripcion = trim($row['descripcion'] . "\n" . $row['numero2'] . "\n" . $row['observaciones']);
-        if ($this->toolBox()->utils()->str2bool($row['finalizado'])) {
-            $proyecto->editable = true;
-            $proyecto->idestado = 3;
-        }
-
         $proyecto->fecha = date($proyecto::DATE_STYLE, strtotime($row['fecha']));
         $proyecto->fechafin = empty($row['fecha_fin']) ? null : date($proyecto::DATE_STYLE, strtotime($row['fecha_fin']));
         $proyecto->fechainicio = empty($row['fecha_inicio']) ? null : date($proyecto::DATE_STYLE, strtotime($row['fecha_inicio']));
         $proyecto->idempresa = $this->toolBox()->appSettings()->get('default', 'idempresa');
         $proyecto->idproyecto = (int)$row['id'];
-        $proyecto->nombre = $row['nombre'];
+        if ($this->toolBox()->utils()->str2bool($row['finalizado'])) {
+            $proyecto->editable = true;
+            $proyecto->idestado = 3;
+        }
+
+        // elegimos codigo, numero2 o nombre como identificador, en función de cual esté rellenado
+        if ($row['codigo']) {
+            $proyecto->nombre = $row['codigo'];
+            $proyecto->descripcion = trim($row['nombre'] . "\n" . $row['descripcion'] . "\n" . $row['numero2'] . "\n" . $row['observaciones']);
+        } elseif ($row['numero2']) {
+            $proyecto->nombre = $row['numero2'];
+            $proyecto->descripcion = trim($row['nombre'] . "\n" . $row['descripcion'] . "\n" . $row['codigo'] . "\n" . $row['observaciones']);
+        } else {
+            $proyecto->nombre = substr($row['nombre'], 0, 100);
+            $proyecto->descripcion = trim($row['descripcion'] . "\n" . $row['numero2'] . "\n" . $row['observaciones']);
+        }
+
         return $proyecto->save() && $this->linkDocuments($proyecto->idproyecto);
     }
 }
