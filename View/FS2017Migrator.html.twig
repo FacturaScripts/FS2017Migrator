@@ -1,4 +1,4 @@
-{% extends "Master/MenuTemplate.html.twig" %}
+{% extends "Master/MenuBghTemplate.html.twig" %}
 
 {% block body %}
     <div class="bg-light pt-5 pb-5">
@@ -83,15 +83,6 @@
     </div>
 {% endblock %}
 
-{% block css %}
-    {{ parent() }}
-    <style>
-        .bg-header {
-            background-color: #FAFBFC;
-        }
-    </style>
-{% endblock %}
-
 {% block javascripts %}
     {{ parent() }}
     <script type="text/javascript">
@@ -111,7 +102,7 @@
                 },
                 callback: function (result) {
                     if (result) {
-                        window.location = "{{fsc.url()}}?action=Inicio";
+                        window.location = "{{ fsc.url() }}?action=Inicio";
                     }
                 }
             });
