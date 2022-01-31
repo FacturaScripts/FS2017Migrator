@@ -1,5 +1,4 @@
 <?php
-
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
  * Copyright (C) 2019-2021 Carlos Garcia Gomez <carlos@facturascripts.com>

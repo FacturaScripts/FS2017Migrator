@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2021 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2022 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
@@ -32,7 +33,6 @@ class ContactosMigrator extends MigratorBase
 {
 
     /**
-     * 
      * @param int $offset
      *
      * @return bool
@@ -68,7 +68,6 @@ class ContactosMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param string $name
      *
      * @return int
@@ -78,7 +77,7 @@ class ContactosMigrator extends MigratorBase
         $fuente = new CrmFuente();
         $where = [new DataBaseWhere('nombre', $this->toolBox()->utils()->noHtml($name))];
         if (false === $fuente->loadFromCode('', $where)) {
-            /// create source
+            // create source
             $fuente->descripcion = $name;
             $fuente->nombre = $name;
             $fuente->save();
@@ -88,7 +87,6 @@ class ContactosMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param Contacto $contact
      *
      * @return bool
@@ -101,7 +99,7 @@ class ContactosMigrator extends MigratorBase
 
         $listClass = '\\FacturaScripts\\Dinamic\\Model\\CrmLista';
         $memberClass = '\\FacturaScripts\\Dinamic\\Model\\CrmListaContacto';
-        if (false === \class_exists($listClass) || false === \class_exists($memberClass)) {
+        if (false === class_exists($listClass) || false === class_exists($memberClass)) {
             return true;
         }
 
@@ -128,9 +126,8 @@ class ContactosMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param Contacto $contact
-     * @param string   $codcontacto
+     * @param string $codcontacto
      *
      * @return bool
      */
@@ -138,7 +135,7 @@ class ContactosMigrator extends MigratorBase
     {
         $class = '\\FacturaScripts\\Dinamic\\Model\\CrmNota';
         if (false === $this->dataBase->tableExists('crm_notas') ||
-            false === \class_exists($class)) {
+            false === class_exists($class)) {
             return true;
         }
 
@@ -156,9 +153,8 @@ class ContactosMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param Contacto $contact
-     * @param string   $codcontacto
+     * @param string $codcontacto
      *
      * @return bool
      */
@@ -166,7 +162,7 @@ class ContactosMigrator extends MigratorBase
     {
         $class = '\\FacturaScripts\\Dinamic\\Model\\CrmOportunidad';
         if (false === $this->dataBase->tableExists('crm_oportunidades') ||
-            false === \class_exists($class)) {
+            false === class_exists($class)) {
             return true;
         }
 
@@ -209,7 +205,6 @@ class ContactosMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param array $data
      *
      * @return bool

@@ -6,6 +6,6 @@
     "backup-found": "Copie de sauvegarde trouvée",
     "backup-not-found": "Copie de sauvegarde non trouvée",
     "confirm-migration": "Confirmer la migration",
-    "no-db-2017": "no-db-2017",
-    "remove-backup": "remove-backup"
+    "no-db-2017": "Aucune base de données de 2017 trouvée",
+    "remove-backup": "Supprimer la copie de sauvegarde"
 }

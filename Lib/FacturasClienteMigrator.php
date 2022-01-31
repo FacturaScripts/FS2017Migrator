@@ -61,7 +61,7 @@ class FacturasClienteMigrator extends FacturasProveedorMigrator
         }
 
         if (0 === $offset) {
-            /// needed dependency
+            // needed dependency
             new LiquidacionComision();
         }
 

@@ -94,7 +94,7 @@ class SubcuentasMigrator extends MigratorBase
         }
 
         if (empty($rows)) {
-            /// forze table creation
+            // forze table creation
             new Subcuenta();
         }
 

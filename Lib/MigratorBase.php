@@ -52,7 +52,7 @@ abstract class MigratorBase
     {
         $this->dataBase = new DataBase();
 
-        /// Load taxes
+        // Load taxes
         $impuestoModel = new Impuesto();
         foreach ($impuestoModel->all() as $imp) {
             $this->impuestos[$imp->codimpuesto] = $imp;
@@ -166,7 +166,7 @@ abstract class MigratorBase
 
         $specialAccount = new CuentaEspecial();
         if (false === $specialAccount->loadFromCode($code)) {
-            /// create a new special account
+            // create a new special account
             $specialAccount->codcuentaesp = $code;
             $specialAccount->descripcion = $code;
             $specialAccount->save();

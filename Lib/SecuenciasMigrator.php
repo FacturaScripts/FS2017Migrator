@@ -46,7 +46,7 @@ class SecuenciasMigrator extends MigratorBase
      */
     protected function migrationProcess(&$offset = 0): bool
     {
-        /// create sequences for every serie
+        // create sequences for every serie
         $serieModel = new Serie();
         foreach ($serieModel->all() as $serie) {
             $this->migrateSequence($serie->codserie, new FacturaCliente(), true);
@@ -72,7 +72,7 @@ class SecuenciasMigrator extends MigratorBase
     {
         $tipodoc = $model->modelClassName();
 
-        /// sequence exists for this serie?
+        // sequence exists for this serie?
         $secuencia = new SecuenciaDocumento();
         $where = [
             new DataBaseWhere('codserie', $codserie),
@@ -82,7 +82,7 @@ class SecuenciasMigrator extends MigratorBase
             return;
         }
 
-        /// find previous data
+        // find previous data
         $where2 = [new DataBaseWhere('codserie', $codserie)];
         $order = \strtolower(\FS_DB_TYPE) == 'postgresql' ? ['CAST(numero as integer)' => 'DESC'] : ['CAST(numero as unsigned)' => 'DESC'];
         foreach ($model->all($where2, $order, 0, 1) as $doc) {

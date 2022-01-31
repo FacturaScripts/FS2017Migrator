@@ -126,7 +126,7 @@ class CrmFuente extends Base\ModelClass
      */
     protected function saveUpdate(array $values = [])
     {
-        /// get the number of contacts with this source
+        // get the number of contacts with this source
         $contact = new Contacto();
         $where = [new DataBaseWhere('idfuente', $this->primaryColumnValue())];
         $this->numcontactos = $contact->count($where);

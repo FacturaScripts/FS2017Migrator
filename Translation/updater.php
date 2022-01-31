@@ -4,7 +4,7 @@ if (php_sapi_name() !== "cli") {
     die("Please use command line: php updater.php");
 }
 
-/// scan json files
+// scan json files
 chdir(__DIR__);
 $files = [];
 foreach (scandir(__DIR__, SCANDIR_SORT_ASCENDING) as $filename) {
@@ -13,7 +13,7 @@ foreach (scandir(__DIR__, SCANDIR_SORT_ASCENDING) as $filename) {
     }
 }
 
-/// download json from facturascripts.com
+// download json from facturascripts.com
 foreach ($files as $filename) {
     $url = "https://facturascripts.com/EditLanguage?action=json&idproject=16&code=";
     $json = file_get_contents($url . substr($filename, 0, -5));

@@ -113,15 +113,12 @@ class FS2017Migrator extends Controller
     {
         $this->working = true;
         $steps = [
-            'Inicio', 'Mysql', 'Empresa', 'GruposEpigrafes', 'Epigrafes',
-            'Cuentas', 'Subcuentas', 'Balances', 'Asientos', 'Tarifas', 'Clientes',
-            'Proveedores', 'Atributos', 'Productos', 'PedidosProveedor',
-            'AlbaranesProveedor', 'FacturasProveedor', 'RecibosProveedor',
-            'PagosProveedor', 'PresupuestosCliente', 'PedidosCliente',
-            'AlbaranesCliente', 'FacturasCliente', 'RecibosCliente',
-            'PagosCliente', 'Estados', 'Secuencias', 'Contactos',
-            'RegImpuestos', 'Files', 'FilesExpedientes', 'FilesProCli',
-            'Servicios', 'Expedientes', 'AlbaranesProgramados', 'end'
+            'Inicio', 'Mysql', 'Empresa', 'GruposEpigrafes', 'Epigrafes', 'Cuentas', 'Subcuentas', 'Balances',
+            'Asientos', 'Tarifas', 'Contactos', 'Clientes', 'Proveedores', 'Atributos', 'Productos', 'PedidosProveedor',
+            'AlbaranesProveedor', 'FacturasProveedor', 'RecibosProveedor', 'PagosProveedor', 'PresupuestosCliente',
+            'PedidosCliente', 'AlbaranesCliente', 'FacturasCliente', 'RecibosCliente', 'PagosCliente', 'Estados',
+            'Secuencias', 'RegImpuestos', 'Files', 'FilesExpedientes', 'FilesProCli', 'Servicios', 'Expedientes',
+            'AlbaranesProgramados', 'end'
         ];
 
         $next = false;
