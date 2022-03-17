@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Dinamic\Model\AttachedFile;
@@ -33,7 +34,6 @@ class FilesMigrator extends MigratorBase
     const TABLE_NAME = 'documentosfac';
 
     /**
-     * 
      * @param int $offset
      *
      * @return bool
@@ -65,7 +65,6 @@ class FilesMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param string $ruta
      *
      * @return bool
@@ -77,7 +76,6 @@ class FilesMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @return bool
      */
     private function migrateLogo()
@@ -110,16 +108,18 @@ class FilesMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param array $row
      *
      * @return bool
      */
     private function moveFile($row): bool
     {
+        // corregimos el nombre del archivo
+        $row['nombre'] = str_replace([' ', '/'], ['_', '_'], $this->toolBox()::utils()::noHtml($row['nombre']));
+
         $filePath = FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR . 'FS2017Migrator' . DIRECTORY_SEPARATOR . $row['ruta'];
         $newPath = FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR . $row['nombre'];
-        if (false === \rename($filePath, $newPath)) {
+        if (false === rename($filePath, $newPath)) {
             return false;
         }
 
@@ -162,10 +162,9 @@ class FilesMigrator extends MigratorBase
     }
 
     /**
-     * 
-     * @param int    $idfile
+     * @param int $idfile
      * @param string $model
-     * @param int    $modelid
+     * @param int $modelid
      * @param string $date
      *
      * @return bool

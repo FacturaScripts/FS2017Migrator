@@ -171,7 +171,7 @@ class ProductosMigrator extends MigratorBase
         // fix referencia
         if (strlen($data['referencia']) > 30) {
             $data['referencia'] = trim(substr($data['referencia'], 0, 30));
-        } elseif (empty($data['referencia'])) {
+        } elseif (empty(trim($data['referencia']))) {
             $data['referencia'] = '-';
         }
 
@@ -219,6 +219,10 @@ class ProductosMigrator extends MigratorBase
     protected function newProductVariants($producto, array $data): bool
     {
         foreach ($this->getCombinaciones($producto->referencia, (float)$data['pvp']) as $combi) {
+            if (empty(trim($combi['referencia']))) {
+                continue;
+            }
+
             $variante = new Variante();
             $where = [new DataBaseWhere('referencia', trim($combi['referencia']))];
             if ($combi['referencia'] && $variante->loadFromCode('', $where)) {

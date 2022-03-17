@@ -229,6 +229,9 @@ class ContactosMigrator extends MigratorBase
             $data['nombre'] = '-';
         }
 
+        $data['telefono1'] = $this->fixString($data['telefono1'], 20);
+        $data['telefono2'] = $this->fixString($data['telefono2'], 20);
+
         $contact = new Contacto();
         $where = empty($data['email']) ? [new DataBaseWhere('nombre', $data['nombre'])] : [new DataBaseWhere('email', $data['email'])];
         if ($contact->loadFromCode('', $where)) {

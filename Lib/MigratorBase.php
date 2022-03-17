@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2021 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2022 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use Exception;
@@ -35,13 +36,11 @@ abstract class MigratorBase
 {
 
     /**
-     *
      * @var DataBase
      */
     protected $dataBase;
 
     /**
-     *
      * @var Impuesto[]
      */
     protected $impuestos = [];
@@ -60,7 +59,6 @@ abstract class MigratorBase
     }
 
     /**
-     * 
      * @param int $offset
      *
      * @return bool
@@ -89,19 +87,17 @@ abstract class MigratorBase
     }
 
     /**
-     * 
      * @param bool $disable
      */
     protected function disableForeignKeys($disable = true)
     {
-        if (\strtolower(FS_DB_TYPE) == 'mysql') {
+        if (strtolower(FS_DB_TYPE) == 'mysql') {
             $value = $disable ? 0 : 1;
             $this->dataBase->exec('SET FOREIGN_KEY_CHECKS=' . $value . ';');
         }
     }
 
     /**
-     * 
      * @param string $codimpuesto
      *
      * @return string
@@ -112,9 +108,8 @@ abstract class MigratorBase
     }
 
     /**
-     * 
      * @param string $txt
-     * @param int    $len
+     * @param int $len
      *
      * @return string
      */
@@ -125,12 +120,11 @@ abstract class MigratorBase
         }
 
         $string = $this->toolBox()->utils()->noHtml($txt);
-        $fixed = \preg_replace('/[[:^print:]]/', '', $string);
-        return empty($len) ? $fixed : \substr($fixed, 0, $len);
+        $fixed = preg_replace('/[[:^print:]]/', '', $string);
+        return empty($len) ? $fixed : substr($fixed, 0, $len);
     }
 
     /**
-     * 
      * @param string $text
      *
      * @return array
@@ -142,10 +136,10 @@ abstract class MigratorBase
         }
 
         $emails = [];
-        $text2 = \str_replace([',', ';'], [' ', ' '], $text);
-        foreach (\explode(' ', $text2) as $aux) {
-            $email = \trim($aux);
-            if (\filter_var($aux, \FILTER_VALIDATE_EMAIL)) {
+        $text2 = str_replace([',', ';'], [' ', ' '], $text);
+        foreach (explode(' ', $text2) as $aux) {
+            $email = trim($aux);
+            if (filter_var($aux, FILTER_VALIDATE_EMAIL)) {
                 $emails[] = $email;
             }
         }
@@ -153,7 +147,6 @@ abstract class MigratorBase
     }
 
     /**
-     * 
      * @param string $code
      *
      * @return string
@@ -176,7 +169,6 @@ abstract class MigratorBase
     }
 
     /**
-     * 
      * @param string $codejercicio
      * @param string $codparent
      * @param string $codcuenta
@@ -218,7 +210,6 @@ abstract class MigratorBase
     }
 
     /**
-     * 
      * @param string $tableName
      *
      * @return bool
@@ -230,7 +221,6 @@ abstract class MigratorBase
     }
 
     /**
-     * 
      * @param string $tableName
      * @param string $newName
      *
@@ -247,18 +237,14 @@ abstract class MigratorBase
         }
 
         $sql = 'ALTER TABLE ' . $tableName . ' RENAME ' . $newName . ';';
-        if (\strtolower(FS_DB_TYPE) == 'postgresql') {
+        if (strtolower(FS_DB_TYPE) == 'postgresql') {
             $sql = 'ALTER TABLE ' . $tableName . ' RENAME TO "' . $newName . '";';
         }
 
         return $this->dataBase->exec($sql);
     }
 
-    /**
-     * 
-     * @return ToolBox
-     */
-    protected function toolBox()
+    protected function toolBox(): ToolBox
     {
         return new ToolBox();
     }
