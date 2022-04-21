@@ -21,7 +21,7 @@ namespace FacturaScripts\Plugins\FS2017Migrator\Model;
 
 class Contacto extends \FacturaScripts\Core\Model\Contacto
 {
-    public function install()
+    public function install(): string
     {
         return '';
     }

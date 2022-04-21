@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace FacturaScripts\Plugins\FS2017Migrator\Model;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
@@ -32,31 +33,26 @@ class CrmFuente extends Base\ModelClass
     use Base\ModelTrait;
 
     /**
-     *
      * @var string
      */
     public $descripcion;
 
     /**
-     *
      * @var string
      */
     public $fecha;
 
     /**
-     *
      * @var int
      */
     public $id;
 
     /**
-     *
      * @var string
      */
     public $nombre;
 
     /**
-     *
      * @var int
      */
     public $numcontactos;
@@ -64,67 +60,38 @@ class CrmFuente extends Base\ModelClass
     public function clear()
     {
         parent::clear();
-        $this->fecha = \date(self::DATE_STYLE);
+        $this->fecha = date(self::DATE_STYLE);
         $this->numcontactos = 0;
     }
 
-    /**
-     * 
-     * @return string
-     */
     public static function primaryColumn(): string
     {
         return 'id';
     }
 
-    /**
-     * 
-     * @return string
-     */
     public function primaryDescriptionColumn(): string
     {
         return 'nombre';
     }
 
-    /**
-     * 
-     * @return string
-     */
     public static function tableName(): string
     {
         return 'crm_fuentes2';
     }
 
-    /**
-     * 
-     * @return bool
-     */
-    public function test()
+    public function test(): bool
     {
         $this->descripcion = $this->toolBox()->utils()->noHtml($this->descripcion);
         $this->nombre = $this->toolBox()->utils()->noHtml($this->nombre);
         return parent::test();
     }
 
-    /**
-     * 
-     * @param string $type
-     * @param string $list
-     *
-     * @return string
-     */
     public function url(string $type = 'auto', string $list = 'ListContacto?activetab=List'): string
     {
         return parent::url($type, $list);
     }
 
-    /**
-     * 
-     * @param array $values
-     *
-     * @return bool
-     */
-    protected function saveUpdate(array $values = [])
+    protected function saveUpdate(array $values = []): bool
     {
         // get the number of contacts with this source
         $contact = new Contacto();

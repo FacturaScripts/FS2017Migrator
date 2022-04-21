@@ -86,10 +86,7 @@ abstract class MigratorBase
         return $return;
     }
 
-    /**
-     * @param bool $disable
-     */
-    protected function disableForeignKeys($disable = true)
+    protected function disableForeignKeys(bool $disable = true)
     {
         if (strtolower(FS_DB_TYPE) == 'mysql') {
             $value = $disable ? 0 : 1;
@@ -177,10 +174,10 @@ abstract class MigratorBase
      *
      * @return bool
      */
-    protected function newCuenta($codejercicio, $codparent, $codcuenta, $descripcion, $idcuentaesp = null)
+    protected function newCuenta($codejercicio, $codparent, $codcuenta, $descripcion, $idcuentaesp = null): bool
     {
         $cuenta = new Cuenta();
-        $cuenta->disableAditionalTest(true);
+        $cuenta->disableAdditionalTest(true);
         $where = [
             new DataBaseWhere('codcuenta', $codcuenta),
             new DataBaseWhere('codejercicio', $codejercicio)
@@ -214,7 +211,7 @@ abstract class MigratorBase
      *
      * @return bool
      */
-    protected function removeTable($tableName)
+    protected function removeTable($tableName): bool
     {
         $sql = 'DROP TABLE ' . $tableName . ';';
         return $this->dataBase->exec($sql);
@@ -226,7 +223,7 @@ abstract class MigratorBase
      *
      * @return bool
      */
-    protected function renameTable($tableName, $newName)
+    protected function renameTable($tableName, $newName): bool
     {
         if (false === $this->dataBase->tableExists($tableName)) {
             return true;

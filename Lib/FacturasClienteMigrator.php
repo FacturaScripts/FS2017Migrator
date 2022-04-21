@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2021 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2022 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -16,9 +16,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
-use FacturaScripts\Dinamic\Model\LiquidacionComision;
+namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 /**
  * Description of FacturasClienteMigrator
@@ -29,7 +28,6 @@ class FacturasClienteMigrator extends FacturasProveedorMigrator
 {
 
     /**
-     * 
      * @param int $offset
      *
      * @return bool
@@ -60,11 +58,6 @@ class FacturasClienteMigrator extends FacturasProveedorMigrator
             return false;
         }
 
-        if (0 === $offset) {
-            // needed dependency
-            new LiquidacionComision();
-        }
-
         $sql = "SELECT * FROM lineasfacturascli"
             . " WHERE idalbaran IS NOT null"
             . " AND idalbaran != '0'"
@@ -82,10 +75,6 @@ class FacturasClienteMigrator extends FacturasProveedorMigrator
         return true;
     }
 
-    /**
-     * 
-     * @return bool
-     */
     private function fixVencimiento(): bool
     {
         $sql = "update facturascli set vencimiento = '1999-12-31' where vencimiento < '1999-01-01';";
