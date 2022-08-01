@@ -51,10 +51,7 @@ class FS2017Migrator extends Controller
      */
     public $working = false;
 
-    /**
-     * @return array
-     */
-    public function getPageData()
+    public function getPageData(): array
     {
         $data = parent::getPageData();
         $data['menu'] = 'admin';
@@ -63,9 +60,6 @@ class FS2017Migrator extends Controller
         return $data;
     }
 
-    /**
-     * @return bool
-     */
     public function findFileBackup(): bool
     {
         $path = 'MyFiles' . DIRECTORY_SEPARATOR . 'FS2017Migrator';
@@ -106,10 +100,7 @@ class FS2017Migrator extends Controller
         }
     }
 
-    /**
-     * @param string $name
-     */
-    private function executeStep($name)
+    private function executeStep(string $name)
     {
         $this->working = true;
         $steps = [
@@ -160,11 +151,6 @@ class FS2017Migrator extends Controller
         }
     }
 
-    /**
-     * @param string $fileName
-     *
-     * @return bool
-     */
     private function extractBackup(string $fileName): bool
     {
         $zip = new ZipArchive();

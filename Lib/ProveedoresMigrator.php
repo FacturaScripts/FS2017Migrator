@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2021 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2022 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -16,9 +16,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
+use FacturaScripts\Core\Base\Utils;
 use FacturaScripts\Dinamic\Model\Contacto;
 use FacturaScripts\Dinamic\Model\Proveedor;
 
@@ -38,7 +40,7 @@ class ProveedoresMigrator extends MigratorBase
     }
 
     /**
-     * 
+     *
      * @param string $codproveedor
      *
      * @return string
@@ -58,7 +60,7 @@ class ProveedoresMigrator extends MigratorBase
     }
 
     /**
-     * 
+     *
      * @param Proveedor $proveedor
      *
      * @return bool
@@ -96,7 +98,7 @@ class ProveedoresMigrator extends MigratorBase
     }
 
     /**
-     * 
+     *
      * @param int $offset
      *
      * @return bool
@@ -126,6 +128,10 @@ class ProveedoresMigrator extends MigratorBase
                 $proveedor->fechabaja = null;
             }
 
+            if ($proveedor->web && false === Utils::isValidUrl($proveedor->web)) {
+                $proveedor->web = '';
+            }
+
             if (false === $proveedor->save()) {
                 return false;
             }
@@ -141,7 +147,7 @@ class ProveedoresMigrator extends MigratorBase
     }
 
     /**
-     * 
+     *
      * @param Proveedor $proveedor
      *
      * @return bool
