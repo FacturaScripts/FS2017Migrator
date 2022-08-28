@@ -19,6 +19,7 @@
 
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
+use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
 use FacturaScripts\Dinamic\Model\User;
 
 class UsersMigrator extends MigratorBase
@@ -41,7 +42,14 @@ class UsersMigrator extends MigratorBase
                 continue;
             }
 
+            // comprobamos si ya hay un usuario con ese email
             $user = new User();
+            $where = [new DataBaseWhere('email', $row['email'])];
+            if ($user->loadFromCode('', $where)) {
+                continue;
+            }
+
+            // no lo encontramos, lo creamos
             $user->admin = in_array($row['admin'], ['1', 't']);
             $user->nick = $row['nick'];
             $user->email = $row['email'];
