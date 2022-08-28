@@ -31,24 +31,16 @@ use ZipArchive;
 class FS2017Migrator extends Controller
 {
 
-    /**
-     * @var bool
-     */
+    /** @var bool */
     public $enableRun = true;
 
-    /**
-     * @var array
-     */
+    /** @var array */
     public $migrationLog = [];
 
-    /**
-     * @var int
-     */
+    /** @var int */
     public $offset;
 
-    /**
-     * @var bool
-     */
+    /** @var bool */
     public $working = false;
 
     public function getPageData(): array
@@ -109,7 +101,7 @@ class FS2017Migrator extends Controller
             'AlbaranesProveedor', 'FacturasProveedor', 'RecibosProveedor', 'PagosProveedor', 'PresupuestosCliente',
             'PedidosCliente', 'AlbaranesCliente', 'FacturasCliente', 'RecibosCliente', 'PagosCliente', 'Estados',
             'Secuencias', 'RegImpuestos', 'Files', 'FilesExpedientes', 'FilesProCli', 'Servicios', 'Expedientes',
-            'AlbaranesProgramados', 'end'
+            'AlbaranesProgramados', 'Users', 'end'
         ];
 
         $next = false;
