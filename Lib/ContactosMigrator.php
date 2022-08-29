@@ -20,6 +20,8 @@
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
+use FacturaScripts\Dinamic\Model\AttachedFile;
+use FacturaScripts\Dinamic\Model\AttachedFileRelation;
 use FacturaScripts\Dinamic\Model\Contacto;
 use FacturaScripts\Dinamic\Model\CrmFuente;
 use FacturaScripts\Dinamic\Model\GrupoClientes;
@@ -48,7 +50,7 @@ class ContactosMigrator extends MigratorBase
         }
 
         $sql = "SELECT * FROM crm_contactos ORDER BY codcontacto ASC";
-        $rows = $this->dataBase->selectLimit($sql, 300, $offset);
+        $rows = $this->dataBase->selectLimit($sql, 100, $offset);
         foreach ($rows as $row) {
             if (false === $this->newContact($row)) {
                 return false;
@@ -60,6 +62,12 @@ class ContactosMigrator extends MigratorBase
         return true;
     }
 
+    private function fileExists(string $ruta): bool
+    {
+        $filePath = FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR . 'FS2017Migrator' . DIRECTORY_SEPARATOR . $ruta;
+        return false === empty($ruta) && file_exists($filePath);
+    }
+
     private function fixContactos()
     {
         $sql = "UPDATE crm_contactos SET codgrupo = null WHERE codgrupo NOT IN (SELECT codgrupo FROM gruposclientes);"
@@ -67,12 +75,7 @@ class ContactosMigrator extends MigratorBase
         $this->dataBase->exec($sql);
     }
 
-    /**
-     * @param string $name
-     *
-     * @return int
-     */
-    protected function getIdFuente($name)
+    protected function getIdFuente(string $name): int
     {
         $fuente = new CrmFuente();
         $where = [new DataBaseWhere('nombre', $this->toolBox()->utils()->noHtml($name))];
@@ -86,12 +89,27 @@ class ContactosMigrator extends MigratorBase
         return $fuente->primaryColumnValue();
     }
 
-    /**
-     * @param Contacto $contact
-     *
-     * @return bool
-     */
-    protected function migrateGroup($contact): bool
+    protected function migrateFiles(Contacto $contact, string $codcontacto): bool
+    {
+        if (false === $this->dataBase->tableExists('crm_documentos')) {
+            return true;
+        }
+
+        $sql = 'SELECT * FROM crm_documentos WHERE codcontacto = ' . $this->dataBase->var2str($codcontacto) . ' ORDER BY id ASC';
+        foreach ($this->dataBase->select($sql) as $row) {
+            if (false === $this->fileExists($row['ruta'])) {
+                continue;
+            }
+
+            if (false === $this->moveFile($row, $contact)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    protected function migrateGroup(Contacto $contact): bool
     {
         if (!isset($contact->codgrupo) || empty($contact->codgrupo)) {
             return true;
@@ -125,13 +143,7 @@ class ContactosMigrator extends MigratorBase
         return true;
     }
 
-    /**
-     * @param Contacto $contact
-     * @param string $codcontacto
-     *
-     * @return bool
-     */
-    protected function migrateNotes($contact, $codcontacto)
+    protected function migrateNotes(Contacto $contact, string $codcontacto): bool
     {
         $class = '\\FacturaScripts\\Dinamic\\Model\\CrmNota';
         if (false === $this->dataBase->tableExists('crm_notas') ||
@@ -152,13 +164,7 @@ class ContactosMigrator extends MigratorBase
         return true;
     }
 
-    /**
-     * @param Contacto $contact
-     * @param string $codcontacto
-     *
-     * @return bool
-     */
-    protected function migrateOportunities($contact, $codcontacto)
+    protected function migrateOpportunities(Contacto $contact, string $codcontacto): bool
     {
         $class = '\\FacturaScripts\\Dinamic\\Model\\CrmOportunidad';
         if (false === $this->dataBase->tableExists('crm_oportunidades') ||
@@ -166,12 +172,12 @@ class ContactosMigrator extends MigratorBase
             return true;
         }
 
-        $crmOportunity = new $class();
+        $crmOpportunity = new $class();
         $where = [
             new DataBaseWhere('codcontacto', $codcontacto),
             new DataBaseWhere('idcontacto', null, 'IS')
         ];
-        foreach ($crmOportunity->all($where, [], 0, 0) as $opo) {
+        foreach ($crmOpportunity->all($where, [], 0, 0) as $opo) {
             $opo->idcontacto = $contact->idcontacto;
 
             switch ($opo->estado) {
@@ -204,14 +210,37 @@ class ContactosMigrator extends MigratorBase
         return true;
     }
 
-    /**
-     * @param array $data
-     *
-     * @return bool
-     */
-    protected function newContact($data): bool
+    private function moveFile(array $row, Contacto $contact): bool
+    {
+        // corregimos el nombre del archivo
+        $row['nombre'] = str_replace([' ', '/'], ['_', '_'], $this->toolBox()::utils()::noHtml($row['nombre']));
+
+        $filePath = FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR . 'FS2017Migrator' . DIRECTORY_SEPARATOR . $row['ruta'];
+        $newPath = FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR . $row['nombre'];
+        if (false === rename($filePath, $newPath)) {
+            return false;
+        }
+
+        $newAttFile = new AttachedFile();
+        $newAttFile->date = $row['fecha'];
+        $newAttFile->path = $row['nombre'];
+        if (false === $newAttFile->save()) {
+            return false;
+        }
+
+        $newRelation = new AttachedFileRelation();
+        $newRelation->creationdate = $row['fecha'];
+        $newRelation->idfile = $newAttFile->idfile;
+        $newRelation->model = 'Contacto';
+        $newRelation->modelid = $contact->idcontacto;
+        return $newRelation->save();
+    }
+
+    protected function newContact(array $data): bool
     {
         $data['cifnif'] = $data['nif'] ?? '';
+        $data['telefono1'] = $this->fixString($data['telefono1'], 20);
+        $data['telefono2'] = $this->fixString($data['telefono2'], 20);
 
         $emails = $this->getEmails($data['email']);
         $data['email'] = empty($emails) ? '' : $emails[0];
@@ -224,16 +253,14 @@ class ContactosMigrator extends MigratorBase
         if (empty($data['nombre']) && empty($data['direccion'])) {
             $data['descripcion'] = $data['codcontacto'];
         }
-
         if (empty($data['nombre'])) {
             $data['nombre'] = '-';
         }
 
-        $data['telefono1'] = $this->fixString($data['telefono1'], 20);
-        $data['telefono2'] = $this->fixString($data['telefono2'], 20);
-
         $contact = new Contacto();
-        $where = empty($data['email']) ? [new DataBaseWhere('nombre', $data['nombre'])] : [new DataBaseWhere('email', $data['email'])];
+        $where = empty($data['email']) ?
+            [new DataBaseWhere('nombre', $data['nombre'])] :
+            [new DataBaseWhere('email', $data['email'])];
         if ($contact->loadFromCode('', $where)) {
 
             if (empty($contact->email) && !empty($data['email'])) {
@@ -248,7 +275,7 @@ class ContactosMigrator extends MigratorBase
 
             return $contact->save() && $this->migrateNotes($contact, $data['codcontacto']) &&
                 $this->migrateGroup($contact) &&
-                $this->migrateOportunities($contact, $data['codcontacto']);
+                $this->migrateOpportunities($contact, $data['codcontacto']);
         }
 
         $contact->loadFromData($data);
@@ -256,8 +283,10 @@ class ContactosMigrator extends MigratorBase
             $contact->idfuente = $this->getIdFuente($data['fuente']);
         }
 
-        return $contact->save() && $this->migrateNotes($contact, $data['codcontacto']) &&
+        return $contact->save() &&
+            $this->migrateNotes($contact, $data['codcontacto']) &&
             $this->migrateGroup($contact) &&
-            $this->migrateOportunities($contact, $data['codcontacto']);
+            $this->migrateOpportunities($contact, $data['codcontacto']) &&
+            $this->migrateFiles($contact, $data['codcontacto']);
     }
 }
