@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2021 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2021-2022 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -51,13 +51,7 @@ class ExpedientesMigrator extends MigratorBase
         return true;
     }
 
-    /**
-     * @param int $id
-     * @param string $tableName
-     * @param string $colName
-     * @param int $iddoc
-     */
-    private function linkDocument(int $id, string $tableName, string $colName, $iddoc)
+    private function linkDocument(int $id, string $tableName, string $colName, ?int $iddoc)
     {
         if (empty($iddoc)) {
             return;
@@ -84,11 +78,6 @@ class ExpedientesMigrator extends MigratorBase
         return true;
     }
 
-    /**
-     * @param array $row
-     *
-     * @return bool
-     */
     private function newProyecto(array $row): bool
     {
         $proyecto = new \FacturaScripts\Plugins\Proyectos\Model\Proyecto();

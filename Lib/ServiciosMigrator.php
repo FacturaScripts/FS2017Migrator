@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2021 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2021-2022 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -20,6 +20,7 @@
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
+use FacturaScripts\Core\Model\Base\ModelCore;
 use FacturaScripts\Dinamic\Model\AlbaranCliente;
 use FacturaScripts\Dinamic\Model\Variante;
 
@@ -38,12 +39,13 @@ class ServiciosMigrator extends MigratorBase
      */
     protected function migrationProcess(&$offset = 0): bool
     {
-        if (false === $this->dataBase->tableExists('servicioscli') || false === class_exists('\FacturaScripts\Dinamic\Model\ServicioAT')) {
+        if (false === $this->dataBase->tableExists('servicioscli') ||
+            false === class_exists('\FacturaScripts\Dinamic\Model\ServicioAT')) {
             return true;
         }
 
         $sql = 'SELECT * FROM servicioscli ORDER BY idservicio ASC';
-        foreach ($this->dataBase->selectLimit($sql, 300, $offset) as $row) {
+        foreach ($this->dataBase->selectLimit($sql, 100, $offset) as $row) {
             if (false === $this->newServicio($row)) {
                 return false;
             }
@@ -96,7 +98,8 @@ class ServiciosMigrator extends MigratorBase
 
         return $this->migrateLines($servicio, (bool)$row['idalbaran']) &&
             $this->migrateDetails($servicio) &&
-            $this->linkInvoice($servicio, $row);
+            $this->linkInvoice($servicio, $row) &&
+            $this->linkProject($servicio, $row);
     }
 
     /**
@@ -116,7 +119,7 @@ class ServiciosMigrator extends MigratorBase
             return true;
         }
 
-        if (\property_exists($albaran, 'idservicio')) {
+        if (property_exists($albaran, 'idservicio')) {
             $albaran->idservicio = $servicio->idservicio;
             return $albaran->save();
         }
@@ -124,6 +127,23 @@ class ServiciosMigrator extends MigratorBase
         foreach ($albaran->childrenDocuments() as $child) {
             $child->idservicio = $servicio->idservicio;
             return $child->save();
+        }
+
+        return true;
+    }
+
+    private function linkProject($servicio, array $row): bool
+    {
+        if (false === $this->dataBase->tableExists('expediente_documentos') ||
+            false === $this->dataBase->tableExists('proyectos')) {
+            return true;
+        }
+
+        // leemos de la tabla de expedientes_documentos los registros que tengan este idservicio
+        $sql = 'SELECT * FROM expediente_documentos WHERE id_servicio_ventas = ' . $this->dataBase->var2str($row['idservicio']);
+        foreach ($this->dataBase->select($sql) as $item) {
+            $servicio->idproyecto = $item['id_expediente'];
+            return $servicio->save();
         }
 
         return true;
@@ -142,7 +162,7 @@ class ServiciosMigrator extends MigratorBase
         foreach ($this->dataBase->select($sql) as $row) {
             $newTrabajo = new \FacturaScripts\Plugins\Servicios\Model\TrabajoAT();
             $newTrabajo->observaciones = $row['descripcion'] . ' #' . $row['nick'];
-            $newTrabajo->fechainicio = \date(Variante::DATE_STYLE, \strtotime($row['fecha']));
+            $newTrabajo->fechainicio = date(ModelCore::DATE_STYLE, strtotime($row['fecha']));
             $newTrabajo->horainicio = $row['hora'];
             $newTrabajo->idservicio = $servicio->idservicio;
             $newTrabajo->estado = \FacturaScripts\Plugins\Servicios\Model\TrabajoAT::STATUS_NONE;
@@ -176,7 +196,7 @@ class ServiciosMigrator extends MigratorBase
             $newTrabajo->idservicio = $servicio->idservicio;
 
             if ($newTrabajo->cantidad != 0) {
-                $newTrabajo->precio = \floatval($row['pvptotal']) / \floatval($row['cantidad']);
+                $newTrabajo->precio = floatval($row['pvptotal']) / floatval($row['cantidad']);
             }
 
             $variante = new Variante();
