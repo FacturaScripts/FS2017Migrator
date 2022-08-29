@@ -142,6 +142,12 @@ class ServiciosMigrator extends MigratorBase
         // leemos de la tabla de expedientes_documentos los registros que tengan este idservicio
         $sql = 'SELECT * FROM expediente_documentos WHERE id_servicio_ventas = ' . $this->dataBase->var2str($row['idservicio']);
         foreach ($this->dataBase->select($sql) as $item) {
+            // comprobamos si el proyecto existe
+            $proyecto = new \FacturaScripts\Dinamic\Model\Proyecto();
+            if (false === $proyecto->loadFromCode($item['id_expediente'])) {
+                continue;
+            }
+
             $servicio->idproyecto = $item['id_expediente'];
             return $servicio->save();
         }
