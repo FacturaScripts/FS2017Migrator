@@ -60,14 +60,19 @@ class FS2017Migrator extends Controller
             return false;
         }
 
+        // descomprimimos los zip que encontremos
         foreach (FileManager::scanFolder($path) as $file) {
-            if ('.zip' === substr($file, -4)) {
-                return $this->extractBackup($file);
+            if ('.zip' != substr($file, -4)) {
+                continue;
             }
+            if (false === $this->extractBackup($file)) {
+                return false;
+            }
+            break;
         }
 
-        return file_exists(FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR
-            . 'FS2017Migrator' . DIRECTORY_SEPARATOR . 'FOUND.lock');
+        // buscamos la carpeta tmp, si la encontramos, es que ya tenemos el backup listo
+        return in_array('tmp', FileManager::scanFolder($path));
     }
 
     public function privateCore(&$response, $user, $permissions)
@@ -145,6 +150,14 @@ class FS2017Migrator extends Controller
 
     private function extractBackup(string $fileName): bool
     {
+        // creamos un archivo lock para evitar que se ejecute más de una vez
+        $lockFile = 'MyFiles' . DIRECTORY_SEPARATOR . 'FS2017Migrator' . DIRECTORY_SEPARATOR . 'zip.lock';
+        if (file_exists($lockFile)) {
+            $this->toolBox()->log()->critical('UNZIP LOCKED');
+            return false;
+        }
+        touch($lockFile);
+
         $zip = new ZipArchive();
         $filePath = FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR . 'FS2017Migrator' . DIRECTORY_SEPARATOR . $fileName;
         $zipStatus = $zip->open($filePath, ZipArchive::CHECKCONS);
@@ -160,7 +173,7 @@ class FS2017Migrator extends Controller
         }
 
         unlink($filePath);
-        touch(FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR . 'FS2017Migrator' . DIRECTORY_SEPARATOR . 'FOUND.lock');
+        unlink($lockFile);
         return true;
     }
 
