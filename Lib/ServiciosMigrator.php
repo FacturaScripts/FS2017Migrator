@@ -65,7 +65,7 @@ class ServiciosMigrator extends MigratorBase
     {
         $servicio = new \FacturaScripts\Plugins\Servicios\Model\ServicioAT();
         if ($servicio->loadFromCode($row['idservicio'])) {
-            return true;
+            return $this->linkProject($servicio, $row);
         }
 
         $servicio->codagente = $row['codagente'];

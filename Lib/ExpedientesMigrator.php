@@ -82,7 +82,7 @@ class ExpedientesMigrator extends MigratorBase
     {
         $proyecto = new \FacturaScripts\Plugins\Proyectos\Model\Proyecto();
         if ($proyecto->loadFromCode($row['id'])) {
-            return true;
+            return $this->linkDocuments($row['id']);
         }
 
         $proyecto->fecha = date($proyecto::DATE_STYLE, strtotime($row['fecha']));
