@@ -103,7 +103,7 @@ class RecibosProveedorMigrator extends MigratorBase
         $newReceipt = new ReciboProveedor($row);
         $newReceipt->disablePaymentGeneration(true);
         $newReceipt->idempresa = $this->toolBox()->appSettings()->get('default', 'idempresa');
-        $newReceipt->fechapago = date('d-m-Y', strtotime($row['fechap']));
+        $newReceipt->fechapago = date('d-m-Y', strtotime($row['fechap'] ?? $row['fecha']));
         $newReceipt->vencimiento = date('d-m-Y', strtotime($row['fechav']));
         $newReceipt->pagado = $row['estado'] === 'Pagado';
         if ($newReceipt->exists()) {

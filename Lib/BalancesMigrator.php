@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2021 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2021-2022 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -16,11 +16,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
-use FacturaScripts\Dinamic\Model\Balance;
-use FacturaScripts\Dinamic\Model\BalanceCuenta;
-use FacturaScripts\Dinamic\Model\BalanceCuentaA;
+namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 /**
  * Description of BalancesMigrator
@@ -29,9 +26,7 @@ use FacturaScripts\Dinamic\Model\BalanceCuentaA;
  */
 class BalancesMigrator extends MigratorBase
 {
-
     /**
-     * 
      * @param int $offset
      *
      * @return bool
@@ -53,65 +48,8 @@ class BalancesMigrator extends MigratorBase
                 $offset++;
                 return $this->dataBase->tableExists('balancescuentasabreviadas') ||
                     $this->renameTable('co_cuentascbba', 'balancescuentasabreviadas');
-
-            case 3:
-                $offset++;
-                new Balance();
-                return $this->dataBase->tableExists('balances');
-
-            case 4:
-                $offset++;
-                return $this->checkBalanceCuentas();
-
-            case 5:
-                $offset++;
-                return $this->checkBalanceCuentasA();
         }
 
         return true;
-    }
-
-    /**
-     * 
-     * @param string $tableName
-     *
-     * @return bool
-     */
-    private function checkBalanceCuentas(string $tableName = 'balancescuentas')
-    {
-        if (false === $this->dataBase->tableExists($tableName)) {
-            new BalanceCuenta();
-            return $this->dataBase->tableExists($tableName);
-        }
-
-        $sql = 'DELETE FROM ' . $tableName . ' WHERE codbalance NOT IN (SELECT codbalance FROM balances)';
-        if (false === $this->dataBase->exec($sql)) {
-            return false;
-        }
-
-        new BalanceCuenta();
-        return $this->dataBase->tableExists($tableName);
-    }
-
-    /**
-     * 
-     * @param string $tableName
-     *
-     * @return bool
-     */
-    private function checkBalanceCuentasA(string $tableName = 'balancescuentasabreviadas')
-    {
-        if (false === $this->dataBase->tableExists($tableName)) {
-            new BalanceCuentaA();
-            return $this->dataBase->tableExists($tableName);
-        }
-
-        $sql = 'DELETE FROM ' . $tableName . ' WHERE codbalance NOT IN (SELECT codbalance FROM balances)';
-        if (false === $this->dataBase->exec($sql)) {
-            return false;
-        }
-
-        new BalanceCuentaA();
-        return $this->dataBase->tableExists($tableName);
     }
 }
