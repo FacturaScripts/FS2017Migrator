@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2022 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -34,18 +34,13 @@ use FacturaScripts\Dinamic\Model\Impuesto;
  */
 abstract class MigratorBase
 {
-
-    /**
-     * @var DataBase
-     */
+    /** @var DataBase */
     protected $dataBase;
 
-    /**
-     * @var Impuesto[]
-     */
+    /** @var Impuesto[] */
     protected $impuestos = [];
 
-    abstract protected function migrationProcess(&$offset = 0): bool;
+    abstract protected function migrationProcess(int &$offset = 0): bool;
 
     public function __construct()
     {
@@ -58,12 +53,7 @@ abstract class MigratorBase
         }
     }
 
-    /**
-     * @param int $offset
-     *
-     * @return bool
-     */
-    public function migrate(&$offset = 0)
+    public function migrate(int &$offset = 0): bool
     {
         // start transaction
         $this->dataBase->beginTransaction();
@@ -86,7 +76,7 @@ abstract class MigratorBase
         return $return;
     }
 
-    protected function disableForeignKeys(bool $disable = true)
+    protected function disableForeignKeys(bool $disable = true): void
     {
         if (strtolower(FS_DB_TYPE) == 'mysql') {
             $value = $disable ? 0 : 1;
@@ -94,23 +84,12 @@ abstract class MigratorBase
         }
     }
 
-    /**
-     * @param string $codimpuesto
-     *
-     * @return string
-     */
-    protected function fixImpuesto($codimpuesto)
+    protected function fixImpuesto(string $codimpuesto): ?string
     {
         return isset($this->impuestos[$codimpuesto]) ? $codimpuesto : null;
     }
 
-    /**
-     * @param string $txt
-     * @param int $len
-     *
-     * @return string
-     */
-    protected function fixString($txt, $len = 0)
+    protected function fixString(string $txt, int $len = 0): string
     {
         if (empty($txt)) {
             return $txt;
@@ -121,12 +100,7 @@ abstract class MigratorBase
         return empty($len) ? $fixed : substr($fixed, 0, $len);
     }
 
-    /**
-     * @param string $text
-     *
-     * @return array
-     */
-    protected function getEmails($text)
+    protected function getEmails(string $text): array
     {
         if (empty($text)) {
             return [];
@@ -143,12 +117,7 @@ abstract class MigratorBase
         return $emails;
     }
 
-    /**
-     * @param string $code
-     *
-     * @return string
-     */
-    protected function getSpecialAccount($code)
+    protected function getSpecialAccount(?string $code): ?string
     {
         if (empty($code)) {
             return null;
@@ -165,16 +134,7 @@ abstract class MigratorBase
         return $specialAccount->primaryColumnValue();
     }
 
-    /**
-     * @param string $codejercicio
-     * @param string $codparent
-     * @param string $codcuenta
-     * @param string $descripcion
-     * @param string $idcuentaesp
-     *
-     * @return bool
-     */
-    protected function newCuenta($codejercicio, $codparent, $codcuenta, $descripcion, $idcuentaesp = null): bool
+    protected function newCuenta(string $codejercicio, string $codparent, string $codcuenta, string $descripcion, ?string $idcuentaesp = null): bool
     {
         $cuenta = new Cuenta();
         $cuenta->disableAdditionalTest(true);
@@ -206,24 +166,13 @@ abstract class MigratorBase
         return $cuenta->save();
     }
 
-    /**
-     * @param string $tableName
-     *
-     * @return bool
-     */
-    protected function removeTable($tableName): bool
+    protected function removeTable(string $tableName): bool
     {
         $sql = 'DROP TABLE ' . $tableName . ';';
         return $this->dataBase->exec($sql);
     }
 
-    /**
-     * @param string $tableName
-     * @param string $newName
-     *
-     * @return bool
-     */
-    protected function renameTable($tableName, $newName): bool
+    protected function renameTable(string $tableName, string $newName): bool
     {
         if (false === $this->dataBase->tableExists($tableName)) {
             return true;

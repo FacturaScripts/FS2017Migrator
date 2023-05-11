@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2021 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -21,6 +21,7 @@ namespace FacturaScripts\Plugins\FS2017Migrator\Controller;
 
 use FacturaScripts\Core\Base\Controller;
 use FacturaScripts\Core\Base\FileManager;
+use FacturaScripts\Core\Cache;
 use ZipArchive;
 
 /**
@@ -30,7 +31,6 @@ use ZipArchive;
  */
 class FS2017Migrator extends Controller
 {
-
     /** @var bool */
     public $enableRun = true;
 
@@ -112,7 +112,7 @@ class FS2017Migrator extends Controller
         $next = false;
         foreach ($steps as $step) {
             if ($next) {
-                $this->toolBox()->cache()->clear();
+                Cache::clear();
 
                 // redirect to next step
                 $this->redirect($this->url() . '?action=' . $step, 1);
@@ -128,7 +128,7 @@ class FS2017Migrator extends Controller
             // selected step
             $next = true;
             if ($step == 'end') {
-                $this->toolBox()->cache()->clear();
+                Cache::clear();
                 $this->working = false;
                 break;
             }

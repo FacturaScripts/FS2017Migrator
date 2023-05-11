@@ -23,23 +23,25 @@
                 <div class="col">
                     <div class="card shadow mb-4">
                         <div class="card-body">
-                            <ul>
+                            <ul class="mb-0">
                                 {% for log in fsc.migrationLog %}
-                                    <li>
-                                        {{ log }}
-                                    </li>
+                                    <li>{{ log }}</li>
                                 {% endfor %}
                             </ul>
-                            {% if fsc.working %}
+                        </div>
+                        {% if fsc.working %}
+                            <div class="card-footer">
                                 <button class="btn btn-warning">
                                     <i class="fas fa-cog fa-spin fa-fw"></i> {{ i18n.trans('run') }}
                                 </button>
-                            {% elseif fsc.findFileBackup() %}
+                            </div>
+                        {% elseif fsc.findFileBackup() %}
+                            <div class="card-footer">
                                 <a class="btn btn-danger" href="{{ fsc.url() }}?action=remove-backup">
                                     <i class="fas fa-trash-alt fa-fw"></i> {{ i18n.trans('remove-backup') }}
                                 </a>
-                            {% endif %}
-                        </div>
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>

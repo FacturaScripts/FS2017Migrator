@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2021 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,7 +19,7 @@
 
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
-use FacturaScripts\Core\Base\Cache;
+use FacturaScripts\Core\Cache;
 
 /**
  * Description of InicioMigrator
@@ -28,23 +28,17 @@ use FacturaScripts\Core\Base\Cache;
  */
 class InicioMigrator extends MigratorBase
 {
-
-    /**
-     * @var array
-     */
+    /** @var array */
     private $removedConstraints = [];
 
-    /**
-     * @return array
-     */
-    private function getTables()
+    /** @return array */
+    private function getTables(): array
     {
         $exclude = [
-            'attached_files', 'cajas', 'cajas_general', 'cajas_general_mov',
-            'crm_calendario', 'empresas', 'estados_documentos', 'fs_access',
-            'fs_extensions2', 'pages', 'pages_filters', 'pages_options',
-            'productos', 'roles', 'roles_access', 'roles_users',
-            'secuencias_documentos', 'settings', 'users', 'variantes'
+            'attached_files', 'cajas', 'cajas_general', 'cajas_general_mov', 'crm_calendario', 'empresas',
+            'estados_documentos', 'fs_access', 'fs_extensions2', 'pages', 'pages_filters', 'pages_options',
+            'productos', 'roles', 'roles_access', 'roles_users', 'secuencias_documentos', 'settings', 'users',
+            'variantes'
         ];
         $tables = [];
         foreach ($this->dataBase->getTables() as $tableName) {
@@ -66,19 +60,13 @@ class InicioMigrator extends MigratorBase
         return $tables;
     }
 
-    /**
-     * @param int $offset
-     *
-     * @return bool
-     */
-    protected function migrationProcess(&$offset = 0): bool
+    protected function migrationProcess(int &$offset = 0): bool
     {
         if (0 === $offset && false === $this->dataBase->tableExists('fs_vars')) {
             $this->toolBox()->i18nLog()->warning('no-db-2017');
             return false;
         } elseif (0 === $offset) {
-            $cache = new Cache();
-            $cache->clear();
+            Cache::clear();
         }
 
         $this->disableForeignKeys(true);
@@ -101,12 +89,7 @@ class InicioMigrator extends MigratorBase
         return true;
     }
 
-    /**
-     * @param string $tableName
-     *
-     * @return bool
-     */
-    private function removeForeignKeys($tableName)
+    private function removeForeignKeys(string $tableName): bool
     {
         foreach ($this->dataBase->getConstraints($tableName, true) as $constraint) {
             if ($constraint['type'] == 'PRIMARY KEY' || in_array($constraint['name'], $this->removedConstraints)) {
@@ -133,12 +116,7 @@ class InicioMigrator extends MigratorBase
         return true;
     }
 
-    /**
-     * @param string $tableName
-     *
-     * @return bool
-     */
-    private function removeNotNulls($tableName)
+    private function removeNotNulls(string $tableName): bool
     {
         $primaryKey = [];
         foreach ($this->dataBase->getConstraints($tableName, true) as $constraint) {
@@ -165,12 +143,7 @@ class InicioMigrator extends MigratorBase
         return true;
     }
 
-    /**
-     * @param string $tableName
-     *
-     * @return bool
-     */
-    private function removeUniques($tableName)
+    private function removeUniques(string $tableName): bool
     {
         foreach ($this->dataBase->getConstraints($tableName, true) as $constraint) {
             if ($constraint['type'] == 'PRIMARY KEY' || in_array($constraint['name'], $this->removedConstraints)) {
