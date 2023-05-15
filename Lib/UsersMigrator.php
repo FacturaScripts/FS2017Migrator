@@ -19,18 +19,12 @@
 
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
-use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
 use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\User;
 
 class UsersMigrator extends MigratorBase
 {
-    /**
-     * @param int $offset
-     *
-     * @return bool
-     */
-    protected function migrationProcess(&$offset = 0): bool
+    protected function migrationProcess(int &$offset = 0): bool
     {
         if (false === $this->dataBase->tableExists('fs_users')) {
             return true;
@@ -38,21 +32,20 @@ class UsersMigrator extends MigratorBase
 
         $sql = "SELECT * FROM fs_users;";
         foreach ($this->dataBase->select($sql) as $row) {
-            // si no hay email o no es válido, saltamos
-            if (empty($row['email']) || false === filter_var($row['email'], FILTER_VALIDATE_EMAIL)) {
-                continue;
-            }
-
-            // comprobamos si ya hay un usuario con ese email
+            // comprobamos si ya hay un usuario con ese nick
             $user = new User();
-            $where = [new DataBaseWhere('email', $row['email'])];
-            if ($user->loadFromCode('', $where)) {
+            if ($user->loadFromCode($row['nick'])) {
                 continue;
             }
 
             // no lo encontramos, lo creamos
             $user->admin = in_array($row['admin'], ['1', 't']);
-            $user->email = $row['email'];
+
+            // si hay email y es válido, lo usamos
+            if ($row['email'] && filter_var($row['email'], FILTER_VALIDATE_EMAIL)) {
+                $user->email = $row['email'];
+            }
+
             $user->newPassword = $user->newPassword2 = Tools::randomString();
             $user->nick = $row['nick'];
             if (false === $user->save()) {
