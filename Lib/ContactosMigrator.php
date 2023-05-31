@@ -239,8 +239,8 @@ class ContactosMigrator extends MigratorBase
     protected function newContact(array $data): bool
     {
         $data['cifnif'] = $data['nif'] ?? '';
-        $data['telefono1'] = $this->fixString($data['telefono1'], 20);
-        $data['telefono2'] = $this->fixString($data['telefono2'], 20);
+        $data['telefono1'] = $this->fixString($data['telefono1'] ?? '', 20);
+        $data['telefono2'] = $this->fixString($data['telefono2'] ?? '', 20);
 
         $emails = $this->getEmails($data['email']);
         $data['email'] = empty($emails) ? '' : $emails[0];
