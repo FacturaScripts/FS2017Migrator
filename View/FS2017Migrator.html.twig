@@ -11,7 +11,7 @@
                         {% else %}
                             <i class="fas fa-database fa-fw"></i>
                         {% endif %}
-                        {{ i18n.trans('2017-migrator') }}
+                        {{ trans('2017-migrator') }}
                     </h1>
                 </div>
             </div>
@@ -32,13 +32,13 @@
                         {% if fsc.working %}
                             <div class="card-footer">
                                 <button class="btn btn-warning">
-                                    <i class="fas fa-cog fa-spin fa-fw"></i> {{ i18n.trans('run') }}
+                                    <i class="fas fa-cog fa-spin fa-fw"></i> {{ trans('run') }}
                                 </button>
                             </div>
                         {% elseif fsc.findFileBackup() %}
                             <div class="card-footer">
                                 <a class="btn btn-danger" href="{{ fsc.url() }}?action=remove-backup">
-                                    <i class="fas fa-trash-alt fa-fw"></i> {{ i18n.trans('remove-backup') }}
+                                    <i class="fas fa-trash-alt fa-fw"></i> {{ trans('remove-backup') }}
                                 </a>
                             </div>
                         {% endif %}
@@ -50,34 +50,39 @@
             <div class="row">
                 <div class="col">
                     <div class="card shadow mb-4">
-                        <div class="card-body">
-                            <p>{{ i18n.trans('2017-migrator-paragraph') }}</p>
+                        <div class="card-body">{{ trans('2017-migrator-paragraph') }}</div>
+                        <div class="card-footer">
                             <form method="post">
                                 <button type="button" class="btn btn-warning" onclick="executeMigration();">
-                                    <i class="fas fa-terminal fa-fw"></i> {{ i18n.trans('run') }}
+                                    <i class="fas fa-terminal fa-fw"></i> {{ trans('run') }}
                                 </button>
                             </form>
                         </div>
                     </div>
+                    {% set filesbackup = fsc.findFileBackup() %}
                     <div class="card shadow mb-4">
                         <div class="card-body">
                             <h2 class="h5 card-title">
-                                <i class="fas fa-save fa-fw"></i> {{ i18n.trans('files') }}
+                                <i class="fas fa-save fa-fw"></i> {{ trans('files') }}
                             </h2>
-                            <p class="card-text">{{ i18n.trans('2017-files-paragraph') }}</p>
-                            {% if fsc.findFileBackup() %}
+                            <p class="card-text">{{ trans('2017-files-paragraph') }}</p>
+                            {% if fileBackup %}
                                 <div class="alert alert-success mb-0">
-                                    <i class="fas fa-check fa-fw"></i> {{ i18n.trans('backup-found') }}
+                                    <i class="fas fa-check fa-fw"></i> {{ trans('backup-found') }}
                                 </div>
                             {% else %}
-                                <div class="alert alert-warning">
-                                    <i class="fas fa-times fa-fw"></i> {{ i18n.trans('backup-not-found') }}
+                                <div class="alert alert-warning mb-0">
+                                    <i class="fas fa-times fa-fw"></i> {{ trans('backup-not-found') }}
                                 </div>
-                                <a href="{{ fsc.url() }}" class="btn btn-light">
-                                    <i class="fas fa-redo fa-fw"></i> {{ i18n.trans('refresh') }}
-                                </a>
                             {% endif %}
                         </div>
+                        {% if fileBackup == false %}
+                            <div class="card-footer">
+                                <a href="{{ fsc.url() }}" class="btn btn-secondary">
+                                    <i class="fas fa-redo fa-fw"></i> {{ trans('refresh') }}
+                                </a>
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -90,15 +95,15 @@
     <script type="text/javascript">
         function executeMigration() {
             bootbox.confirm({
-                title: "{{ i18n.trans('confirm-migration') | raw }}",
-                message: "{{ i18n.trans('are-you-sure-migration') }}",
+                title: "{{ trans('confirm-migration') | raw }}",
+                message: "{{ trans('are-you-sure-migration') }}",
                 closeButton: false,
                 buttons: {
                     cancel: {
-                        label: "<i class='fas fa-times'></i> {{ i18n.trans('cancel') }}"
+                        label: "<i class='fas fa-times'></i> {{ trans('cancel') }}"
                     },
                     confirm: {
-                        label: "<i class='fas fa-check'></i> {{ i18n.trans('continue') }}",
+                        label: "<i class='fas fa-check'></i> {{ trans('continue') }}",
                         className: 'btn-warning'
                     }
                 },

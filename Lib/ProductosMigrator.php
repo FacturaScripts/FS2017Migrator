@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2021 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -32,10 +32,7 @@ use FacturaScripts\Dinamic\Model\Variante;
  */
 class ProductosMigrator extends MigratorBase
 {
-
-    /**
-     * @var array
-     */
+    /** @var array */
     private $attributeValues;
 
     /**
@@ -96,9 +93,6 @@ class ProductosMigrator extends MigratorBase
         return $combinaciones;
     }
 
-    /**
-     * @return bool
-     */
     private function fixFamilies(): bool
     {
         if (false === $this->dataBase->tableExists('familias')) {
@@ -110,9 +104,6 @@ class ProductosMigrator extends MigratorBase
         return $this->dataBase->exec($sql);
     }
 
-    /**
-     * @return bool
-     */
     private function fixManufacturers(): bool
     {
         if (false === $this->dataBase->tableExists('fabricantes')) {
@@ -124,12 +115,7 @@ class ProductosMigrator extends MigratorBase
         return $this->dataBase->exec($sql);
     }
 
-    /**
-     * @param int $offset
-     *
-     * @return bool
-     */
-    protected function migrationProcess(&$offset = 0): bool
+    protected function migrationProcess(int &$offset = 0): bool
     {
         // rename stocks table
         if ($offset == 0 && false === $this->dataBase->tableExists('stocks_old')) {
@@ -161,11 +147,6 @@ class ProductosMigrator extends MigratorBase
         return true;
     }
 
-    /**
-     * @param array $data
-     *
-     * @return bool
-     */
     protected function newProduct(array $data): bool
     {
         // fix referencia
@@ -182,7 +163,8 @@ class ProductosMigrator extends MigratorBase
             return true;
         }
 
-        $producto->loadFromData($data, ['stockfis']);
+        $producto->loadFromData($data, ['controlstock', 'pvp', 'stockfis']);
+        $producto->precio = (float)$data['pvp'];
         $producto->ventasinstock = $this->toolBox()->utils()->str2bool($data['controlstock']);
         $this->setSubcuentas($producto);
 
@@ -210,13 +192,7 @@ class ProductosMigrator extends MigratorBase
         return true;
     }
 
-    /**
-     * @param Producto $producto
-     * @param array $data
-     *
-     * @return bool
-     */
-    protected function newProductVariants($producto, array $data): bool
+    protected function newProductVariants(Producto $producto, array $data): bool
     {
         foreach ($this->getCombinaciones($producto->referencia, (float)$data['pvp']) as $combi) {
             if (empty(trim($combi['referencia']))) {
@@ -257,9 +233,6 @@ class ProductosMigrator extends MigratorBase
         return true;
     }
 
-    /**
-     * @return bool
-     */
     private function removeDuplicatedAttributeValues(): bool
     {
         $sql = "SELECT codatributo, valor, COUNT(*) repeticiones FROM atributos_valores"
@@ -280,9 +253,6 @@ class ProductosMigrator extends MigratorBase
         return true;
     }
 
-    /**
-     * @return bool
-     */
     private function removeDuplicatedReferences(): bool
     {
         if (false === $this->dataBase->tableExists('articulo_combinaciones')) {
@@ -299,10 +269,7 @@ class ProductosMigrator extends MigratorBase
         return $this->dataBase->exec($sql);
     }
 
-    /**
-     * @param Producto $producto
-     */
-    protected function setSubcuentas(&$producto)
+    protected function setSubcuentas(Producto &$producto): void
     {
         if (false === $this->dataBase->tableExists('articulo_propiedades')) {
             return;
@@ -326,13 +293,7 @@ class ProductosMigrator extends MigratorBase
         }
     }
 
-    /**
-     * @param Producto $producto
-     * @param array $data
-     *
-     * @return bool
-     */
-    protected function updateStock(&$producto, array $data): bool
+    protected function updateStock(Producto &$producto, array $data): bool
     {
         $sql = "SELECT * FROM stocks_old WHERE referencia = " . $this->dataBase->var2str($producto->referencia) . ";";
         foreach ($this->dataBase->select($sql) as $row) {
