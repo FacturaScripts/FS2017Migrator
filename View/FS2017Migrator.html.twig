@@ -59,14 +59,14 @@
                             </form>
                         </div>
                     </div>
-                    {% set filesbackup = fsc.findFileBackup() %}
+                    {% set filesBackup = fsc.findFileBackup() %}
                     <div class="card shadow mb-4">
                         <div class="card-body">
                             <h2 class="h5 card-title">
                                 <i class="fas fa-save fa-fw"></i> {{ trans('files') }}
                             </h2>
                             <p class="card-text">{{ trans('2017-files-paragraph') }}</p>
-                            {% if fileBackup %}
+                            {% if filesBackup %}
                                 <div class="alert alert-success mb-0">
                                     <i class="fas fa-check fa-fw"></i> {{ trans('backup-found') }}
                                 </div>
@@ -76,7 +76,7 @@
                                 </div>
                             {% endif %}
                         </div>
-                        {% if fileBackup == false %}
+                        {% if filesBackup == false %}
                             <div class="card-footer">
                                 <a href="{{ fsc.url() }}" class="btn btn-secondary">
                                     <i class="fas fa-redo fa-fw"></i> {{ trans('refresh') }}
