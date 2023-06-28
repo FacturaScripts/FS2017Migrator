@@ -19,7 +19,7 @@
 
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
-use FacturaScripts\Core\Tools;
+use FacturaScripts\Core\Base\Utils;
 use FacturaScripts\Dinamic\Model\User;
 
 class UsersMigrator extends MigratorBase
@@ -46,7 +46,7 @@ class UsersMigrator extends MigratorBase
                 $user->email = $row['email'];
             }
 
-            $user->newPassword = $user->newPassword2 = Tools::randomString();
+            $user->newPassword = $user->newPassword2 = Utils::randomString(8);
             $user->nick = $row['nick'];
             if (false === $user->save()) {
                 return false;
