@@ -1,0 +1,11 @@
+{
+    "2017-files-paragraph": "Máte zálohu souborů FacturaScripts 2017? Zkopírujte .zip do složky MyFiles\/FS2017Migrator ve FacturaScripts",
+    "2017-migrator": "Migrátor 2017",
+    "2017-migrator-paragraph": "Tento průvodce vám umožní migrovat data z verze 2017 do podoby verze 2021",
+    "are-you-sure-migration": "Recuerde que los cambios no se pueden deshacer, y que no podrá usar FacturaScripts 2017 con esta misma base de datos ¿Desea continuar?",
+    "backup-found": "Copia de seguridad encontrada",
+    "backup-not-found": "Copia de seguridad no encontrada",
+    "confirm-migration": "Confirmar migración",
+    "no-db-2017": "Esta base de datos no contiene información de FacturaScripts 2017",
+    "remove-backup": "Eliminar copia de seguridad"
+}
