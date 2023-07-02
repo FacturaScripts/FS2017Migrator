@@ -89,7 +89,7 @@ abstract class MigratorBase
         return isset($this->impuestos[$codimpuesto]) ? $codimpuesto : null;
     }
 
-    protected function fixString(string $txt, int $len = 0): string
+    protected function fixString(?string $txt, int $len = 0): string
     {
         if (empty($txt)) {
             return $txt;
