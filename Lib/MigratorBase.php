@@ -57,7 +57,6 @@ abstract class MigratorBase
     {
         // start transaction
         $this->dataBase->beginTransaction();
-        $return = false;
 
         try {
             $return = $this->migrationProcess($offset);
@@ -91,6 +90,10 @@ abstract class MigratorBase
 
     protected function fixString(?string $txt, int $len = 0): string
     {
+        if (null === $txt) {
+            return '';
+        }
+
         if (empty($txt)) {
             return $txt;
         }
