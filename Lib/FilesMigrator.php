@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2021 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2021-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -30,7 +30,6 @@ use FacturaScripts\Dinamic\Model\Empresa;
  */
 class FilesMigrator extends MigratorBase
 {
-
     const TABLE_NAME = 'documentosfac';
 
     /**
@@ -64,30 +63,22 @@ class FilesMigrator extends MigratorBase
         return true;
     }
 
-    /**
-     * @param string $ruta
-     *
-     * @return bool
-     */
     private function fileExists(string $ruta): bool
     {
         $filePath = FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR . 'FS2017Migrator' . DIRECTORY_SEPARATOR . $ruta;
-        return false === empty($ruta) && \file_exists($filePath);
+        return false === empty($ruta) && file_exists($filePath);
     }
 
-    /**
-     * @return bool
-     */
-    private function migrateLogo()
+    private function migrateLogo(): bool
     {
         foreach (['logo.png', 'logo.jpg'] as $name) {
             $filePath = FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR . 'FS2017Migrator' . DIRECTORY_SEPARATOR . 'images';
-            if (false === \file_exists($filePath . DIRECTORY_SEPARATOR . $name)) {
+            if (false === file_exists($filePath . DIRECTORY_SEPARATOR . $name)) {
                 continue;
             }
 
             $newPath = FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR . $name;
-            if (false === \rename($filePath . DIRECTORY_SEPARATOR . $name, $newPath)) {
+            if (false === rename($filePath . DIRECTORY_SEPARATOR . $name, $newPath)) {
                 return false;
             }
 
@@ -107,12 +98,7 @@ class FilesMigrator extends MigratorBase
         return false;
     }
 
-    /**
-     * @param array $row
-     *
-     * @return bool
-     */
-    private function moveFile($row): bool
+    private function moveFile(array $row): bool
     {
         // corregimos el nombre del archivo
         $row['nombre'] = str_replace([' ', '/'], ['_', '_'], $this->toolBox()::utils()::noHtml($row['nombre']));

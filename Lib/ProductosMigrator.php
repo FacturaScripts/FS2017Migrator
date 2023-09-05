@@ -21,7 +21,9 @@ namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
 use FacturaScripts\Dinamic\Model\AtributoValor;
+use FacturaScripts\Dinamic\Model\AttachedFile;
 use FacturaScripts\Dinamic\Model\Producto;
+use FacturaScripts\Dinamic\Model\ProductoImagen;
 use FacturaScripts\Dinamic\Model\Stock;
 use FacturaScripts\Dinamic\Model\Variante;
 
@@ -35,12 +37,7 @@ class ProductosMigrator extends MigratorBase
     /** @var array */
     private $attributeValues;
 
-    /**
-     * @param int $id
-     *
-     * @return int
-     */
-    private function checkAttributeValue($id)
+    private function checkAttributeValue(?int $id): ?int
     {
         if (null === $this->attributeValues) {
             $attValue = new AtributoValor();
@@ -56,13 +53,7 @@ class ProductosMigrator extends MigratorBase
         return null;
     }
 
-    /**
-     * @param string $ref
-     * @param float $precio
-     *
-     * @return array
-     */
-    protected function getCombinaciones($ref, $precio): array
+    protected function getCombinaciones(string $ref, float $precio): array
     {
         if (false === $this->dataBase->tableExists('articulo_combinaciones')) {
             return [];
@@ -115,6 +106,39 @@ class ProductosMigrator extends MigratorBase
         return $this->dataBase->exec($sql);
     }
 
+    protected function migrateImages(Producto $producto): void
+    {
+        foreach ($producto->getVariants() as $variante) {
+            foreach (['jpg', 'png'] as $extension) {
+                $imageRef = str_replace(['/', '\\'], ['_', '_'], $variante->referencia) . '-1.' . $extension;
+                $filePath = FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR . 'FS2017Migrator'
+                    . DIRECTORY_SEPARATOR . 'images/articulos/' . $imageRef;
+                if (false === file_exists($filePath)) {
+                    continue;
+                }
+
+                $newPath = FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR . $imageRef;
+                if (false === rename($filePath, $newPath)) {
+                    $this->toolBox()->i18nLog()->warning('could-not-move-file: ' . $filePath);
+                    return;
+                }
+
+                $newAttFile = new AttachedFile();
+                $newAttFile->path = $imageRef;
+                if (false === $newAttFile->save()) {
+                    $this->toolBox()->i18nLog()->warning('could-not-save-file: ' . $filePath);
+                    return;
+                }
+
+                $imagen = new ProductoImagen();
+                $imagen->idproducto = $producto->idproducto;
+                $imagen->idfile = $newAttFile->idfile;
+                $imagen->referencia = $variante->referencia;
+                $imagen->save();
+            }
+        }
+    }
+
     protected function migrationProcess(int &$offset = 0): bool
     {
         // rename stocks table
@@ -160,6 +184,8 @@ class ProductosMigrator extends MigratorBase
         $variante = new Variante();
         $where = [new DataBaseWhere('referencia', trim($data['referencia']))];
         if ($producto->loadFromCode('', $where) || $variante->loadFromCode('', $where)) {
+            // migramos las imágenes
+            $this->migrateImages($producto);
             return true;
         }
 
@@ -189,6 +215,8 @@ class ProductosMigrator extends MigratorBase
             return false;
         }
 
+        // migramos las imágenes
+        $this->migrateImages($producto);
         return true;
     }
 
@@ -230,6 +258,8 @@ class ProductosMigrator extends MigratorBase
             }
         }
 
+        // migramos las imágenes
+        $this->migrateImages($producto);
         return true;
     }
 

@@ -258,9 +258,7 @@ class ContactosMigrator extends MigratorBase
         }
 
         $contact = new Contacto();
-        $where = empty($data['email']) ?
-            [new DataBaseWhere('nombre', $data['nombre'])] :
-            [new DataBaseWhere('email', $data['email'])];
+        $where = [new DataBaseWhere('codcontacto', $data['codcontacto'])];
         if ($contact->loadFromCode('', $where)) {
 
             if (empty($contact->email) && !empty($data['email'])) {

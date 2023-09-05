@@ -6,6 +6,10 @@
 -->
 <table>
     <column>
+        <name>codcontacto</name>
+        <type>character varying(6)</type>
+    </column>
+    <column>
         <name>idfuente</name>
         <type>integer</type>
     </column>
