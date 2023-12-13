@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2021-2022 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2021-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -20,7 +20,7 @@
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
-use FacturaScripts\Core\Model\Base\ModelCore;
+use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\AlbaranCliente;
 use FacturaScripts\Dinamic\Model\Variante;
 
@@ -31,7 +31,6 @@ use FacturaScripts\Dinamic\Model\Variante;
  */
 class ServiciosMigrator extends MigratorBase
 {
-
     /**
      * @param int $offset
      *
@@ -56,11 +55,6 @@ class ServiciosMigrator extends MigratorBase
         return true;
     }
 
-    /**
-     * @param array $row
-     *
-     * @return bool
-     */
     private function newServicio(array $row): bool
     {
         $servicio = new \FacturaScripts\Plugins\Servicios\Model\ServicioAT();
@@ -73,7 +67,7 @@ class ServiciosMigrator extends MigratorBase
         $servicio->descripcion = $row['descripcion'];
         $servicio->fecha = $row['fecha'];
         $servicio->hora = $row['hora'];
-        $servicio->idempresa = $this->toolBox()->appSettings()->get('default', 'idempresa');
+        $servicio->idempresa = Tools::settings('default', 'idempresa');
         $servicio->idservicio = (int)$row['idservicio'];
         $servicio->material = $row['material'];
         $servicio->observaciones = $row['observaciones'];
@@ -168,7 +162,7 @@ class ServiciosMigrator extends MigratorBase
         foreach ($this->dataBase->select($sql) as $row) {
             $newTrabajo = new \FacturaScripts\Plugins\Servicios\Model\TrabajoAT();
             $newTrabajo->observaciones = $row['descripcion'] . ' #' . $row['nick'];
-            $newTrabajo->fechainicio = date(ModelCore::DATE_STYLE, strtotime($row['fecha']));
+            $newTrabajo->fechainicio = Tools::date($row['fecha']);
             $newTrabajo->horainicio = $row['hora'];
             $newTrabajo->idservicio = $servicio->idservicio;
             $newTrabajo->estado = \FacturaScripts\Plugins\Servicios\Model\TrabajoAT::STATUS_NONE;
@@ -181,7 +175,6 @@ class ServiciosMigrator extends MigratorBase
     }
 
     /**
-     *
      * @param \FacturaScripts\Plugins\Servicios\Model\ServicioAT $servicio
      * @param bool $invoice
      *

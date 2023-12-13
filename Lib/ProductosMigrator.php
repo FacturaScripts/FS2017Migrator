@@ -20,6 +20,8 @@
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
+use FacturaScripts\Core\Base\Utils;
+use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\AtributoValor;
 use FacturaScripts\Dinamic\Model\AttachedFile;
 use FacturaScripts\Dinamic\Model\Producto;
@@ -119,14 +121,14 @@ class ProductosMigrator extends MigratorBase
 
                 $newPath = FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR . $imageRef;
                 if (false === rename($filePath, $newPath)) {
-                    $this->toolBox()->i18nLog()->warning('could-not-move-file: ' . $filePath);
+                    Tools::log()->warning('could-not-move-file: ' . $filePath);
                     return;
                 }
 
                 $newAttFile = new AttachedFile();
                 $newAttFile->path = $imageRef;
                 if (false === $newAttFile->save()) {
-                    $this->toolBox()->i18nLog()->warning('could-not-save-file: ' . $filePath);
+                    Tools::log()->warning('could-not-save-file: ' . $filePath);
                     return;
                 }
 
@@ -191,7 +193,7 @@ class ProductosMigrator extends MigratorBase
 
         $producto->loadFromData($data, ['controlstock', 'pvp', 'stockfis']);
         $producto->precio = (float)$data['pvp'];
-        $producto->ventasinstock = $this->toolBox()->utils()->str2bool($data['controlstock']);
+        $producto->ventasinstock = Utils::str2bool($data['controlstock']);
         $this->setSubcuentas($producto);
 
         if (false === $producto->save()) {
@@ -244,13 +246,13 @@ class ProductosMigrator extends MigratorBase
             }
 
             $newStock = new Stock();
-            $where[] = new DataBaseWhere('codalmacen', $this->toolBox()->appSettings()->get('default', 'codalmacen'));
+            $where[] = new DataBaseWhere('codalmacen', Tools::settings('default', 'codalmacen'));
             if (false === $newStock->loadFromCode('', $where)) {
                 continue;
             }
 
             $newStock->cantidad = $newVariante->stockfis;
-            $newStock->codalmacen = $this->toolBox()->appSettings()->get('default', 'codalmacen');
+            $newStock->codalmacen = Tools::settings('default', 'codalmacen');
             $newStock->idproducto = $newVariante->idproducto;
             $newStock->referencia = $newVariante->referencia;
             if (false === $newStock->save()) {

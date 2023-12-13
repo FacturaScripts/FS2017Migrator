@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2021 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2021-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,6 +19,8 @@
 
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
+use FacturaScripts\Core\Base\Utils;
+use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\AlbaranCliente;
 use FacturaScripts\Dinamic\Model\Cliente;
 
@@ -29,7 +31,6 @@ use FacturaScripts\Dinamic\Model\Cliente;
  */
 class AlbaranesProgramadosMigrator extends MigratorBase
 {
-
     /**
      * @param int $offset
      *
@@ -65,19 +66,14 @@ class AlbaranesProgramadosMigrator extends MigratorBase
         return $albaran->loadFromCode($idalbaran) ? $albaran->fecha : null;
     }
 
-    /**
-     * @param array $row
-     *
-     * @return bool
-     */
-    protected function newDocRecurringSale($row): bool
+    protected function newDocRecurringSale(array $row): bool
     {
         $docRecurring = new \FacturaScripts\Plugins\DocumentosRecurrentes\Model\DocRecurringSale();
         if ($docRecurring->loadFromCode($row['id'])) {
             return true;
         }
 
-        if ($row['fechafin'] && strtotime($row['fechafin']) < \time()) {
+        if ($row['fechafin'] && strtotime($row['fechafin']) < time()) {
             return true;
         }
 
@@ -99,7 +95,7 @@ class AlbaranesProgramadosMigrator extends MigratorBase
         $docRecurring->codpago = $albaran->codpago;
         $docRecurring->codserie = $albaran->codserie;
         $docRecurring->enddate = $row['fechafin'];
-        $docRecurring->generatedoc = $this->toolBox()->utils()->str2bool($row['facturar']) ? 'FacturaCliente' : 'AlbaranCliente';
+        $docRecurring->generatedoc = Utils::str2bool($row['facturar']) ? 'FacturaCliente' : 'AlbaranCliente';
         $docRecurring->id = $row['id'];
         $docRecurring->name = $row['concepto'];
 
@@ -120,9 +116,9 @@ class AlbaranesProgramadosMigrator extends MigratorBase
                 break;
         }
 
-        $lastdate = $this->getLastData($row['ultimo_idalbaran']);
-        if ($lastdate) {
-            $docRecurring->startdate = date(AlbaranCliente::DATE_STYLE, strtotime($lastdate));
+        $lastDate = $this->getLastData($row['ultimo_idalbaran']);
+        if ($lastDate) {
+            $docRecurring->startdate = Tools::date($lastDate);
         } else {
             $day = date('d', strtotime($row['fecha']));
             $docRecurring->startdate = date($day . '-m-Y', strtotime($row['fecha']));
@@ -149,7 +145,7 @@ class AlbaranesProgramadosMigrator extends MigratorBase
 
             $product = $line->getProducto();
             if ($product) {
-                $newLine->price = $this->toolBox()->utils()->str2bool($row['actualizar_precios']) ? 0 : $line->pvpunitario;
+                $newLine->price = Utils::str2bool($row['actualizar_precios']) ? 0 : $line->pvpunitario;
                 $newLine->reference = $line->referencia;
             } else {
                 $newLine->price = $line->pvpunitario;

@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2021-2022 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2021-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,6 +19,9 @@
 
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
+use FacturaScripts\Core\Base\Utils;
+use FacturaScripts\Core\Tools;
+
 /**
  * Description of ExpedientesMigrator
  *
@@ -26,7 +29,6 @@ namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
  */
 class ExpedientesMigrator extends MigratorBase
 {
-
     /**
      * @param int $offset
      *
@@ -51,7 +53,7 @@ class ExpedientesMigrator extends MigratorBase
         return true;
     }
 
-    private function linkDocument(int $id, string $tableName, string $colName, ?int $iddoc)
+    private function linkDocument(int $id, string $tableName, string $colName, ?int $iddoc): void
     {
         if (empty($iddoc)) {
             return;
@@ -85,12 +87,12 @@ class ExpedientesMigrator extends MigratorBase
             return $this->linkDocuments($row['id']);
         }
 
-        $proyecto->fecha = date($proyecto::DATE_STYLE, strtotime($row['fecha']));
-        $proyecto->fechafin = empty($row['fecha_fin']) ? null : date($proyecto::DATE_STYLE, strtotime($row['fecha_fin']));
-        $proyecto->fechainicio = empty($row['fecha_inicio']) ? null : date($proyecto::DATE_STYLE, strtotime($row['fecha_inicio']));
-        $proyecto->idempresa = $this->toolBox()->appSettings()->get('default', 'idempresa');
+        $proyecto->fecha = Tools::date($row['fecha']);
+        $proyecto->fechafin = empty($row['fecha_fin']) ? null : Tools::date($row['fecha_fin']);
+        $proyecto->fechainicio = empty($row['fecha_inicio']) ? null : Tools::date($row['fecha_inicio']);
+        $proyecto->idempresa = Tools::settings('default', 'idempresa');
         $proyecto->idproyecto = (int)$row['id'];
-        if ($this->toolBox()->utils()->str2bool($row['finalizado'])) {
+        if (Utils::str2bool($row['finalizado'])) {
             $proyecto->editable = true;
             $proyecto->idestado = 3;
         }

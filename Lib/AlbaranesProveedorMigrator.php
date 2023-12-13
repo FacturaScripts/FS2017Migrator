@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2021 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -20,6 +20,7 @@
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
+use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\DocTransformation;
 use FacturaScripts\Dinamic\Model\EstadoDocumento;
 
@@ -30,16 +31,9 @@ use FacturaScripts\Dinamic\Model\EstadoDocumento;
  */
 class AlbaranesProveedorMigrator extends MigratorBase
 {
-    /**
-     * @var array
-     */
+    /** @var array */
     private static $availableStatus = [];
 
-    /**
-     * @param string $tableName
-     *
-     * @return bool
-     */
     protected function fixCustomers(string $tableName): bool
     {
         if (false === $this->dataBase->tableExists($tableName)) {
@@ -53,11 +47,6 @@ class AlbaranesProveedorMigrator extends MigratorBase
         return $this->dataBase->exec($sql);
     }
 
-    /**
-     * @param string $tableName
-     *
-     * @return bool
-     */
     protected function fixLinesTable(string $tableName): bool
     {
         if (false === $this->dataBase->tableExists($tableName)) {
@@ -75,11 +64,6 @@ class AlbaranesProveedorMigrator extends MigratorBase
         return $this->dataBase->exec($sql);
     }
 
-    /**
-     * @param string $tableName
-     *
-     * @return bool
-     */
     protected function fixSuppliers(string $tableName): bool
     {
         if (false === $this->dataBase->tableExists($tableName)) {
@@ -167,18 +151,13 @@ class AlbaranesProveedorMigrator extends MigratorBase
         return false;
     }
 
-    /**
-     * @param string $modelName
-     *
-     * @return bool
-     */
     protected function setModelCompany(string $modelName): bool
     {
         $className = '\\FacturaScripts\\Dinamic\\Model\\' . $modelName;
         $model1 = new $className();
 
-        $codalmacen = $this->toolBox()->appSettings()->get('default', 'codalmacen');
-        $idempresa = $this->toolBox()->appSettings()->get('default', 'idempresa');
+        $codalmacen = Tools::settings('default', 'codalmacen');
+        $idempresa = Tools::settings('default', 'idempresa');
         $sql = "UPDATE " . $model1->tableName() . " SET idempresa = " . $this->dataBase->var2str($idempresa)
             . " WHERE idempresa IS NULL;"
             . "UPDATE " . $model1->tableName() . " SET codalmacen = " . $this->dataBase->var2str($codalmacen)

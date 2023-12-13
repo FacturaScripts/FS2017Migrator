@@ -20,6 +20,7 @@
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\Cache;
+use FacturaScripts\Core\Tools;
 
 /**
  * Description of InicioMigrator
@@ -63,7 +64,7 @@ class InicioMigrator extends MigratorBase
     protected function migrationProcess(int &$offset = 0): bool
     {
         if (0 === $offset && false === $this->dataBase->tableExists('fs_vars')) {
-            $this->toolBox()->i18nLog()->warning('no-db-2017');
+            Tools::log()->warning('no-db-2017');
             return false;
         } elseif (0 === $offset) {
             Cache::clear();
@@ -108,7 +109,7 @@ class InicioMigrator extends MigratorBase
             $this->removedConstraints[] = $constraint['name'];
 
             if ($sql && false === $this->dataBase->exec($sql)) {
-                $this->toolBox()->log()->warning('cant-remove-constraint: ' . $constraint['name']);
+                Tools::log()->warning('cant-remove-constraint: ' . $constraint['name']);
                 return false;
             }
         }
@@ -135,7 +136,7 @@ class InicioMigrator extends MigratorBase
                 'ALTER TABLE ' . $tableName . ' MODIFY `' . $column['name'] . '` ' . $column['type'] . ' NULL;';
 
             if (false === $this->dataBase->exec($sql)) {
-                $this->toolBox()->log()->warning('cant-remove-not-null: ' . $tableName . ' ' . $column['name']);
+                Tools::log()->warning('cant-remove-not-null: ' . $tableName . ' ' . $column['name']);
                 return false;
             }
         }
@@ -162,7 +163,7 @@ class InicioMigrator extends MigratorBase
             $this->removedConstraints[] = $constraint['name'];
 
             if ($sql && false === $this->dataBase->exec($sql)) {
-                $this->toolBox()->log()->warning('cant-remove-constraint: ' . $constraint['name']);
+                Tools::log()->warning('cant-remove-constraint: ' . $constraint['name']);
                 return false;
             }
         }

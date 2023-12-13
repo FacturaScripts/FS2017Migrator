@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2020 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -16,8 +16,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
+use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\Almacen;
 use FacturaScripts\Dinamic\Model\CuentaBanco;
 use FacturaScripts\Dinamic\Model\Ejercicio;
@@ -32,9 +34,7 @@ use FacturaScripts\Dinamic\Model\Serie;
  */
 class EmpresaMigrator extends MigratorBase
 {
-
     /**
-     * 
      * @param int $offset
      *
      * @return bool
@@ -50,15 +50,12 @@ class EmpresaMigrator extends MigratorBase
         foreach ($this->dataBase->select('SELECT * FROM fs_vars;') as $row) {
             $this->updatePreferences($row);
         }
-        $this->toolBox()->appSettings()->save();
+
+        Tools::settingsSave();
         return true;
     }
 
-    /**
-     * 
-     * @param int $idempresa
-     */
-    protected function updateAccounting($idempresa)
+    protected function updateAccounting(int $idempresa): void
     {
         $ejercicioModel = new Ejercicio();
         foreach ($ejercicioModel->all([], [], 0, 0) as $ejercicio) {
@@ -67,11 +64,7 @@ class EmpresaMigrator extends MigratorBase
         }
     }
 
-    /**
-     * 
-     * @param int $idempresa
-     */
-    protected function updateBankAccounts($idempresa)
+    protected function updateBankAccounts(int $idempresa): void
     {
         $cuentaBancoModel = new CuentaBanco();
         foreach ($cuentaBancoModel->all([], [], 0, 0) as $cuentaBanco) {
@@ -82,28 +75,29 @@ class EmpresaMigrator extends MigratorBase
 
     /**
      * Updates company data with previous data.
-     * 
+     *
      * @param array $data
      */
-    protected function updateCompany($data)
+    protected function updateCompany(array $data): void
     {
         $exclude = ['regimeniva'];
 
         $empresaModel = new Empresa();
         foreach ($empresaModel->all() as $empresa) {
             foreach ($data as $key => $value) {
-                if (false === \in_array($key, $exclude)) {
+                if (false === in_array($key, $exclude)) {
                     $empresa->{$key} = $value;
                 }
             }
 
             if (false === $empresa->save()) {
-                $this->toolBox()->i18nLog()->error('record-save-error');
+                Tools::log()->error('record-save-error');
                 return;
             }
 
-            $this->toolBox()->appSettings()->set('default', 'idempresa', $empresa->idempresa);
-            $this->toolBox()->appSettings()->set('email', 'email', $empresa->email);
+            Tools::settingsSet('default', 'idempresa', $empresa->idempresa);
+            Tools::settingsSet('email', 'email', $empresa->email);
+
             $this->updateWarehouses($empresa->idempresa, $data['codalmacen']);
             $this->updatePaymentMethods($empresa->idempresa, $data['codpago']);
             $this->updateBankAccounts($empresa->idempresa);
@@ -112,18 +106,13 @@ class EmpresaMigrator extends MigratorBase
         }
     }
 
-    protected function updateCountries()
+    protected function updateCountries(): void
     {
         $sql = "UPDATE paises SET codiso = null WHERE codiso = '';";
         $this->dataBase->exec($sql);
     }
 
-    /**
-     * 
-     * @param int    $idempresa
-     * @param string $codpago
-     */
-    protected function updatePaymentMethods($idempresa, $codpago)
+    protected function updatePaymentMethods(int $idempresa, string $codpago): void
     {
         $formaPagoModel = new FormaPago();
         foreach ($formaPagoModel->all() as $formaPago) {
@@ -137,57 +126,53 @@ class EmpresaMigrator extends MigratorBase
                 $formaPago->pagado = ($formaPago->genrecibos == 'Pagados');
             }
 
-            $this->setPaymentMehtodExpiration($formaPago);
+            $this->setPaymentMethodExpiration($formaPago);
             $formaPago->save();
 
             if ($formaPago->codpago == $codpago) {
-                $this->toolBox()->appSettings()->set('default', 'codpago', $codpago);
+                Tools::settingsSet('default', 'codpago', $codpago);
             }
         }
     }
 
-    /**
-     * 
-     * @param array $row
-     */
-    protected function updatePreferences($row)
+    protected function updatePreferences(array $row): void
     {
         switch ($row['name']) {
             case 'mail_bcc':
-                $this->toolBox()->appSettings()->set('email', 'emailbcc', $row['varchar']);
+                Tools::settingsSet('email', 'emailbcc', $row['varchar']);
                 break;
 
             case 'mail_enc':
-                $this->toolBox()->appSettings()->set('email', 'enc', $row['varchar']);
+                Tools::settingsSet('email', 'enc', $row['varchar']);
                 break;
 
             case 'mail_firma':
-                $this->toolBox()->appSettings()->set('email', 'signature', $row['varchar']);
+                Tools::settingsSet('email', 'signature', $row['varchar']);
                 break;
 
             case 'mail_host':
-                $this->toolBox()->appSettings()->set('email', 'host', $row['varchar']);
+                Tools::settingsSet('email', 'host', $row['varchar']);
                 break;
 
             case 'mail_mailer':
-                $this->toolBox()->appSettings()->set('email', 'mailer', $row['varchar']);
+                Tools::settingsSet('email', 'mailer', $row['varchar']);
                 break;
 
             case 'mail_password':
-                $this->toolBox()->appSettings()->set('email', 'password', $row['varchar']);
+                Tools::settingsSet('email', 'password', $row['varchar']);
                 break;
 
             case 'mail_port':
-                $this->toolBox()->appSettings()->set('email', 'port', $row['varchar']);
+                Tools::settingsSet('email', 'port', $row['varchar']);
                 break;
 
             case 'mail_user':
-                $this->toolBox()->appSettings()->set('email', 'user', $row['varchar']);
+                Tools::settingsSet('email', 'user', $row['varchar']);
                 break;
         }
     }
 
-    protected function updateSeries()
+    protected function updateSeries(): void
     {
         foreach (['A', 'R', 'S'] as $codserie) {
             $serie = new Serie();
@@ -199,29 +184,20 @@ class EmpresaMigrator extends MigratorBase
         }
     }
 
-    /**
-     * 
-     * @param int    $idempresa
-     * @param string $codalmacen
-     */
-    protected function updateWarehouses($idempresa, $codalmacen)
+    protected function updateWarehouses(int $idempresa, string $codalmacen): void
     {
-        $almacenModel = new Almacen();
-        foreach ($almacenModel->all() as $almacen) {
+        $model = new Almacen();
+        foreach ($model->all() as $almacen) {
             $almacen->idempresa = $idempresa;
             $almacen->save();
 
             if ($almacen->codalmacen == $codalmacen) {
-                $this->toolBox()->appSettings()->set('default', 'codalmacen', $codalmacen);
+                Tools::settingsSet('default', 'codalmacen', $codalmacen);
             }
         }
     }
 
-    /**
-     * 
-     * @param FormaPago $formaPago
-     */
-    protected function setPaymentMehtodExpiration(&$formaPago)
+    protected function setPaymentMethodExpiration(FormaPago &$formaPago): void
     {
         if (!isset($formaPago->vencimiento)) {
             return;

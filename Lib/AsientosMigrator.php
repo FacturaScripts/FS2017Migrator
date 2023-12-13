@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2021 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,6 +19,7 @@
 
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
+use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\Asiento;
 use FacturaScripts\Dinamic\Model\Diario;
 use FacturaScripts\Dinamic\Model\Ejercicio;
@@ -31,7 +32,6 @@ use FacturaScripts\Dinamic\Model\Partida;
  */
 class AsientosMigrator extends MigratorBase
 {
-
     /**
      * @param int $offset
      *
@@ -65,7 +65,7 @@ class AsientosMigrator extends MigratorBase
 
             case 5:
                 $offset++;
-                $idempresa = (int)$this->toolBox()->appSettings()->get('default', 'idempresa');
+                $idempresa = (int)Tools::settings('default', 'idempresa');
                 $sql = "UPDATE asientos SET idempresa = " . $this->dataBase->var2str($idempresa)
                     . " WHERE idempresa IS NULL;"
                     . " UPDATE partidas SET idcontrapartida = null WHERE idcontrapartida IS NOT NULL"
@@ -79,9 +79,6 @@ class AsientosMigrator extends MigratorBase
         return true;
     }
 
-    /**
-     * @return bool
-     */
     private function fixPartidas(): bool
     {
         if (false === $this->dataBase->tableExists('partidas')) {

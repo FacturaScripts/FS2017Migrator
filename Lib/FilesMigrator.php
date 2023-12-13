@@ -19,6 +19,7 @@
 
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
+use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\AttachedFile;
 use FacturaScripts\Dinamic\Model\AttachedFileRelation;
 use FacturaScripts\Dinamic\Model\Empresa;
@@ -101,7 +102,7 @@ class FilesMigrator extends MigratorBase
     private function moveFile(array $row): bool
     {
         // corregimos el nombre del archivo
-        $row['nombre'] = str_replace([' ', '/'], ['_', '_'], $this->toolBox()::utils()::noHtml($row['nombre']));
+        $row['nombre'] = str_replace([' ', '/'], ['_', '_'], Tools::noHtml($row['nombre']));
 
         $filePath = FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR . 'FS2017Migrator' . DIRECTORY_SEPARATOR . $row['ruta'];
         $newPath = FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR . $row['nombre'];

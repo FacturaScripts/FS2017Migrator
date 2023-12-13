@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2022 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -32,7 +32,6 @@ use FacturaScripts\Dinamic\Model\Contacto;
  */
 class ClientesMigrator extends MigratorBase
 {
-
     /**
      * @param int $offset
      *
@@ -89,7 +88,7 @@ class ClientesMigrator extends MigratorBase
         return true;
     }
 
-    protected function fixClientes()
+    protected function fixClientes(): void
     {
         // fix strange bug with 0000-00-00 dates on mysql
         if (FS_DB_TYPE === 'mysql') {
@@ -129,12 +128,7 @@ class ClientesMigrator extends MigratorBase
         return '';
     }
 
-    /**
-     * @param Cliente $cliente
-     *
-     * @return bool
-     */
-    protected function migrateAddress(&$cliente): bool
+    protected function migrateAddress(Cliente &$cliente): bool
     {
         $contacto = new Contacto();
         $where = [new DataBaseWhere('codcliente', $cliente->codcliente)];
@@ -156,11 +150,11 @@ class ClientesMigrator extends MigratorBase
                 return false;
             }
 
-            if ($this->toolBox()->utils()->str2bool($row['domfacturacion'])) {
+            if (Utils::str2bool($row['domfacturacion'])) {
                 $cliente->idcontactofact = $newContacto->idcontacto;
             }
 
-            if ($this->toolBox()->utils()->str2bool($row['domenvio'])) {
+            if (Utils::str2bool($row['domenvio'])) {
                 $cliente->idcontactoenv = $newContacto->idcontacto;
             }
 
@@ -170,12 +164,7 @@ class ClientesMigrator extends MigratorBase
         return $found ? $cliente->save() : $this->newContacto($cliente);
     }
 
-    /**
-     * @param Cliente $cliente
-     *
-     * @return bool
-     */
-    protected function newContacto(&$cliente): bool
+    protected function newContacto(Cliente &$cliente): bool
     {
         $contact = new Contacto();
         $contact->cifnif = $cliente->cifnif;
@@ -188,6 +177,7 @@ class ClientesMigrator extends MigratorBase
         $contact->personafisica = $cliente->personafisica;
         $contact->telefono1 = $cliente->telefono1;
         $contact->telefono2 = $cliente->telefono2;
+
         if ($contact->save()) {
             $cliente->idcontactoenv = $contact->idcontacto;
             $cliente->idcontactofact = $contact->idcontacto;

@@ -22,6 +22,7 @@ namespace FacturaScripts\Plugins\FS2017Migrator\Controller;
 use FacturaScripts\Core\Base\Controller;
 use FacturaScripts\Core\Base\FileManager;
 use FacturaScripts\Core\Cache;
+use FacturaScripts\Core\Tools;
 use ZipArchive;
 
 /**
@@ -78,6 +79,7 @@ class FS2017Migrator extends Controller
     public function privateCore(&$response, $user, $permissions)
     {
         parent::privateCore($response, $user, $permissions);
+
         $this->offset = (int)$this->request->get('offset', '0');
 
         $action = $this->request->get('action', '');
@@ -97,7 +99,7 @@ class FS2017Migrator extends Controller
         }
     }
 
-    private function executeStep(string $name)
+    private function executeStep(string $name): void
     {
         $this->working = true;
         $steps = [
@@ -123,7 +125,9 @@ class FS2017Migrator extends Controller
                 continue;
             }
 
-            $this->migrationLog[] = empty($this->offset) ? $step : $step . ' (' . $this->offset . ')';
+            $this->migrationLog[] = empty($this->offset) ?
+                $step :
+                $step . ' (' . Tools::number($this->offset, 0) . ')';
 
             // selected step
             $next = true;
@@ -153,7 +157,7 @@ class FS2017Migrator extends Controller
         // creamos un archivo lock para evitar que se ejecute más de una vez
         $lockFile = 'MyFiles' . DIRECTORY_SEPARATOR . 'FS2017Migrator' . DIRECTORY_SEPARATOR . 'zip.lock';
         if (file_exists($lockFile)) {
-            $this->toolBox()->log()->critical('UNZIP LOCKED');
+            Tools::log()->critical('UNZIP LOCKED');
             return false;
         }
         touch($lockFile);
@@ -162,12 +166,12 @@ class FS2017Migrator extends Controller
         $filePath = FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR . 'FS2017Migrator' . DIRECTORY_SEPARATOR . $fileName;
         $zipStatus = $zip->open($filePath, ZipArchive::CHECKCONS);
         if ($zipStatus !== true) {
-            $this->toolBox()->log()->critical('ZIP ERROR: ' . $zipStatus);
+            Tools::log()->critical('ZIP ERROR: ' . $zipStatus);
             return false;
         }
 
         if (false === $zip->extractTo(FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR . 'FS2017Migrator')) {
-            $this->toolBox()->log()->critical('ZIP EXTRACT ERROR: ' . $fileName);
+            Tools::log()->critical('ZIP EXTRACT ERROR: ' . $fileName);
             $zip->close();
             return false;
         }
@@ -177,7 +181,7 @@ class FS2017Migrator extends Controller
         return true;
     }
 
-    private function removeBackupAction()
+    private function removeBackupAction(): void
     {
         $path = 'MyFiles' . DIRECTORY_SEPARATOR . 'FS2017Migrator';
         FileManager::delTree($path);

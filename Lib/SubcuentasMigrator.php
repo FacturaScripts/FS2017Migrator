@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2022 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -20,6 +20,7 @@
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
+use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\Cuenta;
 use FacturaScripts\Dinamic\Model\Ejercicio;
 use FacturaScripts\Dinamic\Model\Subcuenta;
@@ -31,15 +32,7 @@ use FacturaScripts\Dinamic\Model\Subcuenta;
  */
 class SubcuentasMigrator extends MigratorBase
 {
-
-    /**
-     * @param Cuenta $cuenta
-     * @param string $codcuenta
-     * @param string $codejercicio
-     *
-     * @return bool
-     */
-    private function fixMissingCuenta(&$cuenta, $codcuenta, $codejercicio)
+    private function fixMissingCuenta(Cuenta &$cuenta, string $codcuenta, string $codejercicio): bool
     {
         $parentCuenta = new Cuenta();
         $where = [
@@ -100,12 +93,7 @@ class SubcuentasMigrator extends MigratorBase
         return true;
     }
 
-    /**
-     * @param array $data
-     *
-     * @return bool
-     */
-    private function newSubcuenta($data)
+    private function newSubcuenta(array $data): bool
     {
         $subcuenta = new Subcuenta();
         $subcuenta->disableAdditionalTest(true);
@@ -124,7 +112,7 @@ class SubcuentasMigrator extends MigratorBase
         ];
         if (false === $cuenta->loadFromCode('', $where2) &&
             false === $this->fixMissingCuenta($cuenta, $data['codcuenta'], $data['codejercicio'])) {
-            $this->toolBox()->log()->warning('account-missing');
+            Tools::log()->warning('account-missing');
             return false;
         }
 
@@ -142,7 +130,7 @@ class SubcuentasMigrator extends MigratorBase
             return true;
         }
 
-        $this->toolBox()->log()->error('codejercicio: ' . $subcuenta->codejercicio . ', codsubcuenta: ' . $subcuenta->codsubcuenta);
+        Tools::log()->error('codejercicio: ' . $subcuenta->codejercicio . ', codsubcuenta: ' . $subcuenta->codsubcuenta);
         return false;
     }
 }

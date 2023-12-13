@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2022 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -20,6 +20,7 @@
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
+use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\AttachedFile;
 use FacturaScripts\Dinamic\Model\AttachedFileRelation;
 use FacturaScripts\Dinamic\Model\Contacto;
@@ -33,7 +34,6 @@ use FacturaScripts\Dinamic\Model\GrupoClientes;
  */
 class ContactosMigrator extends MigratorBase
 {
-
     /**
      * @param int $offset
      *
@@ -68,7 +68,7 @@ class ContactosMigrator extends MigratorBase
         return false === empty($ruta) && file_exists($filePath);
     }
 
-    private function fixContactos()
+    private function fixContactos(): void
     {
         $sql = "UPDATE crm_contactos SET codgrupo = null WHERE codgrupo NOT IN (SELECT codgrupo FROM gruposclientes);"
             . "UPDATE crm_contactos SET codagente = null WHERE codagente NOT IN (SELECT codagente FROM agentes);";
@@ -78,7 +78,7 @@ class ContactosMigrator extends MigratorBase
     protected function getIdFuente(string $name): int
     {
         $fuente = new CrmFuente();
-        $where = [new DataBaseWhere('nombre', $this->toolBox()->utils()->noHtml($name))];
+        $where = [new DataBaseWhere('nombre', Tools::noHtml($name))];
         if (false === $fuente->loadFromCode('', $where)) {
             // create source
             $fuente->descripcion = $name;
@@ -213,7 +213,7 @@ class ContactosMigrator extends MigratorBase
     private function moveFile(array $row, Contacto $contact): bool
     {
         // corregimos el nombre del archivo
-        $row['nombre'] = str_replace([' ', '/'], ['_', '_'], $this->toolBox()::utils()::noHtml($row['nombre']));
+        $row['nombre'] = str_replace([' ', '/'], ['_', '_'], Tools::noHtml($row['nombre']));
 
         $filePath = FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR . 'FS2017Migrator' . DIRECTORY_SEPARATOR . $row['ruta'];
         $newPath = FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR . $row['nombre'];

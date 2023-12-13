@@ -22,7 +22,7 @@ namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 use Exception;
 use FacturaScripts\Core\Base\DataBase;
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
-use FacturaScripts\Core\Base\ToolBox;
+use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\Cuenta;
 use FacturaScripts\Dinamic\Model\CuentaEspecial;
 use FacturaScripts\Dinamic\Model\Impuesto;
@@ -64,7 +64,7 @@ abstract class MigratorBase
             // confirm data
             $this->dataBase->commit();
         } catch (Exception $exp) {
-            $this->toolBox()->log()->error($exp->getMessage());
+            Tools::log()->error($exp->getMessage());
             $return = false;
         } finally {
             if ($this->dataBase->inTransaction()) {
@@ -98,12 +98,12 @@ abstract class MigratorBase
             return $txt;
         }
 
-        $string = $this->toolBox()->utils()->noHtml($txt);
+        $string = Tools::noHtml($txt);
         $fixed = preg_replace('/[[:^print:]]/', '', $string);
         return empty($len) ? $fixed : substr($fixed, 0, $len);
     }
 
-    protected function getEmails(string $text): array
+    protected function getEmails(?string $text): array
     {
         if (empty($text)) {
             return [];
@@ -191,10 +191,5 @@ abstract class MigratorBase
         }
 
         return $this->dataBase->exec($sql);
-    }
-
-    protected function toolBox(): ToolBox
-    {
-        return new ToolBox();
     }
 }

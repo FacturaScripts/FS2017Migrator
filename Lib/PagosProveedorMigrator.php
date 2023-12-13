@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2021 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -20,6 +20,8 @@
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
+use FacturaScripts\Core\Base\Utils;
+use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\Asiento;
 use FacturaScripts\Dinamic\Model\PagoProveedor;
 use FacturaScripts\Dinamic\Model\ReciboProveedor;
@@ -31,7 +33,6 @@ use FacturaScripts\Dinamic\Model\ReciboProveedor;
  */
 class PagosProveedorMigrator extends MigratorBase
 {
-
     /**
      * @param int $offset
      *
@@ -74,11 +75,6 @@ class PagosProveedorMigrator extends MigratorBase
         return $newPayment->save();
     }
 
-    /**
-     * @param array $row
-     *
-     * @return bool
-     */
     protected function newReceipt(array $row): bool
     {
         $newReceipt = new ReciboProveedor();
@@ -91,12 +87,13 @@ class PagosProveedorMigrator extends MigratorBase
         $newReceipt->codproveedor = $row['codproveedor'];
         $newReceipt->coddivisa = $row['coddivisa'];
         $newReceipt->codpago = $row['codpago'];
-        $newReceipt->fecha = date('d-m-Y', strtotime($row['fecha']));
-        $newReceipt->fechapago = date('d-m-Y', strtotime($row['fecha']));
+        $newReceipt->fecha = Tools::date($row['fecha']);
+        $newReceipt->fechapago = Tools::date($row['fecha']);
         $newReceipt->idfactura = $row['idfactura'];
         $newReceipt->importe = $row['total'];
-        $newReceipt->pagado = $this->toolBox()->utils()->str2bool($row['pagada']);
-        $newReceipt->vencimiento = date('d-m-Y', strtotime($row['fecha']));
+        $newReceipt->pagado = Utils::str2bool($row['pagada']);
+        $newReceipt->vencimiento = Tools::date($row['fecha']);
+
         return $newReceipt->save() && $this->newPayment($newReceipt, $row['idasientop']);
     }
 }

@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2020 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -21,6 +21,7 @@ namespace FacturaScripts\Plugins\FS2017Migrator\Model;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
 use FacturaScripts\Core\Model\Base;
+use FacturaScripts\Core\Tools;
 
 /**
  * Description of CrmFuente
@@ -29,38 +30,27 @@ use FacturaScripts\Core\Model\Base;
  */
 class CrmFuente extends Base\ModelClass
 {
-
     use Base\ModelTrait;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     public $descripcion;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     public $fecha;
 
-    /**
-     * @var int
-     */
+    /** @var int */
     public $id;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     public $nombre;
 
-    /**
-     * @var int
-     */
+    /** @var int */
     public $numcontactos;
 
     public function clear()
     {
         parent::clear();
-        $this->fecha = date(self::DATE_STYLE);
+        $this->fecha = Tools::date();
         $this->numcontactos = 0;
     }
 
@@ -81,8 +71,9 @@ class CrmFuente extends Base\ModelClass
 
     public function test(): bool
     {
-        $this->descripcion = $this->toolBox()->utils()->noHtml($this->descripcion);
-        $this->nombre = $this->toolBox()->utils()->noHtml($this->nombre);
+        $this->descripcion = Tools::noHtml($this->descripcion);
+        $this->nombre = Tools::noHtml($this->nombre);
+
         return parent::test();
     }
 

@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2022 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -31,21 +31,14 @@ use FacturaScripts\Dinamic\Model\Proveedor;
  */
 class ProveedoresMigrator extends MigratorBase
 {
-
-    protected function fixProveedores()
+    protected function fixProveedores(): void
     {
         $sql = "UPDATE proveedores SET codpago = null WHERE codpago NOT IN (SELECT codpago FROM formaspago);"
             . "UPDATE proveedores SET codserie = null WHERE codserie NOT IN (SELECT codserie FROM series);";
         $this->dataBase->exec($sql);
     }
 
-    /**
-     *
-     * @param string $codproveedor
-     *
-     * @return string
-     */
-    protected function getSubcuenta($codproveedor)
+    protected function getSubcuenta(string $codproveedor): string
     {
         if (false === $this->dataBase->tableExists('co_subcuentasprov')) {
             return '';
@@ -59,13 +52,7 @@ class ProveedoresMigrator extends MigratorBase
         return '';
     }
 
-    /**
-     *
-     * @param Proveedor $proveedor
-     *
-     * @return bool
-     */
-    protected function migrateAddress(&$proveedor)
+    protected function migrateAddress(Proveedor &$proveedor): bool
     {
         $contacto = new Contacto();
         $where = [new DataBaseWhere('codproveedor', $proveedor->codproveedor)];
@@ -87,7 +74,7 @@ class ProveedoresMigrator extends MigratorBase
                 return false;
             }
 
-            if ($this->toolBox()->utils()->str2bool($row['direccionppal'])) {
+            if (Utils::str2bool($row['direccionppal'])) {
                 $proveedor->idcontacto = $newContacto->idcontacto;
             }
 
@@ -98,7 +85,6 @@ class ProveedoresMigrator extends MigratorBase
     }
 
     /**
-     *
      * @param int $offset
      *
      * @return bool
@@ -146,13 +132,7 @@ class ProveedoresMigrator extends MigratorBase
         return true;
     }
 
-    /**
-     *
-     * @param Proveedor $proveedor
-     *
-     * @return bool
-     */
-    protected function newContacto(&$proveedor)
+    protected function newContacto(Proveedor &$proveedor): bool
     {
         $contact = new Contacto();
         $contact->cifnif = $proveedor->cifnif;
@@ -165,6 +145,7 @@ class ProveedoresMigrator extends MigratorBase
         $contact->personafisica = $proveedor->personafisica;
         $contact->telefono1 = $proveedor->telefono1;
         $contact->telefono2 = $proveedor->telefono2;
+
         if ($contact->save()) {
             $proveedor->idcontacto = $contact->idcontacto;
             return $proveedor->save();

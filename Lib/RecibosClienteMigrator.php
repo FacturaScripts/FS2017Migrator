@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2021 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,6 +19,7 @@
 
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
+use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\PagoCliente;
 use FacturaScripts\Dinamic\Model\ReciboCliente;
 
@@ -29,7 +30,6 @@ use FacturaScripts\Dinamic\Model\ReciboCliente;
  */
 class RecibosClienteMigrator extends MigratorBase
 {
-
     private function fixRecibos()
     {
         $sql = "DELETE FROM reciboscli WHERE codcliente IS NULL;"
@@ -93,18 +93,13 @@ class RecibosClienteMigrator extends MigratorBase
         return true;
     }
 
-    /**
-     * @param array $row
-     *
-     * @return bool
-     */
-    protected function newReceipt($row): bool
+    protected function newReceipt(array $row): bool
     {
         $newReceipt = new ReciboCliente($row);
         $newReceipt->disablePaymentGeneration(true);
-        $newReceipt->idempresa = $this->toolBox()->appSettings()->get('default', 'idempresa');
-        $newReceipt->fechapago = date('d-m-Y', strtotime($row['fechap'] ?? $row['fecha']));
-        $newReceipt->vencimiento = date('d-m-Y', strtotime($row['fechav']));
+        $newReceipt->idempresa = Tools::settings('default', 'idempresa');
+        $newReceipt->fechapago = Tools::date($row['fechap'] ?? $row['fecha']);
+        $newReceipt->vencimiento = Tools::date($row['fechav']);
         $newReceipt->pagado = $row['estado'] === 'Pagado';
         if ($newReceipt->exists()) {
             return true;

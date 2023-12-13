@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2020 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace FacturaScripts\Plugins\FS2017Migrator;
 
 use FacturaScripts\Core\Base\InitClass;
@@ -31,9 +32,8 @@ use FacturaScripts\Dinamic\Model\Tarifa;
  *
  * @author Carlos Garcia Gomez <carlos@facturascripts.com>
  */
-class Init extends InitClass
+final class Init extends InitClass
 {
-
     public function init()
     {
         ;
