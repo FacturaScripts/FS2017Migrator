@@ -2,6 +2,7 @@
     "2017-files-paragraph": "Avez-vous une sauvegarde des fichiers FacturaScripts 2017? Copiez le zip dans le dossier MyFiles \/ FS2017Migrator dans FacturaScripts.",
     "2017-migrator": "Migrateur 2017",
     "2017-migrator-paragraph": "Cet assistant permet de migrer les données de la version 2017 vers la nouvelle structure 2021.",
+    "2017-mysql-charset-problem": "La codificación de MySQL debe ser utf8. Consulta está página %web%",
     "are-you-sure-migration": "Rappelez-vous que les modifications ne peuvent pas être annulées, et que vous ne serez pas en mesure d'utiliser FacturaScripts 2017 avec la même base de données. Souhaitez-vous continuer ?",
     "backup-found": "Copie de sauvegarde trouvée",
     "backup-not-found": "Copie de sauvegarde non trouvée",

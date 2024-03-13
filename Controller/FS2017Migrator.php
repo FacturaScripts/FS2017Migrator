@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2024 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -85,6 +85,7 @@ class FS2017Migrator extends Controller
         $action = $this->request->get('action', '');
         switch ($action) {
             case '':
+                $this->checkMySQLCharset();
                 $this->findFileBackup();
                 break;
 
@@ -96,6 +97,21 @@ class FS2017Migrator extends Controller
                 $this->enableRun = false;
                 $this->executeStep($action);
                 break;
+        }
+    }
+
+    private function checkMySQLCharset(): void
+    {
+        // si la base de datos no es MySQL, no hacemos nada
+        if ('mysql' != Tools::config('db_type')) {
+            return;
+        }
+
+        // si el charset no es utf8, sacamos un aviso
+        if ('utf8' != Tools::config('mysql_charset', 'utf8')) {
+            Tools::log()->warning('2017-mysql-charset-problem', [
+                '%web%' => 'https://facturascripts.com/publicaciones/la-codificacion-de-mysql-debe-ser-utf8-para-la-actualizacion'
+            ]);
         }
     }
 

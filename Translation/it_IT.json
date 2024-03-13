@@ -2,6 +2,7 @@
     "2017-files-paragraph": "2017-file-paragrafo",
     "2017-migrator": "2017- migratore",
     "2017-migrator-paragraph": "2017-migratore-paragrafo",
+    "2017-mysql-charset-problem": "La codificación de MySQL debe ser utf8. Consulta está página %web%",
     "are-you-sure-migration": "are-you-sure-migration",
     "backup-found": "backup-found",
     "backup-not-found": "backup-not-found",
