@@ -1,12 +1,12 @@
 {
     "2017-files-paragraph": "Lembre ter uma cópia de segurança dos ficheiros de FacturaScripts 2017? Copie o  zip à pasta MyFiles\/ FS2017 Migrator de FacturaScripts.",
     "2017-migrator": "Migrador 2017",
-    "2017-migrator-paragraph": "Este assistente permite a você migrar os dados da versão 2017 à nova estrutura de tabelas do FS2021",
-    "2017-mysql-charset-problem": "La codificación de MySQL debe ser utf8. Consulta está página %web%",
-    "are-you-sure-migration": "are-you-sure-migration",
-    "backup-found": "backup-found",
-    "backup-not-found": "backup-not-found",
-    "confirm-migration": "confirm-migration",
-    "no-db-2017": "no-db-2017",
-    "remove-backup": "remove-backup"
+    "2017-migrator-paragraph": "Este assistente permite migrar os dados da versão 2017 para a nova estrutura de tabelas do FS2021",
+    "2017-mysql-charset-problem": "A codificação do MySQL deve ser utf8. Verifique esta página %web%",
+    "are-you-sure-migration": "¿Está seguro de la migración?",
+    "backup-found": "Copia de seguridad encontrada",
+    "backup-not-found": "Copia de seguridad no encontrada",
+    "confirm-migration": "confirmar-migration",
+    "no-db-2017": "Esta base de dados não contém informações do FacturaScripts 2017",
+    "remove-backup": "remover-cópia-de-segurança"
 }

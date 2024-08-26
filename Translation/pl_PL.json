@@ -1,12 +1,12 @@
 {
-    "2017-files-paragraph": "¿Tiene una copia de seguridad de los archivos de FacturaScripts 2017? Copie el zip a la carpeta MyFiles\/FS2017Migrator de FacturaScripts.",
-    "2017-migrator": "Migrador 2017",
-    "2017-migrator-paragraph": "Este asistente permite migrar los datos de la versión 2017 a la nueva estructura de 2022.",
-    "2017-mysql-charset-problem": "La codificación de MySQL debe ser utf8. Consulta está página %web%",
-    "are-you-sure-migration": "Recuerde que los cambios no se pueden deshacer, y que no podrá usar FacturaScripts 2017 con esta misma base de datos ¿Desea continuar?",
-    "backup-found": "Copia de seguridad encontrada",
-    "backup-not-found": "Copia de seguridad no encontrada",
-    "confirm-migration": "Confirmar migración",
-    "no-db-2017": "Esta base de datos no contiene información de FacturaScripts 2017",
+    "2017-files-paragraph": "Czy posiadasz kopię zapasową plików FacturaScripts 2017? Skopiuj plik zip do katalogu MyFiles\/FS2017Migrator w FacturaScripts.",
+    "2017-migrator": "Migrator 2017",
+    "2017-migrator-paragraph": "Ten asystent pozwala na migrację danych z wersji 2017 do nowej struktury 2022.",
+    "2017-mysql-charset-problem": "Kodowanie MySQL musi być utf8. Sprawdź tę stronę %web%",
+    "are-you-sure-migration": "Proszę pamiętać, że zmiany są nieodwracalne i nie można będzie używać FacturaScripts 2017 z tą samą bazą danych. Czy chcesz kontynuować?",
+    "backup-found": "Znaleziono kopię zapasową",
+    "backup-not-found": "Kopia zapasowa nie została znaleziona",
+    "confirm-migration": "Potwierdź migrację",
+    "no-db-2017": "Ta baza danych nie zawiera informacji o FacturaScripts 2017",
     "remove-backup": "Eliminar copia de seguridad"
 }

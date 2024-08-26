@@ -2,11 +2,11 @@
     "2017-files-paragraph": "2017-file-paragrafo",
     "2017-migrator": "2017- migratore",
     "2017-migrator-paragraph": "2017-migratore-paragrafo",
-    "2017-mysql-charset-problem": "La codificación de MySQL debe ser utf8. Consulta está página %web%",
-    "are-you-sure-migration": "are-you-sure-migration",
-    "backup-found": "backup-found",
-    "backup-not-found": "backup-not-found",
-    "confirm-migration": "confirm-migration",
-    "no-db-2017": "no-db-2017",
-    "remove-backup": "remove-backup"
+    "2017-mysql-charset-problem": "La codifica MySQL deve essere utf8. Controlla questa pagina %web%",
+    "are-you-sure-migration": "sei-sicuro-migrazione",
+    "backup-found": "backup trovato",
+    "backup-not-found": "backup non trovato",
+    "confirm-migration": "conferma-migrazione",
+    "no-db-2017": "Questo database non contiene informazioni su FacturaScripts 2017",
+    "remove-backup": "Rimuovere il backup"
 }

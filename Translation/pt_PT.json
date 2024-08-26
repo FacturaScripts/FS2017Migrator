@@ -1,12 +1,12 @@
 {
-    "2017-files-paragraph": "2017-files-paragraph",
-    "2017-migrator": "2017-migrator",
-    "2017-migrator-paragraph": "2017-migrator-paragraph",
-    "2017-mysql-charset-problem": "La codificación de MySQL debe ser utf8. Consulta está página %web%",
-    "are-you-sure-migration": "are-you-sure-migration",
-    "backup-found": "backup-found",
-    "backup-not-found": "backup-not-found",
-    "confirm-migration": "confirm-migration",
-    "no-db-2017": "no-db-2017",
-    "remove-backup": "remove-backup"
+    "2017-files-paragraph": "Parágrafo de arquivos de 2017",
+    "2017-migrator": "Migrador de 2017",
+    "2017-migrator-paragraph": "Parágrafo do Migrador de 2017",
+    "2017-mysql-charset-problem": "A codificação do MySQL deve ser utf8. Verifique esta página %web%",
+    "are-you-sure-migration": "tem certeza da migração",
+    "backup-found": "backup encontrado",
+    "backup-not-found": "backup não encontrado",
+    "confirm-migration": "confirmar-migração",
+    "no-db-2017": "Esta base de dados não contém informações do FacturaScripts 2017",
+    "remove-backup": "Remover backup"
 }

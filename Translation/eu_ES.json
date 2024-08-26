@@ -1,8 +1,8 @@
 {
     "2017-files-paragraph": "FacturaScripts 2017 artxiboen segurtasun kopiarik ba daukazu? Kopiatu zip-a FacturaScripts-eko MyFiles\/FS2017Migrator karpera.",
     "2017-migrator": "2017 Migratzailea",
-    "2017-migrator-paragraph": "Morroi honi esker 2017 bertsioko datuak 2021eko egitura berrira migratu ditzakezu.",
-    "2017-mysql-charset-problem": "La codificación de MySQL debe ser utf8. Consulta está página %web%",
+    "2017-migrator-paragraph": "Morroia bidez 2017ko datuak 2021eko egitura berriera migrazio dezakezu.",
+    "2017-mysql-charset-problem": "MySQL-ren kodifikazioa utf8 izan behar du. Kontsultatu web orrialde honetan %web%",
     "are-you-sure-migration": "Gogoratu aldaketak ezin direla desegin, eta ezingo duzula FacturaScripts 2017 datu base honekin erabili. ¿Jarraitu nahi duzu?",
     "backup-found": "Segurtasun kopia aurkituta",
     "backup-not-found": "Ez da segurtasun kopia aurkitu",

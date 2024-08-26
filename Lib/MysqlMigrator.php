@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2020 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2020-2024 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -16,9 +16,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
-use FacturaScripts\Core\Base\DataBase\DataBaseTools;
+use FacturaScripts\Core\DbUpdater;
 
 /**
  * Description of MysqlMigrator
@@ -27,28 +28,20 @@ use FacturaScripts\Core\Base\DataBase\DataBaseTools;
  */
 class MysqlMigrator extends MigratorBase
 {
-
-    /**
-     * 
-     * @param string $tableName
-     *
-     * @return bool
-     */
     private function fixMysqlPrimaryKey(string $tableName): bool
     {
-        $fileName = \substr($tableName, 0, 3) === 'co_' ? \substr($tableName, 3) : $tableName;
-        $fileLocation = DataBaseTools::getXmlTableLocation($fileName);
-        if (false === \file_exists($fileLocation)) {
+        $fileName = substr($tableName, 0, 3) === 'co_' ? substr($tableName, 3) : $tableName;
+        $fileLocation = DbUpdater::getTableXmlLocation($fileName);
+        if (false === file_exists($fileLocation)) {
             return true;
         }
 
-        $xmlCols = [];
-        $xmlCons = [];
-        if (false === DataBaseTools::getXmlTable($fileName, $xmlCols, $xmlCons)) {
+        $structure = DbUpdater::readTableXml($fileLocation);
+        if (empty($structure['columns'])) {
             return true;
         }
 
-        foreach ($xmlCols as $col) {
+        foreach ($structure['columns'] as $col) {
             if ($col['type'] != 'serial') {
                 continue;
             }
@@ -60,12 +53,6 @@ class MysqlMigrator extends MigratorBase
         return true;
     }
 
-    /**
-     * 
-     * @param string $tableName
-     *
-     * @return bool
-     */
     private function fixOldMysqlIntegers(string $tableName): bool
     {
         foreach ($this->dataBase->getColumns($tableName) as $colData) {
@@ -83,14 +70,13 @@ class MysqlMigrator extends MigratorBase
     }
 
     /**
-     * 
      * @param int $offset
      *
      * @return bool
      */
     protected function migrationProcess(&$offset = 0): bool
     {
-        if (\strtolower(FS_DB_TYPE) != 'mysql') {
+        if (strtolower(FS_DB_TYPE) != 'mysql') {
             return true;
         }
 
@@ -102,7 +88,7 @@ class MysqlMigrator extends MigratorBase
         ];
         $tables = [];
         foreach ($this->dataBase->getTables() as $tableName) {
-            if (false === \in_array($tableName, $exclude)) {
+            if (false === in_array($tableName, $exclude)) {
                 $tables[] = $tableName;
             }
         }
