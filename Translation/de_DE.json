@@ -7,6 +7,6 @@
     "backup-found": "Sicherheitskopie gefunden",
     "backup-not-found": "Sicherhetiskopie nicht gefunden",
     "confirm-migration": "Migration bestätigen",
-    "no-db-2017": "no-db-2017",
+    "no-db-2017": "Diese Datenbank enthält keine Informationen zu FacturaScripts 2017",
     "remove-backup": "Sicherheitskopie löschen"
 }

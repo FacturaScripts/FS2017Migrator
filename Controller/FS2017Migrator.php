@@ -22,6 +22,7 @@ namespace FacturaScripts\Plugins\FS2017Migrator\Controller;
 use FacturaScripts\Core\Base\Controller;
 use FacturaScripts\Core\Base\FileManager;
 use FacturaScripts\Core\Cache;
+use FacturaScripts\Core\DbUpdater;
 use FacturaScripts\Core\Tools;
 use ZipArchive;
 
@@ -49,7 +50,7 @@ class FS2017Migrator extends Controller
         $data = parent::getPageData();
         $data['menu'] = 'admin';
         $data['title'] = '2017-migrator';
-        $data['icon'] = 'fas fa-database';
+        $data['icon'] = 'fa-solid fa-database';
         return $data;
     }
 
@@ -131,6 +132,7 @@ class FS2017Migrator extends Controller
         foreach ($steps as $step) {
             if ($next) {
                 Cache::clear();
+                DbUpdater::rebuild();
 
                 // redirect to next step
                 $this->redirect($this->url() . '?action=' . $step, 1);
@@ -149,6 +151,7 @@ class FS2017Migrator extends Controller
             $next = true;
             if ($step == 'end') {
                 Cache::clear();
+                DbUpdater::rebuild();
                 $this->working = false;
                 break;
             }

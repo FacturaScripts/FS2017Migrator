@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2024 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -92,6 +92,9 @@ class InicioMigrator extends MigratorBase
 
     private function removeForeignKeys(string $tableName): bool
     {
+        // obtenemos los índices de la tabla
+        $indexes = $this->dataBase->getIndexes($tableName);
+
         foreach ($this->dataBase->getConstraints($tableName, true) as $constraint) {
             if ($constraint['type'] == 'PRIMARY KEY' || in_array($constraint['name'], $this->removedConstraints)) {
                 continue;
@@ -111,6 +114,19 @@ class InicioMigrator extends MigratorBase
             if ($sql && false === $this->dataBase->exec($sql)) {
                 Tools::log()->warning('cant-remove-constraint: ' . $constraint['name']);
                 return false;
+            }
+
+            // eliminamos el índice si existe
+            foreach ($indexes as $index) {
+                if ($index['name'] != $constraint['name']) {
+                    continue;
+                }
+
+                $sql = 'ALTER TABLE ' . $tableName . ' DROP INDEX ' . $constraint['name'] . ';';
+                if (false === $this->dataBase->exec($sql)) {
+                    Tools::log()->warning('cant-remove-index: ' . $constraint['name']);
+                    return false;
+                }
             }
         }
 
