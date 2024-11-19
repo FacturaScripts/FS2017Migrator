@@ -21,6 +21,7 @@ namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
 use FacturaScripts\Core\Base\Utils;
+use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\Contacto;
 use FacturaScripts\Dinamic\Model\Proveedor;
 
@@ -93,6 +94,7 @@ class ProveedoresMigrator extends MigratorBase
     {
         if (0 === $offset) {
             $this->fixProveedores();
+            $this->removeContactsForeignKeys();
         }
 
         $proveedorModel = new Proveedor();
@@ -152,5 +154,44 @@ class ProveedoresMigrator extends MigratorBase
         }
 
         return false;
+    }
+
+    protected function removeContactsForeignKeys($tableName = 'contactos'): void
+    {
+        // obtenemos los índices de la tabla
+        $indexes = $this->dataBase->getIndexes($tableName);
+
+        foreach ($this->dataBase->getConstraints($tableName, true) as $constraint) {
+            if ($constraint['type'] == 'PRIMARY KEY') {
+                continue;
+            }
+
+            $sql = '';
+            if (strtolower(FS_DB_TYPE) == 'postgresql') {
+                $sql .= 'ALTER TABLE ' . $tableName . ' DROP CONSTRAINT ' . $constraint['name'] . ';';
+            } elseif ($constraint['type'] == 'FOREIGN KEY') {
+                $sql .= 'ALTER TABLE ' . $tableName . ' DROP FOREIGN KEY ' . $constraint['name'] . ';';
+            } else {
+                continue;
+            }
+
+            if ($sql && false === $this->dataBase->exec($sql)) {
+                Tools::log()->warning('cant-remove-constraint: ' . $constraint['name']);
+                return;
+            }
+
+            // eliminamos el índice si existe
+            foreach ($indexes as $index) {
+                if ($index['name'] != $constraint['name']) {
+                    continue;
+                }
+
+                $sql = 'ALTER TABLE ' . $tableName . ' DROP INDEX ' . $constraint['name'] . ';';
+                if (false === $this->dataBase->exec($sql)) {
+                    Tools::log()->warning('cant-remove-index: ' . $constraint['name']);
+                    return;
+                }
+            }
+        }
     }
 }
