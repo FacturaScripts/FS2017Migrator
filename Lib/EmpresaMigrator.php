@@ -99,8 +99,8 @@ class EmpresaMigrator extends MigratorBase
             Tools::settingsSet('email', 'email', $empresa->email);
 
             $this->updateWarehouses($empresa->idempresa, $data['codalmacen']);
-            $this->updatePaymentMethods($empresa->idempresa, $data['codpago']);
             $this->updateBankAccounts($empresa->idempresa);
+            $this->updatePaymentMethods($empresa->idempresa, $data['codpago']);
             $this->updateAccounting($empresa->idempresa);
             break;
         }
