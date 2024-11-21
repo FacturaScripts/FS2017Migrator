@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2021-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2021-2024 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -20,6 +20,7 @@
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
+use FacturaScripts\Core\DataSrc\Agentes;
 use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\AlbaranCliente;
 use FacturaScripts\Dinamic\Model\Variante;
@@ -62,7 +63,7 @@ class ServiciosMigrator extends MigratorBase
             return $this->linkProject($servicio, $row);
         }
 
-        $servicio->codagente = $row['codagente'];
+        $servicio->codagente = Agentes::get($row['codagente'])->codagente;
         $servicio->codalmacen = $row['codalmacen'];
         $servicio->descripcion = $row['descripcion'];
         $servicio->fecha = $row['fecha'];
