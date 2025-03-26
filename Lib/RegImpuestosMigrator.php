@@ -28,7 +28,6 @@ use FacturaScripts\Dinamic\Model\RegularizacionImpuesto;
  */
 class RegImpuestosMigrator extends MigratorBase
 {
-
     /**
      * @param int $offset
      *
@@ -55,6 +54,7 @@ class RegImpuestosMigrator extends MigratorBase
                 $newRegImp->idasiento = null;
             }
 
+            $newRegImp->disableAdditionalTest(true);
             if ($newRegImp->save()) {
                 $offset++;
                 continue;
