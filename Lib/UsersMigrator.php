@@ -46,7 +46,7 @@ class UsersMigrator extends MigratorBase
                 $user->email = $row['email'];
             }
 
-            $user->newPassword = $user->newPassword2 = Utils::randomString(8);
+            $user->newPassword = $user->newPassword2 = Utils::randomString(8) . rand(1111, 9999);
             $user->nick = $row['nick'];
             if (false === $user->save()) {
                 return false;
