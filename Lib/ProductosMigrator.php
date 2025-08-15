@@ -20,7 +20,6 @@
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
-use FacturaScripts\Core\Base\Utils;
 use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\AtributoValor;
 use FacturaScripts\Dinamic\Model\AttachedFile;
@@ -42,8 +41,7 @@ class ProductosMigrator extends MigratorBase
     private function checkAttributeValue(?int $id): ?int
     {
         if (null === $this->attributeValues) {
-            $attValue = new AtributoValor();
-            $this->attributeValues = $attValue->all([], [], 0, 0);
+            $this->attributeValues = AtributoValor::all([], [], 0, 0);
         }
 
         foreach ($this->attributeValues as $att) {
@@ -146,6 +144,7 @@ class ProductosMigrator extends MigratorBase
         // rename stocks table
         if ($offset == 0 && false === $this->dataBase->tableExists('stocks_old')) {
             $this->renameTable('stocks', 'stocks_old');
+            new Stock();
         }
         if ($offset == 0 && false === $this->fixFamilies()) {
             return false;
@@ -185,7 +184,7 @@ class ProductosMigrator extends MigratorBase
         $producto = new Producto();
         $variante = new Variante();
         $where = [new DataBaseWhere('referencia', trim($data['referencia']))];
-        if ($producto->loadFromCode('', $where) || $variante->loadFromCode('', $where)) {
+        if ($producto->loadWhere($where) || $variante->loadWhere($where)) {
             // migramos las imágenes
             $this->migrateImages($producto);
             return true;
@@ -193,7 +192,7 @@ class ProductosMigrator extends MigratorBase
 
         $producto->loadFromData($data, ['controlstock', 'pvp', 'stockfis']);
         $producto->precio = (float)$data['pvp'];
-        $producto->ventasinstock = Utils::str2bool($data['controlstock']);
+        $producto->ventasinstock = $this->str2bool($data['controlstock']);
         $this->setSubcuentas($producto);
 
         if (false === $producto->save()) {
@@ -231,7 +230,7 @@ class ProductosMigrator extends MigratorBase
 
             $variante = new Variante();
             $where = [new DataBaseWhere('referencia', trim($combi['referencia']))];
-            if ($combi['referencia'] && $variante->loadFromCode('', $where)) {
+            if ($combi['referencia'] && $variante->loadWhere($where)) {
                 continue;
             }
 
@@ -247,7 +246,7 @@ class ProductosMigrator extends MigratorBase
 
             $newStock = new Stock();
             $where[] = new DataBaseWhere('codalmacen', Tools::settings('default', 'codalmacen'));
-            if (false === $newStock->loadFromCode('', $where)) {
+            if (false === $newStock->loadWhere($where)) {
                 continue;
             }
 
@@ -262,6 +261,7 @@ class ProductosMigrator extends MigratorBase
 
         // migramos las imágenes
         $this->migrateImages($producto);
+
         return true;
     }
 

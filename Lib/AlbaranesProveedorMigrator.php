@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2025 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -54,13 +54,13 @@ class AlbaranesProveedorMigrator extends MigratorBase
         }
 
         $values = [];
-        foreach (\array_keys($this->impuestos) as $value) {
+        foreach (array_keys($this->impuestos) as $value) {
             $values[] = "'" . $value . "'";
         }
 
         $sql = "UPDATE " . $tableName . " SET recargo = 0 WHERE recargo IS null;"
             . " UPDATE " . $tableName . " SET codimpuesto = null WHERE codimpuesto IS NOT null"
-            . " AND codimpuesto NOT IN (" . \implode(',', $values) . ");";
+            . " AND codimpuesto NOT IN (" . implode(',', $values) . ");";
         return $this->dataBase->exec($sql);
     }
 
@@ -75,12 +75,7 @@ class AlbaranesProveedorMigrator extends MigratorBase
         return $this->dataBase->exec($sql);
     }
 
-    /**
-     * @param int $offset
-     *
-     * @return bool
-     */
-    protected function migrationProcess(&$offset = 0): bool
+    protected function migrationProcess(int &$offset = 0): bool
     {
         if (0 === $offset && false === $this->fixLinesTable('lineasalbaranesprov')) {
             return false;
@@ -134,7 +129,7 @@ class AlbaranesProveedorMigrator extends MigratorBase
             new DataBaseWhere('model1', $model1),
             new DataBaseWhere('model2', $model2)
         ];
-        if ($docTransformation->loadFromCode('', $where)) {
+        if ($docTransformation->loadWhere($where)) {
             return true;
         }
 
@@ -175,12 +170,11 @@ class AlbaranesProveedorMigrator extends MigratorBase
     protected function setModelStatus($modelName1, $id, $modelName2): bool
     {
         if (empty(self::$availableStatus)) {
-            $estadoDocModel = new EstadoDocumento();
             $where = [
                 new DataBaseWhere('generadoc', $modelName2),
                 new DataBaseWhere('tipodoc', $modelName1)
             ];
-            self::$availableStatus = $estadoDocModel->all($where);
+            self::$availableStatus = EstadoDocumento::all($where);
         }
 
         foreach (self::$availableStatus as $estado) {
@@ -208,13 +202,12 @@ class AlbaranesProveedorMigrator extends MigratorBase
         $model1 = new $className();
 
         // is ptefactura column present?
-        if ($ptfactura && false === \in_array('ptefactura', \array_keys($model1->getModelFields()))) {
+        if ($ptfactura && false === in_array('ptefactura', array_keys($model1->getModelFields()))) {
             return true;
         }
 
-        $estadoDocModel = new EstadoDocumento();
         $where = [new DataBaseWhere('tipodoc', $modelName)];
-        foreach ($estadoDocModel->all($where) as $estado) {
+        foreach (EstadoDocumento::all($where) as $estado) {
             $sql = "UPDATE " . $model1->tableName() . " SET idestado = " . $this->dataBase->var2str($estado->idestado);
 
             if ($ptfactura) {
@@ -232,9 +225,11 @@ class AlbaranesProveedorMigrator extends MigratorBase
             }
 
             // update lines
-            $sql2 = "UPDATE " . $model1->getNewLine()->tableName() . " SET actualizastock = " . $this->dataBase->var2str($estado->actualizastock)
+            $sql2 = "UPDATE " . $model1->getNewLine()->tableName()
+                . " SET actualizastock = " . $this->dataBase->var2str($estado->actualizastock)
                 . " WHERE " . $model1->primaryColumn() . " IN (SELECT " . $model1->primaryColumn()
-                . " FROM " . $model1->tableName() . " WHERE idestado = " . $this->dataBase->var2str($estado->idestado) . ")";
+                . " FROM " . $model1->tableName()
+                . " WHERE idestado = " . $this->dataBase->var2str($estado->idestado) . ")";
             if (false === $this->dataBase->exec($sql2)) {
                 return false;
             }

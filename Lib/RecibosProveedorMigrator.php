@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2025 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -21,6 +21,7 @@ namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\PagoProveedor;
+use FacturaScripts\Dinamic\Model\ReciboCliente;
 use FacturaScripts\Dinamic\Model\ReciboProveedor;
 
 /**
@@ -38,12 +39,7 @@ class RecibosProveedorMigrator extends MigratorBase
         $this->dataBase->exec($sql);
     }
 
-    /**
-     * @param int $offset
-     *
-     * @return bool
-     */
-    protected function migrationProcess(&$offset = 0): bool
+    protected function migrationProcess(int &$offset = 0): bool
     {
         if (0 === $offset && !$this->dataBase->tableExists('recibosprov')) {
             return true;

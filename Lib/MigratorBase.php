@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2025 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -47,8 +47,7 @@ abstract class MigratorBase
         $this->dataBase = new DataBase();
 
         // Load taxes
-        $impuestoModel = new Impuesto();
-        foreach ($impuestoModel->all() as $imp) {
+        foreach (Impuesto::all() as $imp) {
             $this->impuestos[$imp->codimpuesto] = $imp;
         }
     }
@@ -77,7 +76,7 @@ abstract class MigratorBase
 
     protected function disableForeignKeys(bool $disable = true): void
     {
-        if (strtolower(FS_DB_TYPE) == 'mysql') {
+        if (strtolower(Tools::config('db_type')) == 'mysql') {
             $value = $disable ? 0 : 1;
             $this->dataBase->exec('SET FOREIGN_KEY_CHECKS=' . $value . ';');
         }
@@ -127,14 +126,14 @@ abstract class MigratorBase
         }
 
         $specialAccount = new CuentaEspecial();
-        if (false === $specialAccount->loadFromCode($code)) {
+        if (false === $specialAccount->load($code)) {
             // create a new special account
             $specialAccount->codcuentaesp = $code;
             $specialAccount->descripcion = $code;
             $specialAccount->save();
         }
 
-        return $specialAccount->primaryColumnValue();
+        return $specialAccount->id();
     }
 
     protected function newCuenta(string $codejercicio, string $codparent, string $codcuenta, string $descripcion, ?string $idcuentaesp = null): bool
@@ -145,7 +144,7 @@ abstract class MigratorBase
             new DataBaseWhere('codcuenta', $codcuenta),
             new DataBaseWhere('codejercicio', $codejercicio)
         ];
-        if ($cuenta->loadFromCode('', $where)) {
+        if ($cuenta->loadWhere($where)) {
             return true;
         }
 
@@ -160,7 +159,7 @@ abstract class MigratorBase
                 new DataBaseWhere('codcuenta', $codparent),
                 new DataBaseWhere('codejercicio', $codejercicio)
             ];
-            if ($parent->loadFromCode('', $where2)) {
+            if ($parent->loadWhere($where2)) {
                 $cuenta->parent_codcuenta = $parent->codcuenta;
                 $cuenta->parent_idcuenta = $parent->idcuenta;
             }
@@ -186,10 +185,15 @@ abstract class MigratorBase
         }
 
         $sql = 'ALTER TABLE ' . $tableName . ' RENAME ' . $newName . ';';
-        if (strtolower(FS_DB_TYPE) == 'postgresql') {
+        if (strtolower(Tools::config('db_type')) == 'postgresql') {
             $sql = 'ALTER TABLE ' . $tableName . ' RENAME TO "' . $newName . '";';
         }
 
         return $this->dataBase->exec($sql);
+    }
+
+    public function str2bool(string $val): bool
+    {
+        return in_array(strtolower($val), ['true', 't', '1'], false);
     }
 }

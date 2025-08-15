@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2025 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -20,7 +20,8 @@
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
-use FacturaScripts\Core\Base\Utils;
+use FacturaScripts\Core\Tools;
+use FacturaScripts\Core\Validator;
 use FacturaScripts\Dinamic\Lib\RegimenIVA;
 use FacturaScripts\Dinamic\Model\Cliente;
 use FacturaScripts\Dinamic\Model\Contacto;
@@ -32,19 +33,13 @@ use FacturaScripts\Dinamic\Model\Contacto;
  */
 class ClientesMigrator extends MigratorBase
 {
-    /**
-     * @param int $offset
-     *
-     * @return bool
-     */
-    protected function migrationProcess(&$offset = 0): bool
+    protected function migrationProcess(int &$offset = 0): bool
     {
         if (0 === $offset) {
             $this->fixClientes();
         }
 
-        $clienteModel = new Cliente();
-        $rows = $clienteModel->all([], ['codcliente' => 'ASC'], $offset);
+        $rows = Cliente::all([], ['codcliente' => 'ASC'], $offset, 50);
         foreach ($rows as $cliente) {
             $cliente->codsubcuenta = $this->getSubcuenta($cliente->codcliente);
             $cliente->telefono1 = $this->fixString($cliente->telefono1, 20);
@@ -70,7 +65,7 @@ class ClientesMigrator extends MigratorBase
                 $cliente->nombre = '?';
             }
 
-            if ($cliente->web && false === Utils::isValidUrl($cliente->web)) {
+            if ($cliente->web && false === Validator::url($cliente->web)) {
                 $cliente->web = '';
             }
 
@@ -91,7 +86,7 @@ class ClientesMigrator extends MigratorBase
     protected function fixClientes(): void
     {
         // fix strange bug with 0000-00-00 dates on mysql
-        if (FS_DB_TYPE === 'mysql') {
+        if (Tools::config('db_type') === 'mysql') {
             $this->dataBase->exec("update clientes set fechaalta = NULL where fechaalta < '1000-01-01';");
         }
 
@@ -109,12 +104,7 @@ class ClientesMigrator extends MigratorBase
         $this->dataBase->exec($sql);
     }
 
-    /**
-     * @param string $codcliente
-     *
-     * @return string
-     */
-    protected function getSubcuenta($codcliente): string
+    protected function getSubcuenta(string $codcliente): string
     {
         if (false === $this->dataBase->tableExists('co_subcuentascli')) {
             return '';
@@ -132,7 +122,7 @@ class ClientesMigrator extends MigratorBase
     {
         $contacto = new Contacto();
         $where = [new DataBaseWhere('codcliente', $cliente->codcliente)];
-        if ($contacto->loadFromCode('', $where)) {
+        if ($contacto->loadWhere($where)) {
             return true;
         }
 
@@ -150,11 +140,11 @@ class ClientesMigrator extends MigratorBase
                 return false;
             }
 
-            if (Utils::str2bool($row['domfacturacion'])) {
+            if ($this->str2bool($row['domfacturacion'])) {
                 $cliente->idcontactofact = $newContacto->idcontacto;
             }
 
-            if (Utils::str2bool($row['domenvio'])) {
+            if ($this->str2bool($row['domenvio'])) {
                 $cliente->idcontactoenv = $newContacto->idcontacto;
             }
 
@@ -172,18 +162,18 @@ class ClientesMigrator extends MigratorBase
         $contact->descripcion = $cliente->nombre;
         $contact->email = $cliente->email;
         $contact->empresa = $cliente->razonsocial;
-        $contact->fax = $cliente->fax;
         $contact->nombre = $cliente->nombre;
         $contact->personafisica = $cliente->personafisica;
         $contact->telefono1 = $cliente->telefono1;
         $contact->telefono2 = $cliente->telefono2;
 
-        if ($contact->save()) {
-            $cliente->idcontactoenv = $contact->idcontacto;
-            $cliente->idcontactofact = $contact->idcontacto;
-            return $cliente->save();
+        if (false === $contact->save()) {
+            return false;
         }
 
-        return false;
+        $cliente->idcontactoenv = $contact->idcontacto;
+        $cliente->idcontactofact = $contact->idcontacto;
+
+        return $cliente->save();
     }
 }

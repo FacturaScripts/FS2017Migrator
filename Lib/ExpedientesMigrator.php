@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2021-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2021-2025 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,8 +19,8 @@
 
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
-use FacturaScripts\Core\Base\Utils;
 use FacturaScripts\Core\Tools;
+use FacturaScripts\Plugins\Proyectos\Model\Proyecto;
 
 /**
  * Description of ExpedientesMigrator
@@ -29,12 +29,7 @@ use FacturaScripts\Core\Tools;
  */
 class ExpedientesMigrator extends MigratorBase
 {
-    /**
-     * @param int $offset
-     *
-     * @return bool
-     */
-    protected function migrationProcess(&$offset = 0): bool
+    protected function migrationProcess(int &$offset = 0): bool
     {
         if (false === $this->dataBase->tableExists('expedientes') ||
             false === class_exists('\FacturaScripts\Dinamic\Model\Proyecto')) {
@@ -82,7 +77,7 @@ class ExpedientesMigrator extends MigratorBase
 
     private function newProyecto(array $row): bool
     {
-        $proyecto = new \FacturaScripts\Plugins\Proyectos\Model\Proyecto();
+        $proyecto = new Proyecto();
         if ($proyecto->loadFromCode($row['id'])) {
             return $this->linkDocuments($row['id']);
         }
@@ -92,7 +87,7 @@ class ExpedientesMigrator extends MigratorBase
         $proyecto->fechainicio = empty($row['fecha_inicio']) ? null : Tools::date($row['fecha_inicio']);
         $proyecto->idempresa = Tools::settings('default', 'idempresa');
         $proyecto->idproyecto = (int)$row['id'];
-        if (Utils::str2bool($row['finalizado'])) {
+        if ($this->str2bool($row['finalizado'])) {
             $proyecto->editable = true;
             $proyecto->idestado = 3;
         }

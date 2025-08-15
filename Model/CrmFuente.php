@@ -47,7 +47,7 @@ class CrmFuente extends Base\ModelClass
     /** @var int */
     public $numcontactos;
 
-    public function clear()
+    public function clear(): void
     {
         parent::clear();
         $this->fecha = Tools::date();

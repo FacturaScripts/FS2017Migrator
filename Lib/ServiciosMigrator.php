@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2021-2024 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2021-2025 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -23,6 +23,9 @@ use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
 use FacturaScripts\Core\DataSrc\Agentes;
 use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\AlbaranCliente;
+use FacturaScripts\Dinamic\Model\Proyecto;
+use FacturaScripts\Dinamic\Model\ServicioAT;
+use FacturaScripts\Dinamic\Model\TrabajoAT;
 use FacturaScripts\Dinamic\Model\Variante;
 
 /**
@@ -32,12 +35,7 @@ use FacturaScripts\Dinamic\Model\Variante;
  */
 class ServiciosMigrator extends MigratorBase
 {
-    /**
-     * @param int $offset
-     *
-     * @return bool
-     */
-    protected function migrationProcess(&$offset = 0): bool
+    protected function migrationProcess(int &$offset = 0): bool
     {
         if (false === $this->dataBase->tableExists('servicioscli') ||
             false === class_exists('\FacturaScripts\Dinamic\Model\ServicioAT')) {
@@ -58,7 +56,7 @@ class ServiciosMigrator extends MigratorBase
 
     private function newServicio(array $row): bool
     {
-        $servicio = new \FacturaScripts\Plugins\Servicios\Model\ServicioAT();
+        $servicio = new ServicioAT();
         if ($servicio->loadFromCode($row['idservicio'])) {
             return $this->linkProject($servicio, $row);
         }
@@ -98,7 +96,7 @@ class ServiciosMigrator extends MigratorBase
     }
 
     /**
-     * @param \FacturaScripts\Plugins\Servicios\Model\ServicioAT $servicio
+     * @param ServicioAT $servicio
      * @param array $row
      *
      * @return bool
@@ -110,7 +108,7 @@ class ServiciosMigrator extends MigratorBase
         }
 
         $albaran = new AlbaranCliente();
-        if (false === $albaran->loadFromCode($row['idalbaran'])) {
+        if (false === $albaran->load($row['idalbaran'])) {
             return true;
         }
 
@@ -138,7 +136,7 @@ class ServiciosMigrator extends MigratorBase
         $sql = 'SELECT * FROM expediente_documentos WHERE id_servicio_ventas = ' . $this->dataBase->var2str($row['idservicio']);
         foreach ($this->dataBase->select($sql) as $item) {
             // comprobamos si el proyecto existe
-            $proyecto = new \FacturaScripts\Dinamic\Model\Proyecto();
+            $proyecto = new Proyecto();
             if (false === $proyecto->loadFromCode($item['id_expediente'])) {
                 continue;
             }
@@ -151,7 +149,7 @@ class ServiciosMigrator extends MigratorBase
     }
 
     /**
-     * @param \FacturaScripts\Plugins\Servicios\Model\ServicioAT $servicio
+     * @param ServicioAT $servicio
      *
      * @return bool
      */
@@ -161,12 +159,12 @@ class ServiciosMigrator extends MigratorBase
             . $this->dataBase->var2str($servicio->idservicio) . ' ORDER BY id ASC';
 
         foreach ($this->dataBase->select($sql) as $row) {
-            $newTrabajo = new \FacturaScripts\Plugins\Servicios\Model\TrabajoAT();
+            $newTrabajo = new TrabajoAT();
             $newTrabajo->observaciones = $row['descripcion'] . ' #' . $row['nick'];
             $newTrabajo->fechainicio = Tools::date($row['fecha']);
             $newTrabajo->horainicio = $row['hora'];
             $newTrabajo->idservicio = $servicio->idservicio;
-            $newTrabajo->estado = \FacturaScripts\Plugins\Servicios\Model\TrabajoAT::STATUS_NONE;
+            $newTrabajo->estado = TrabajoAT::STATUS_NONE;
             if (false === $newTrabajo->save()) {
                 return false;
             }
@@ -176,7 +174,7 @@ class ServiciosMigrator extends MigratorBase
     }
 
     /**
-     * @param \FacturaScripts\Plugins\Servicios\Model\ServicioAT $servicio
+     * @param ServicioAT $servicio
      * @param bool $invoice
      *
      * @return bool
@@ -187,7 +185,7 @@ class ServiciosMigrator extends MigratorBase
             . $this->dataBase->var2str($servicio->idservicio) . ' ORDER BY idlinea ASC';
 
         foreach ($this->dataBase->select($sql) as $row) {
-            $newTrabajo = new \FacturaScripts\Plugins\Servicios\Model\TrabajoAT();
+            $newTrabajo = new TrabajoAT();
             $newTrabajo->cantidad = (float)$row['cantidad'];
             $newTrabajo->codagente = $servicio->codagente;
             $newTrabajo->descripcion = $row['descripcion'];
@@ -201,13 +199,13 @@ class ServiciosMigrator extends MigratorBase
 
             $variante = new Variante();
             $where = [new DataBaseWhere('referencia', $row['referencia'])];
-            if (!empty($row['referencia']) && $variante->loadFromCode('', $where)) {
+            if (!empty($row['referencia']) && $variante->loadWhere($where)) {
                 $newTrabajo->referencia = $row['referencia'];
             }
 
             $newTrabajo->estado = $invoice ?
-                \FacturaScripts\Plugins\Servicios\Model\TrabajoAT::STATUS_INVOICED :
-                \FacturaScripts\Plugins\Servicios\Model\TrabajoAT::STATUS_NONE;
+                TrabajoAT::STATUS_INVOICED :
+                TrabajoAT::STATUS_NONE;
 
             if (false === $newTrabajo->save()) {
                 return false;

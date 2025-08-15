@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2025 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -20,8 +20,8 @@
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
-use FacturaScripts\Core\Base\Utils;
 use FacturaScripts\Core\Tools;
+use FacturaScripts\Core\Validator;
 use FacturaScripts\Dinamic\Model\Contacto;
 use FacturaScripts\Dinamic\Model\Proveedor;
 
@@ -57,7 +57,7 @@ class ProveedoresMigrator extends MigratorBase
     {
         $contacto = new Contacto();
         $where = [new DataBaseWhere('codproveedor', $proveedor->codproveedor)];
-        if ($contacto->loadFromCode('', $where) || false === $this->dataBase->tableExists('dirproveedores')) {
+        if ($contacto->loadWhere($where) || false === $this->dataBase->tableExists('dirproveedores')) {
             return true;
         }
 
@@ -75,7 +75,7 @@ class ProveedoresMigrator extends MigratorBase
                 return false;
             }
 
-            if (Utils::str2bool($row['direccionppal'])) {
+            if ($this->str2bool($row['direccionppal'])) {
                 $proveedor->idcontacto = $newContacto->idcontacto;
             }
 
@@ -85,20 +85,14 @@ class ProveedoresMigrator extends MigratorBase
         return $found ? $proveedor->save() : $this->newContacto($proveedor);
     }
 
-    /**
-     * @param int $offset
-     *
-     * @return bool
-     */
-    protected function migrationProcess(&$offset = 0): bool
+    protected function migrationProcess(int &$offset = 0): bool
     {
         if (0 === $offset) {
             $this->fixProveedores();
             $this->removeContactsForeignKeys();
         }
 
-        $proveedorModel = new Proveedor();
-        $rows = $proveedorModel->all([], ['codproveedor' => 'ASC'], $offset);
+        $rows = Proveedor::all([], ['codproveedor' => 'ASC'], $offset, 50);
         foreach ($rows as $proveedor) {
             $proveedor->codsubcuenta = $this->getSubcuenta($proveedor->codproveedor);
             $proveedor->telefono1 = $this->fixString($proveedor->telefono1, 20);
@@ -116,7 +110,7 @@ class ProveedoresMigrator extends MigratorBase
                 $proveedor->fechabaja = null;
             }
 
-            if ($proveedor->web && false === Utils::isValidUrl($proveedor->web)) {
+            if ($proveedor->web && false === Validator::url($proveedor->web)) {
                 $proveedor->web = '';
             }
 
@@ -142,7 +136,6 @@ class ProveedoresMigrator extends MigratorBase
         $contact->descripcion = $proveedor->nombre;
         $contact->email = $proveedor->email;
         $contact->empresa = $proveedor->razonsocial;
-        $contact->fax = $proveedor->fax;
         $contact->nombre = $proveedor->nombre;
         $contact->personafisica = $proveedor->personafisica;
         $contact->telefono1 = $proveedor->telefono1;
@@ -167,7 +160,7 @@ class ProveedoresMigrator extends MigratorBase
             }
 
             $sql = '';
-            if (strtolower(FS_DB_TYPE) == 'postgresql') {
+            if (strtolower(Tools::config('db_type')) == 'postgresql') {
                 $sql .= 'ALTER TABLE ' . $tableName . ' DROP CONSTRAINT ' . $constraint['name'] . ';';
             } elseif ($constraint['type'] == 'FOREIGN KEY') {
                 $sql .= 'ALTER TABLE ' . $tableName . ' DROP FOREIGN KEY ' . $constraint['name'] . ';';

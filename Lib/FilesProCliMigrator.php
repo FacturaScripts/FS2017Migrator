@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2021 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2021-2025 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,7 +19,7 @@
 
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
-use FacturaScripts\Core\Base\FileManager;
+use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\AttachedFile;
 use FacturaScripts\Dinamic\Model\AttachedFileRelation;
 
@@ -30,22 +30,16 @@ use FacturaScripts\Dinamic\Model\AttachedFileRelation;
  */
 class FilesProCliMigrator extends MigratorBase
 {
-
     const FOLDER_NAME = 'documentos_procli';
 
-    /**
-     * @param int $offset
-     *
-     * @return bool
-     */
-    protected function migrationProcess(&$offset = 0): bool
+    protected function migrationProcess(int &$offset = 0): bool
     {
         $tmpFolder = FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR . 'FS2017Migrator' . DIRECTORY_SEPARATOR . 'tmp';
         if (false === file_exists($tmpFolder)) {
             return true;
         }
 
-        foreach (FileManager::scanFolder($tmpFolder, true) as $file) {
+        foreach (Tools::folderScan($tmpFolder, true) as $file) {
             $path = explode(DIRECTORY_SEPARATOR, $file);
             if (count($path) !== 5) {
                 continue;
@@ -59,14 +53,6 @@ class FilesProCliMigrator extends MigratorBase
         return true;
     }
 
-    /**
-     * @param string $fromPath
-     * @param string $fileName
-     * @param string $modelName
-     * @param string $modelCode
-     *
-     * @return bool
-     */
     private function moveFile(string $fromPath, string $fileName, string $modelName, string $modelCode): bool
     {
         $newPath = FS_FOLDER . DIRECTORY_SEPARATOR . 'MyFiles' . DIRECTORY_SEPARATOR . $fileName;
@@ -91,20 +77,14 @@ class FilesProCliMigrator extends MigratorBase
         return false;
     }
 
-    /**
-     * @param int $idfile
-     * @param string $model
-     * @param string $modelcode
-     *
-     * @return bool
-     */
-    private function newRelation($idfile, $model, $modelcode): bool
+    private function newRelation(int $idfile, string $model, string $modelcode): bool
     {
         $newRelation = new AttachedFileRelation();
         $newRelation->idfile = $idfile;
         $newRelation->model = $model;
         $newRelation->modelcode = $modelcode;
         $newRelation->modelid = (int)$modelcode;
+
         return $newRelation->save();
     }
 }

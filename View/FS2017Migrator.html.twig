@@ -67,11 +67,11 @@
                             </h2>
                             <p class="card-text">{{ trans('2017-files-paragraph') }}</p>
                             {% if filesBackup %}
-                                <div class="alert alert-success mb-0">
+                                <div class="alert alert-dismissible alert-success mb-0">
                                     <i class="fa-solid fa-check fa-fw"></i> {{ trans('backup-found') }}
                                 </div>
                             {% else %}
-                                <div class="alert alert-warning mb-0">
+                                <div class="alert alert-dismissible alert-warning mb-0">
                                     <i class="fa-solid fa-times fa-fw"></i> {{ trans('backup-not-found') }}
                                 </div>
                             {% endif %}
@@ -94,25 +94,10 @@
     {{ parent() }}
     <script type="text/javascript">
         function executeMigration() {
-            bootbox.confirm({
-                title: "{{ trans('confirm-migration') | raw }}",
-                message: "{{ trans('are-you-sure-migration') }}",
-                closeButton: false,
-                buttons: {
-                    cancel: {
-                        label: "<i class='fa-solid fa-times'></i> {{ trans('cancel') }}"
-                    },
-                    confirm: {
-                        label: "<i class='fa-solid fa-check'></i> {{ trans('continue') }}",
-                        className: 'btn-warning'
-                    }
-                },
-                callback: function (result) {
-                    if (result) {
-                        window.location = "{{ fsc.url() }}?action=Inicio";
-                    }
-                }
-            });
+            const message = "{{ trans('confirm-migration') | raw }}\n\n{{ trans('are-you-sure-migration') }}";
+            if (confirm(message)) {
+                window.location = "{{ fsc.url() }}?action=Inicio";
+            }
         }
     </script>
 {% endblock %}

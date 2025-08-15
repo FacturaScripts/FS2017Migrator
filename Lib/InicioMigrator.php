@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2024 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2025 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -101,7 +101,7 @@ class InicioMigrator extends MigratorBase
             }
 
             $sql = '';
-            if (strtolower(FS_DB_TYPE) == 'postgresql') {
+            if (strtolower(Tools::config('db_type')) == 'postgresql') {
                 $sql .= 'ALTER TABLE ' . $tableName . ' DROP CONSTRAINT ' . $constraint['name'] . ';';
             } elseif ($constraint['type'] == 'FOREIGN KEY') {
                 $sql .= 'ALTER TABLE ' . $tableName . ' DROP FOREIGN KEY ' . $constraint['name'] . ';';
@@ -147,7 +147,7 @@ class InicioMigrator extends MigratorBase
                 continue;
             }
 
-            $sql = strtolower(FS_DB_TYPE) == 'postgresql' ?
+            $sql = strtolower(Tools::config('db_type')) == 'postgresql' ?
                 'ALTER TABLE ' . $tableName . ' ALTER COLUMN "' . $column['name'] . '" DROP NOT NULL;' :
                 'ALTER TABLE ' . $tableName . ' MODIFY `' . $column['name'] . '` ' . $column['type'] . ' NULL;';
 
@@ -168,7 +168,7 @@ class InicioMigrator extends MigratorBase
             }
 
             $sql = '';
-            if (strtolower(FS_DB_TYPE) == 'postgresql') {
+            if (strtolower(Tools::config('db_type')) == 'postgresql') {
                 $sql .= 'ALTER TABLE ' . $tableName . ' DROP CONSTRAINT ' . $constraint['name'] . ';';
             } elseif ($constraint['type'] == 'UNIQUE') {
                 $sql .= 'ALTER TABLE ' . $tableName . ' DROP INDEX ' . $constraint['name'] . ';';

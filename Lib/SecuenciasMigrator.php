@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2021 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2025 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -16,9 +16,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
+use FacturaScripts\Core\Model\Base\BusinessDocument;
+use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\AlbaranCliente;
 use FacturaScripts\Dinamic\Model\AlbaranProveedor;
 use FacturaScripts\Dinamic\Model\FacturaCliente;
@@ -37,18 +40,10 @@ use FacturaScripts\Dinamic\Model\Serie;
  */
 class SecuenciasMigrator extends MigratorBase
 {
-
-    /**
-     * 
-     * @param int $offset
-     *
-     * @return bool
-     */
-    protected function migrationProcess(&$offset = 0): bool
+    protected function migrationProcess(int &$offset = 0): bool
     {
         // create sequences for every serie
-        $serieModel = new Serie();
-        foreach ($serieModel->all() as $serie) {
+        foreach (Serie::all() as $serie) {
             $this->migrateSequence($serie->codserie, new FacturaCliente(), true);
             $this->migrateSequence($serie->codserie, new FacturaProveedor(), false);
             $this->migrateSequence($serie->codserie, new AlbaranCliente(), false);
@@ -63,12 +58,11 @@ class SecuenciasMigrator extends MigratorBase
     }
 
     /**
-     * 
-     * @param string         $codserie
-     * @param FacturaCliente $model
-     * @param bool           $usarhuecos
+     * @param string $codserie
+     * @param BusinessDocument $model
+     * @param bool $usarhuecos
      */
-    protected function migrateSequence(string $codserie, $model, bool $usarhuecos)
+    protected function migrateSequence(string $codserie, $model, bool $usarhuecos): void
     {
         $tipodoc = $model->modelClassName();
 
@@ -78,16 +72,18 @@ class SecuenciasMigrator extends MigratorBase
             new DataBaseWhere('codserie', $codserie),
             new DataBaseWhere('tipodoc', $tipodoc)
         ];
-        if ($secuencia->loadFromCode('', $where)) {
+        if ($secuencia->loadWhere($where)) {
             return;
         }
 
         // find previous data
         $where2 = [new DataBaseWhere('codserie', $codserie)];
-        $order = \strtolower(\FS_DB_TYPE) == 'postgresql' ? ['CAST(numero as integer)' => 'DESC'] : ['CAST(numero as unsigned)' => 'DESC'];
+        $order = strtolower(Tools::config('db_type')) == 'postgresql' ?
+            ['CAST(numero as integer)' => 'DESC'] :
+            ['CAST(numero as unsigned)' => 'DESC'];
         foreach ($model->all($where2, $order, 0, 1) as $doc) {
-            $prefix = \substr(\strtoupper($tipodoc), 0, 3);
-            if (\substr($doc->codigo, 0, 3) == $prefix) {
+            $prefix = substr(strtoupper($tipodoc), 0, 3);
+            if (substr($doc->codigo, 0, 3) == $prefix) {
                 $secuencia->codejercicio = $doc->codejercicio;
                 $secuencia->codserie = $doc->codserie;
                 $secuencia->idempresa = $doc->idempresa;

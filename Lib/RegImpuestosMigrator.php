@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2020-2021 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2020-2025 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -28,12 +28,7 @@ use FacturaScripts\Dinamic\Model\RegularizacionImpuesto;
  */
 class RegImpuestosMigrator extends MigratorBase
 {
-    /**
-     * @param int $offset
-     *
-     * @return bool
-     */
-    protected function migrationProcess(&$offset = 0): bool
+    protected function migrationProcess(int &$offset = 0): bool
     {
         if (false === $this->dataBase->tableExists('co_regiva')) {
             return true;
@@ -43,7 +38,7 @@ class RegImpuestosMigrator extends MigratorBase
         $rows = $this->dataBase->select($sql);
         foreach ($rows as $row) {
             $newRegImp = new RegularizacionImpuesto();
-            if ($newRegImp->loadFromCode($row['idregiva'])) {
+            if ($newRegImp->load($row['idregiva'])) {
                 continue;
             }
 
@@ -55,12 +50,11 @@ class RegImpuestosMigrator extends MigratorBase
             }
 
             $newRegImp->disableAdditionalTest(true);
-            if ($newRegImp->save()) {
-                $offset++;
-                continue;
+            if (false === $newRegImp->save()) {
+                return false;
             }
 
-            return false;
+            $offset++;
         }
 
         return true;

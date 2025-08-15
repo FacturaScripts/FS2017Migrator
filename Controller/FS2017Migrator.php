@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2024 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2025 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -20,7 +20,6 @@
 namespace FacturaScripts\Plugins\FS2017Migrator\Controller;
 
 use FacturaScripts\Core\Base\Controller;
-use FacturaScripts\Core\Base\FileManager;
 use FacturaScripts\Core\Cache;
 use FacturaScripts\Core\DbUpdater;
 use FacturaScripts\Core\Tools;
@@ -58,12 +57,12 @@ class FS2017Migrator extends Controller
     {
         $path = 'MyFiles' . DIRECTORY_SEPARATOR . 'FS2017Migrator';
         if (false === file_exists($path)) {
-            FileManager::createFolder($path);
+            Tools::folderCheckOrCreate($path);
             return false;
         }
 
         // descomprimimos los zip que encontremos
-        foreach (FileManager::scanFolder($path) as $file) {
+        foreach (Tools::folderScan($path) as $file) {
             if ('.zip' != substr($file, -4)) {
                 continue;
             }
@@ -74,7 +73,7 @@ class FS2017Migrator extends Controller
         }
 
         // buscamos la carpeta tmp, si la encontramos, es que ya tenemos el backup listo
-        return in_array('tmp', FileManager::scanFolder($path));
+        return in_array('tmp', Tools::folderScan($path));
     }
 
     public function privateCore(&$response, $user, $permissions)
@@ -203,6 +202,6 @@ class FS2017Migrator extends Controller
     private function removeBackupAction(): void
     {
         $path = 'MyFiles' . DIRECTORY_SEPARATOR . 'FS2017Migrator';
-        FileManager::delTree($path);
+        Tools::folderDelete($path);
     }
 }

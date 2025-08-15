@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2025 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -20,7 +20,6 @@
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
-use FacturaScripts\Core\Base\Utils;
 use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\Asiento;
 use FacturaScripts\Dinamic\Model\PagoProveedor;
@@ -33,12 +32,7 @@ use FacturaScripts\Dinamic\Model\ReciboProveedor;
  */
 class PagosProveedorMigrator extends MigratorBase
 {
-    /**
-     * @param int $offset
-     *
-     * @return bool
-     */
-    protected function migrationProcess(&$offset = 0): bool
+    protected function migrationProcess(int &$offset = 0): bool
     {
         $sql = 'SELECT * FROM facturasprov WHERE pagada = TRUE OR idasientop IS NOT NULL ORDER BY idfactura ASC';
         $rows = $this->dataBase->selectLimit($sql, 300, $offset);
@@ -68,7 +62,7 @@ class PagosProveedorMigrator extends MigratorBase
         $newPayment->importe = $receipt->importe;
 
         $asiento = new Asiento();
-        if ($idasientop && $asiento->loadFromCode($idasientop)) {
+        if ($idasientop && $asiento->load($idasientop)) {
             $newPayment->idasiento = $idasientop;
         }
 
@@ -79,7 +73,7 @@ class PagosProveedorMigrator extends MigratorBase
     {
         $newReceipt = new ReciboProveedor();
         $where = [new DataBaseWhere('idfactura', $row['idfactura'])];
-        if ($newReceipt->loadFromCode('', $where) || empty($row['codproveedor'])) {
+        if ($newReceipt->loadWhere($where) || empty($row['codproveedor'])) {
             return true;
         }
 
@@ -91,7 +85,7 @@ class PagosProveedorMigrator extends MigratorBase
         $newReceipt->fechapago = Tools::date($row['fecha']);
         $newReceipt->idfactura = $row['idfactura'];
         $newReceipt->importe = $row['total'];
-        $newReceipt->pagado = Utils::str2bool($row['pagada']);
+        $newReceipt->pagado = $this->str2bool($row['pagada']);
         $newReceipt->vencimiento = Tools::date($row['fecha']);
 
         return $newReceipt->save() && $this->newPayment($newReceipt, $row['idasientop']);

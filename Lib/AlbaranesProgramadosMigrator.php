@@ -19,10 +19,10 @@
 
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
-use FacturaScripts\Core\Base\Utils;
 use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\AlbaranCliente;
 use FacturaScripts\Dinamic\Model\Cliente;
+use FacturaScripts\Dinamic\Model\DocRecurringSale;
 
 /**
  * Description of AlbaranesProgramadosMigrator
@@ -31,12 +31,7 @@ use FacturaScripts\Dinamic\Model\Cliente;
  */
 class AlbaranesProgramadosMigrator extends MigratorBase
 {
-    /**
-     * @param int $offset
-     *
-     * @return bool
-     */
-    protected function migrationProcess(&$offset = 0): bool
+    protected function migrationProcess(int &$offset = 0): bool
     {
         if (false === $this->dataBase->tableExists('albaranescli_prog') ||
             false === class_exists('\FacturaScripts\Dinamic\Model\DocRecurringSale')) {
@@ -55,20 +50,15 @@ class AlbaranesProgramadosMigrator extends MigratorBase
         return true;
     }
 
-    /**
-     * @param int $idalbaran
-     *
-     * @return string
-     */
-    protected function getLastData($idalbaran)
+    protected function getLastData(int $idalbaran): ?string
     {
         $albaran = new AlbaranCliente();
-        return $albaran->loadFromCode($idalbaran) ? $albaran->fecha : null;
+        return $albaran->load($idalbaran) ? $albaran->fecha : null;
     }
 
     protected function newDocRecurringSale(array $row): bool
     {
-        $docRecurring = new \FacturaScripts\Plugins\DocumentosRecurrentes\Model\DocRecurringSale();
+        $docRecurring = new DocRecurringSale();
         if ($docRecurring->loadFromCode($row['id'])) {
             return true;
         }
@@ -78,12 +68,12 @@ class AlbaranesProgramadosMigrator extends MigratorBase
         }
 
         $customer = new Cliente();
-        if (false === $customer->loadFromCode($row['codcliente'])) {
+        if (false === $customer->load($row['codcliente'])) {
             return true;
         }
 
         $albaran = new AlbaranCliente();
-        if (false === $albaran->loadFromCode($row['idalbaran'])) {
+        if (false === $albaran->load($row['idalbaran'])) {
             return true;
         }
 
@@ -95,23 +85,23 @@ class AlbaranesProgramadosMigrator extends MigratorBase
         $docRecurring->codpago = $albaran->codpago;
         $docRecurring->codserie = $albaran->codserie;
         $docRecurring->enddate = $row['fechafin'];
-        $docRecurring->generatedoc = Utils::str2bool($row['facturar']) ? 'FacturaCliente' : 'AlbaranCliente';
+        $docRecurring->generatedoc = $this->str2bool($row['facturar']) ? 'FacturaCliente' : 'AlbaranCliente';
         $docRecurring->id = $row['id'];
         $docRecurring->name = $row['concepto'];
 
         switch ($row['periodo']) {
             case 'a':
-                $docRecurring->termtype = \FacturaScripts\Plugins\DocumentosRecurrentes\Model\DocRecurringSale::TERM_TYPE_MONTHS;
+                $docRecurring->termtype = DocRecurringSale::TERM_TYPE_MONTHS;
                 $docRecurring->termunits = 12;
                 break;
 
             case 'd':
-                $docRecurring->termtype = \FacturaScripts\Plugins\DocumentosRecurrentes\Model\DocRecurringSale::TERM_TYPE_DAYS;
+                $docRecurring->termtype = DocRecurringSale::TERM_TYPE_DAYS;
                 $docRecurring->termunits = $row['repeticion'];
                 break;
 
             default:
-                $docRecurring->termtype = \FacturaScripts\Plugins\DocumentosRecurrentes\Model\DocRecurringSale::TERM_TYPE_MONTHS;
+                $docRecurring->termtype = DocRecurringSale::TERM_TYPE_MONTHS;
                 $docRecurring->termunits = $row['repeticion'];
                 break;
         }
@@ -128,7 +118,7 @@ class AlbaranesProgramadosMigrator extends MigratorBase
     }
 
     /**
-     * @param \FacturaScripts\Plugins\DocumentosRecurrentes\Model\DocRecurringSale $docRecurring
+     * @param DocRecurringSale $docRecurring
      * @param AlbaranCliente $albaran
      * @param array $row
      *
@@ -137,7 +127,7 @@ class AlbaranesProgramadosMigrator extends MigratorBase
     protected function newDocRecurringSaleLines($docRecurring, $albaran, $row): bool
     {
         foreach ($albaran->getLines() as $line) {
-            $newLine = new \FacturaScripts\Plugins\DocumentosRecurrentes\Model\DocRecurringSaleLine();
+            $newLine = new DocRecurringSaleLine();
             $newLine->discount = $line->dtopor;
             $newLine->iddoc = $docRecurring->id;
             $newLine->name = empty($line->descripcion) ? '-' : $line->descripcion;
@@ -145,7 +135,7 @@ class AlbaranesProgramadosMigrator extends MigratorBase
 
             $product = $line->getProducto();
             if ($product) {
-                $newLine->price = Utils::str2bool($row['actualizar_precios']) ? 0 : $line->pvpunitario;
+                $newLine->price = $this->str2bool($row['actualizar_precios']) ? 0 : $line->pvpunitario;
                 $newLine->reference = $line->referencia;
             } else {
                 $newLine->price = $line->pvpunitario;

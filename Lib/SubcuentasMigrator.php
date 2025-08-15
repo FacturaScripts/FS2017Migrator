@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2025 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -36,10 +36,10 @@ class SubcuentasMigrator extends MigratorBase
     {
         $parentCuenta = new Cuenta();
         $where = [
-            new DataBaseWhere('codcuenta', \substr($codcuenta, 1)),
+            new DataBaseWhere('codcuenta', substr($codcuenta, 1)),
             new DataBaseWhere('codejercicio', $codejercicio),
         ];
-        if (false === $parentCuenta->loadFromCode('', $where)) {
+        if (false === $parentCuenta->loadWhere($where)) {
             return false;
         }
 
@@ -64,12 +64,7 @@ class SubcuentasMigrator extends MigratorBase
         return $cuenta->save();
     }
 
-    /**
-     * @param int $offset
-     *
-     * @return bool
-     */
-    protected function migrationProcess(&$offset = 0): bool
+    protected function migrationProcess(int &$offset = 0): bool
     {
         if (false === $this->dataBase->tableExists('co_subcuentas')) {
             return true;
@@ -101,7 +96,7 @@ class SubcuentasMigrator extends MigratorBase
             new DataBaseWhere('codejercicio', $data['codejercicio']),
             new DataBaseWhere('codsubcuenta', $data['codsubcuenta']),
         ];
-        if ($subcuenta->loadFromCode('', $where)) {
+        if ($subcuenta->loadWhere($where)) {
             return true;
         }
 
@@ -110,7 +105,7 @@ class SubcuentasMigrator extends MigratorBase
             new DataBaseWhere('codcuenta', $data['codcuenta']),
             new DataBaseWhere('codejercicio', $data['codejercicio']),
         ];
-        if (false === $cuenta->loadFromCode('', $where2) &&
+        if (false === $cuenta->loadWhere($where2) &&
             false === $this->fixMissingCuenta($cuenta, $data['codcuenta'], $data['codejercicio'])) {
             Tools::log()->warning('account-missing');
             return false;
@@ -123,7 +118,7 @@ class SubcuentasMigrator extends MigratorBase
         $subcuenta->debe = $data['debe'];
         $subcuenta->descripcion = empty($data['descripcion']) ? $data['codsubcuenta'] : $data['descripcion'];
         $subcuenta->haber = $data['haber'];
-        $subcuenta->idcuenta = $cuenta->primaryColumnValue();
+        $subcuenta->idcuenta = $cuenta->id();
         $subcuenta->idsubcuenta = $data['idsubcuenta'];
         $subcuenta->saldo = $data['saldo'];
         if ($subcuenta->save()) {

@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2025 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -32,12 +32,7 @@ use FacturaScripts\Dinamic\Model\Partida;
  */
 class AsientosMigrator extends MigratorBase
 {
-    /**
-     * @param int $offset
-     *
-     * @return bool
-     */
-    protected function migrationProcess(&$offset = 0): bool
+    protected function migrationProcess(int &$offset = 0): bool
     {
         switch ($offset) {
             case 0:
@@ -89,7 +84,7 @@ class AsientosMigrator extends MigratorBase
         return $this->dataBase->exec($sql);
     }
 
-    private function migrateSpecialEntries()
+    private function migrateSpecialEntries(): bool
     {
         $map = [
             'idasientoapertura' => Asiento::OPERATION_OPENING,

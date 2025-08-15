@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2025 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,7 +19,7 @@
 
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
-use FacturaScripts\Core\Base\Utils;
+use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\User;
 
 class UsersMigrator extends MigratorBase
@@ -34,7 +34,7 @@ class UsersMigrator extends MigratorBase
         foreach ($this->dataBase->select($sql) as $row) {
             // comprobamos si ya hay un usuario con ese nick
             $user = new User();
-            if ($user->loadFromCode($row['nick'])) {
+            if ($user->load($row['nick'])) {
                 continue;
             }
 
@@ -46,7 +46,7 @@ class UsersMigrator extends MigratorBase
                 $user->email = $row['email'];
             }
 
-            $user->newPassword = $user->newPassword2 = Utils::randomString(8) . rand(1111, 9999);
+            $user->newPassword = $user->newPassword2 = Tools::randomString(8) . rand(1111, 9999);
             $user->nick = $row['nick'];
             if (false === $user->save()) {
                 return false;

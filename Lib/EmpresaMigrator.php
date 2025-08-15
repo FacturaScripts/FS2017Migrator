@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2025 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -34,12 +34,7 @@ use FacturaScripts\Dinamic\Model\Serie;
  */
 class EmpresaMigrator extends MigratorBase
 {
-    /**
-     * @param int $offset
-     *
-     * @return bool
-     */
-    protected function migrationProcess(&$offset = 0): bool
+    protected function migrationProcess(int &$offset = 0): bool
     {
         foreach ($this->dataBase->select('SELECT * FROM empresa;') as $row) {
             $this->updateCompany($row);
@@ -57,8 +52,7 @@ class EmpresaMigrator extends MigratorBase
 
     protected function updateAccounting(int $idempresa): void
     {
-        $ejercicioModel = new Ejercicio();
-        foreach ($ejercicioModel->all([], [], 0, 0) as $ejercicio) {
+        foreach (Ejercicio::all([], [], 0, 0) as $ejercicio) {
             $ejercicio->idempresa = $idempresa;
             $ejercicio->save();
         }
@@ -66,8 +60,7 @@ class EmpresaMigrator extends MigratorBase
 
     protected function updateBankAccounts(int $idempresa): void
     {
-        $cuentaBancoModel = new CuentaBanco();
-        foreach ($cuentaBancoModel->all([], [], 0, 0) as $cuentaBanco) {
+        foreach (CuentaBanco::all([], [], 0, 0) as $cuentaBanco) {
             $cuentaBanco->idempresa = $idempresa;
             $cuentaBanco->save();
         }
@@ -82,8 +75,7 @@ class EmpresaMigrator extends MigratorBase
     {
         $exclude = ['regimeniva'];
 
-        $empresaModel = new Empresa();
-        foreach ($empresaModel->all() as $empresa) {
+        foreach (Empresa::all() as $empresa) {
             foreach ($data as $key => $value) {
                 if (false === in_array($key, $exclude)) {
                     $empresa->{$key} = $value;
@@ -114,8 +106,7 @@ class EmpresaMigrator extends MigratorBase
 
     protected function updatePaymentMethods(int $idempresa, string $codpago): void
     {
-        $formaPagoModel = new FormaPago();
-        foreach ($formaPagoModel->all() as $formaPago) {
+        foreach (FormaPago::all() as $formaPago) {
             $formaPago->idempresa = $idempresa;
 
             if (isset($formaPago->codcuenta) && empty($formaPago->codcuentabanco)) {
@@ -176,7 +167,7 @@ class EmpresaMigrator extends MigratorBase
     {
         foreach (['A', 'R', 'S'] as $codserie) {
             $serie = new Serie();
-            if (!$serie->loadFromCode($codserie)) {
+            if (!$serie->load($codserie)) {
                 $serie->codserie = $codserie;
                 $serie->descripcion = $codserie;
                 $serie->save();
@@ -186,8 +177,7 @@ class EmpresaMigrator extends MigratorBase
 
     protected function updateWarehouses(int $idempresa, string $codalmacen): void
     {
-        $model = new Almacen();
-        foreach ($model->all() as $almacen) {
+        foreach (Almacen::all() as $almacen) {
             $almacen->idempresa = $idempresa;
             $almacen->save();
 

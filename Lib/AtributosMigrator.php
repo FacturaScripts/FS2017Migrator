@@ -28,17 +28,11 @@ use FacturaScripts\Dinamic\Model\AtributoValor;
  */
 class AtributosMigrator extends MigratorBase
 {
-    /**
-     * @param int $offset
-     *
-     * @return bool
-     */
-    protected function migrationProcess(&$offset = 0): bool
+    protected function migrationProcess(int &$offset = 0): bool
     {
         $this->removeDuplicatedValues();
 
-        $attValorModel = new AtributoValor();
-        foreach ($attValorModel->all([], ['id' => 'ASC'], $offset) as $valor) {
+        foreach (AtributoValor::all([], ['id' => 'ASC'], $offset, 50) as $valor) {
             if (false === $valor->save()) {
                 return false;
             }
@@ -49,7 +43,7 @@ class AtributosMigrator extends MigratorBase
         return true;
     }
 
-    private function removeDuplicatedValues()
+    private function removeDuplicatedValues(): void
     {
         if (false === $this->dataBase->tableExists('atributos_valores')) {
             return;

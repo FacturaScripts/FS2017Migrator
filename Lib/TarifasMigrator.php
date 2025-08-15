@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2025 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,8 +19,8 @@
 
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
-use FacturaScripts\Core\Base\Utils;
 use FacturaScripts\Core\Model\Tarifa;
+
 
 /**
  * Description of TarifasMigrator
@@ -29,12 +29,7 @@ use FacturaScripts\Core\Model\Tarifa;
  */
 class TarifasMigrator extends MigratorBase
 {
-    /**
-     * @param int $offset
-     *
-     * @return bool
-     */
-    protected function migrationProcess(&$offset = 0): bool
+    protected function migrationProcess(int &$offset = 0): bool
     {
         if ($this->dataBase->tableExists('tarifasav')) {
             $this->migrateTarifasAv();
@@ -44,8 +39,7 @@ class TarifasMigrator extends MigratorBase
             return true;
         }
 
-        $tarifaModel = new Tarifa();
-        foreach ($tarifaModel->all([], [], 0, 0) as $tarifa) {
+        foreach (Tarifa::all([], [], 0, 0) as $tarifa) {
             if (!empty($tarifa->aplicar) || !isset($tarifa->aplicar_a)) {
                 continue;
             }
@@ -75,14 +69,14 @@ class TarifasMigrator extends MigratorBase
         $sql = "SELECT * FROM tarifasav WHERE madre IS NULL;";
         foreach ($this->dataBase->select($sql) as $row) {
             $tarifa = new Tarifa();
-            if ($tarifa->loadFromCode($row['codtarifa'])) {
+            if ($tarifa->load($row['codtarifa'])) {
                 continue;
             }
 
             $tarifa->codtarifa = $row['codtarifa'];
             $tarifa->nombre = $row['nombre'];
 
-            if (Utils::str2bool($row['margen'])) {
+            if ($this->str2bool($row['margen'])) {
                 $tarifa->aplicar = Tarifa::APPLY_COST;
                 $tarifa->valorx = (float)$row['incporcentual'];
                 $tarifa->valory = (float)$row['inclineal'];

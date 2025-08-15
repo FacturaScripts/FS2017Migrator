@@ -26,13 +26,7 @@ namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
  */
 class AlbaranesClienteMigrator extends AlbaranesProveedorMigrator
 {
-
-    /**
-     * @param int $offset
-     *
-     * @return bool
-     */
-    protected function migrationProcess(&$offset = 0): bool
+    protected function migrationProcess(int &$offset = 0): bool
     {
         if (0 === $offset && false === $this->fixLinesTable('lineasalbaranescli')) {
             return false;
