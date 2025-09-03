@@ -48,7 +48,12 @@ class MysqlMigrator extends MigratorBase
             }
 
             $sql = 'ALTER TABLE `' . $tableName . '` MODIFY `' . $col['name'] . '` INTEGER NOT NULL AUTO_INCREMENT;';
-            return $this->dataBase->exec($sql);
+            if (false === $this->dataBase->exec($sql)) {
+                Tools::log()->error($sql);
+                return false;
+            }
+
+            return true;
         }
 
         return true;
@@ -63,6 +68,7 @@ class MysqlMigrator extends MigratorBase
 
             $sql = 'ALTER TABLE `' . $tableName . '` MODIFY `' . $colData['name'] . '` INTEGER;';
             if (false === $this->dataBase->exec($sql)) {
+                Tools::log()->error($sql);
                 return false;
             }
         }
