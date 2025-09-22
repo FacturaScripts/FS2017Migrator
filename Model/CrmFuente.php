@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2025 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,18 +19,19 @@
 
 namespace FacturaScripts\Plugins\FS2017Migrator\Model;
 
-use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
-use FacturaScripts\Core\Model\Base;
+use FacturaScripts\Core\Template\ModelClass;
+use FacturaScripts\Core\Template\ModelTrait;
 use FacturaScripts\Core\Tools;
+use FacturaScripts\Core\Where;
 
 /**
  * Description of CrmFuente
  *
  * @author Carlos Garcia Gomez <carlos@facturascripts.com>
  */
-class CrmFuente extends Base\ModelClass
+class CrmFuente extends ModelClass
 {
-    use Base\ModelTrait;
+    use ModelTrait;
 
     /** @var string */
     public $descripcion;
@@ -52,11 +53,6 @@ class CrmFuente extends Base\ModelClass
         parent::clear();
         $this->fecha = Tools::date();
         $this->numcontactos = 0;
-    }
-
-    public static function primaryColumn(): string
-    {
-        return 'id';
     }
 
     public function primaryDescriptionColumn(): string
@@ -82,13 +78,12 @@ class CrmFuente extends Base\ModelClass
         return parent::url($type, $list);
     }
 
-    protected function saveUpdate(array $values = []): bool
+    protected function saveUpdate(): bool
     {
         // get the number of contacts with this source
-        $contact = new Contacto();
-        $where = [new DataBaseWhere('idfuente', $this->primaryColumnValue())];
-        $this->numcontactos = $contact->count($where);
+        $where = [Where::eq('idfuente', $this->id())];
+        $this->numcontactos = Contacto::count($where);
 
-        return parent::saveUpdate($values);
+        return parent::saveUpdate();
     }
 }
