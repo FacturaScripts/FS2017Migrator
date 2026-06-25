@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2021-2025 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2021-2026 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,7 +19,7 @@
 
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
-use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
+use FacturaScripts\Core\Where;
 use FacturaScripts\Core\DataSrc\Agentes;
 use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\AlbaranCliente;
@@ -198,7 +198,7 @@ class ServiciosMigrator extends MigratorBase
             }
 
             $variante = new Variante();
-            $where = [new DataBaseWhere('referencia', $row['referencia'])];
+            $where = [Where::eq('referencia', $row['referencia'])];
             if (!empty($row['referencia']) && $variante->loadWhere($where)) {
                 $newTrabajo->referencia = $row['referencia'];
             }

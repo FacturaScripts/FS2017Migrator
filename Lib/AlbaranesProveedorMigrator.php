@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2025 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2026 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,7 +19,7 @@
 
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
-use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
+use FacturaScripts\Core\Where;
 use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\DocTransformation;
 use FacturaScripts\Dinamic\Model\EstadoDocumento;
@@ -123,11 +123,11 @@ class AlbaranesProveedorMigrator extends MigratorBase
     {
         $docTransformation = new DocTransformation();
         $where = [
-            new DataBaseWhere('iddoc1', $id1),
-            new DataBaseWhere('iddoc2', $id2),
-            new DataBaseWhere('idlinea2', $idlinea2),
-            new DataBaseWhere('model1', $model1),
-            new DataBaseWhere('model2', $model2)
+            Where::eq('iddoc1', $id1),
+            Where::eq('iddoc2', $id2),
+            Where::eq('idlinea2', $idlinea2),
+            Where::eq('model1', $model1),
+            Where::eq('model2', $model2)
         ];
         if ($docTransformation->loadWhere($where)) {
             return true;
@@ -171,8 +171,8 @@ class AlbaranesProveedorMigrator extends MigratorBase
     {
         if (empty(self::$availableStatus)) {
             $where = [
-                new DataBaseWhere('generadoc', $modelName2),
-                new DataBaseWhere('tipodoc', $modelName1)
+                Where::eq('generadoc', $modelName2),
+                Where::eq('tipodoc', $modelName1)
             ];
             self::$availableStatus = EstadoDocumento::all($where);
         }
@@ -206,7 +206,7 @@ class AlbaranesProveedorMigrator extends MigratorBase
             return true;
         }
 
-        $where = [new DataBaseWhere('tipodoc', $modelName)];
+        $where = [Where::eq('tipodoc', $modelName)];
         foreach (EstadoDocumento::all($where) as $estado) {
             $sql = "UPDATE " . $model1->tableName() . " SET idestado = " . $this->dataBase->var2str($estado->idestado);
 

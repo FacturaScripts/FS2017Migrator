@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2025 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2026 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,7 +19,7 @@
 
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
-use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
+use FacturaScripts\Core\Where;
 use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\AttachedFile;
 use FacturaScripts\Dinamic\Model\AttachedFileRelation;
@@ -73,7 +73,7 @@ class ContactosMigrator extends MigratorBase
     protected function getIdFuente(string $name): int
     {
         $fuente = new CrmFuente();
-        $where = [new DataBaseWhere('nombre', Tools::noHtml($name))];
+        $where = [Where::eq('nombre', Tools::noHtml($name))];
         if (false === $fuente->loadFromCode('', $where)) {
             // create source
             $fuente->descripcion = $name;
@@ -119,15 +119,15 @@ class ContactosMigrator extends MigratorBase
         $crmLista = new $listClass();
         $grupo = new GrupoClientes();
         if (false === $grupo->loadFromCode($contact->codgrupo) ||
-            false === $crmLista->loadFromCode('', [new DataBaseWhere('nombre', $grupo->nombre)])) {
+            false === $crmLista->loadFromCode('', [Where::eq('nombre', $grupo->nombre)])) {
             $crmLista->nombre = $grupo->nombre;
             $crmLista->save();
         }
 
         $member = new $memberClass();
         $where = [
-            new DataBaseWhere('idcontacto', $contact->idcontacto),
-            new DataBaseWhere('idlista', $crmLista->id)
+            Where::eq('idcontacto', $contact->idcontacto),
+            Where::eq('idlista', $crmLista->id)
         ];
         if (false === $member->loadFromCode('', $where)) {
             $member->idcontacto = $contact->idcontacto;
@@ -148,8 +148,8 @@ class ContactosMigrator extends MigratorBase
 
         $crmNote = new $class();
         $where = [
-            new DataBaseWhere('codcontacto', $codcontacto),
-            new DataBaseWhere('idcontacto', null, 'IS')
+            Where::eq('codcontacto', $codcontacto),
+            Where::isNull('idcontacto')
         ];
         foreach ($crmNote->all($where, [], 0, 0) as $note) {
             $note->idcontacto = $contact->idcontacto;
@@ -169,8 +169,8 @@ class ContactosMigrator extends MigratorBase
 
         $crmOpportunity = new $class();
         $where = [
-            new DataBaseWhere('codcontacto', $codcontacto),
-            new DataBaseWhere('idcontacto', null, 'IS')
+            Where::eq('codcontacto', $codcontacto),
+            Where::isNull('idcontacto')
         ];
         foreach ($crmOpportunity->all($where, [], 0, 0) as $opo) {
             $opo->idcontacto = $contact->idcontacto;
@@ -253,7 +253,7 @@ class ContactosMigrator extends MigratorBase
         }
 
         $contact = new Contacto();
-        $where = [new DataBaseWhere('codcontacto', $data['codcontacto'])];
+        $where = [Where::eq('codcontacto', $data['codcontacto'])];
         if ($contact->loadWhere($where)) {
 
             if (empty($contact->email) && !empty($data['email'])) {

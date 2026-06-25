@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2025 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2026 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,7 +19,7 @@
 
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
-use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
+use FacturaScripts\Core\Where;
 use FacturaScripts\Core\Model\Base\BusinessDocument;
 use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\AlbaranCliente;
@@ -69,15 +69,15 @@ class SecuenciasMigrator extends MigratorBase
         // sequence exists for this serie?
         $secuencia = new SecuenciaDocumento();
         $where = [
-            new DataBaseWhere('codserie', $codserie),
-            new DataBaseWhere('tipodoc', $tipodoc)
+            Where::eq('codserie', $codserie),
+            Where::eq('tipodoc', $tipodoc)
         ];
         if ($secuencia->loadWhere($where)) {
             return;
         }
 
         // find previous data
-        $where2 = [new DataBaseWhere('codserie', $codserie)];
+        $where2 = [Where::eq('codserie', $codserie)];
         $order = strtolower(Tools::config('db_type')) == 'postgresql' ?
             ['CAST(numero as integer)' => 'DESC'] :
             ['CAST(numero as unsigned)' => 'DESC'];

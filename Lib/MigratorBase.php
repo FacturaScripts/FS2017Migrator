@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2025 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2026 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -21,7 +21,7 @@ namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
 use Exception;
 use FacturaScripts\Core\Base\DataBase;
-use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
+use FacturaScripts\Core\Where;
 use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\Cuenta;
 use FacturaScripts\Dinamic\Model\CuentaEspecial;
@@ -131,8 +131,8 @@ abstract class MigratorBase
         $cuenta = new Cuenta();
         $cuenta->disableAdditionalTest(true);
         $where = [
-            new DataBaseWhere('codcuenta', $codcuenta),
-            new DataBaseWhere('codejercicio', $codejercicio)
+            Where::eq('codcuenta', $codcuenta),
+            Where::eq('codejercicio', $codejercicio)
         ];
         if ($cuenta->loadWhere($where)) {
             return true;
@@ -146,8 +146,8 @@ abstract class MigratorBase
         if (!empty($codparent)) {
             $parent = new Cuenta();
             $where2 = [
-                new DataBaseWhere('codcuenta', $codparent),
-                new DataBaseWhere('codejercicio', $codejercicio)
+                Where::eq('codcuenta', $codparent),
+                Where::eq('codejercicio', $codejercicio)
             ];
             if ($parent->loadWhere($where2)) {
                 $cuenta->parent_codcuenta = $parent->codcuenta;

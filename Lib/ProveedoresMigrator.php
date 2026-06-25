@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2025 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2026 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,7 +19,7 @@
 
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
-use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
+use FacturaScripts\Core\Where;
 use FacturaScripts\Core\Tools;
 use FacturaScripts\Core\Validator;
 use FacturaScripts\Dinamic\Model\Contacto;
@@ -56,7 +56,7 @@ class ProveedoresMigrator extends MigratorBase
     protected function migrateAddress(Proveedor &$proveedor): bool
     {
         $contacto = new Contacto();
-        $where = [new DataBaseWhere('codproveedor', $proveedor->codproveedor)];
+        $where = [Where::eq('codproveedor', $proveedor->codproveedor)];
         if ($contacto->loadWhere($where) || false === $this->dataBase->tableExists('dirproveedores')) {
             return true;
         }

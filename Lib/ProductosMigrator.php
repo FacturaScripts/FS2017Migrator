@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2025 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2026 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,7 +19,7 @@
 
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
-use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
+use FacturaScripts\Core\Where;
 use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\AtributoValor;
 use FacturaScripts\Dinamic\Model\AttachedFile;
@@ -183,7 +183,7 @@ class ProductosMigrator extends MigratorBase
 
         $producto = new Producto();
         $variante = new Variante();
-        $where = [new DataBaseWhere('referencia', trim($data['referencia']))];
+        $where = [Where::eq('referencia', trim($data['referencia']))];
         if ($producto->loadWhere($where) || $variante->loadWhere($where)) {
             // migramos las imágenes
             $this->migrateImages($producto);
@@ -229,7 +229,7 @@ class ProductosMigrator extends MigratorBase
             }
 
             $variante = new Variante();
-            $where = [new DataBaseWhere('referencia', trim($combi['referencia']))];
+            $where = [Where::eq('referencia', trim($combi['referencia']))];
             if ($combi['referencia'] && $variante->loadWhere($where)) {
                 continue;
             }
@@ -245,7 +245,7 @@ class ProductosMigrator extends MigratorBase
             }
 
             $newStock = new Stock();
-            $where[] = new DataBaseWhere('codalmacen', Tools::settings('default', 'codalmacen'));
+            $where[] = Where::eq('codalmacen', Tools::settings('default', 'codalmacen'));
             if (false === $newStock->loadWhere($where)) {
                 continue;
             }

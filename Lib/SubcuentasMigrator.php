@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FS2017Migrator plugin for FacturaScripts
- * Copyright (C) 2019-2025 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2026 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,7 +19,7 @@
 
 namespace FacturaScripts\Plugins\FS2017Migrator\Lib;
 
-use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
+use FacturaScripts\Core\Where;
 use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\Cuenta;
 use FacturaScripts\Dinamic\Model\Ejercicio;
@@ -36,8 +36,8 @@ class SubcuentasMigrator extends MigratorBase
     {
         $parentCuenta = new Cuenta();
         $where = [
-            new DataBaseWhere('codcuenta', substr($codcuenta, 1)),
-            new DataBaseWhere('codejercicio', $codejercicio),
+            Where::eq('codcuenta', substr($codcuenta, 1)),
+            Where::eq('codejercicio', $codejercicio),
         ];
         if (false === $parentCuenta->loadWhere($where)) {
             return false;
@@ -93,8 +93,8 @@ class SubcuentasMigrator extends MigratorBase
         $subcuenta = new Subcuenta();
         $subcuenta->disableAdditionalTest(true);
         $where = [
-            new DataBaseWhere('codejercicio', $data['codejercicio']),
-            new DataBaseWhere('codsubcuenta', $data['codsubcuenta']),
+            Where::eq('codejercicio', $data['codejercicio']),
+            Where::eq('codsubcuenta', $data['codsubcuenta']),
         ];
         if ($subcuenta->loadWhere($where)) {
             return true;
@@ -102,8 +102,8 @@ class SubcuentasMigrator extends MigratorBase
 
         $cuenta = new Cuenta();
         $where2 = [
-            new DataBaseWhere('codcuenta', $data['codcuenta']),
-            new DataBaseWhere('codejercicio', $data['codejercicio']),
+            Where::eq('codcuenta', $data['codcuenta']),
+            Where::eq('codejercicio', $data['codejercicio']),
         ];
         if (false === $cuenta->loadWhere($where2) &&
             false === $this->fixMissingCuenta($cuenta, $data['codcuenta'], $data['codejercicio'])) {
