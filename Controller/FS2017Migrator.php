@@ -35,11 +35,20 @@ class FS2017Migrator extends Controller
     /** @var bool */
     public $enableRun = true;
 
+    /** @var bool */
+    public $foreignKeysReady = true;
+
+    /** @var bool */
+    public $migrationFinished = false;
+
     /** @var array */
     public $migrationLog = [];
 
     /** @var int */
     public $offset;
+
+    /** @var int */
+    public $progress = 0;
 
     /** @var bool */
     public $working = false;
@@ -86,6 +95,7 @@ class FS2017Migrator extends Controller
         switch ($action) {
             case '':
                 $this->checkMySQLCharset();
+                $this->checkForeignKeys();
                 $this->findFileBackup();
                 break;
 
@@ -95,9 +105,29 @@ class FS2017Migrator extends Controller
 
             default:
                 $this->enableRun = false;
-                $this->executeStep($action);
+                if ($this->checkForeignKeys()) {
+                    $this->executeStep($action);
+                }
                 break;
         }
+    }
+
+    /**
+     * Comprueba que las claves ajenas estén desactivadas en config.php.
+     * Mientras estén activas, el core volvería a crearlas en cada DbUpdater::rebuild()
+     * deshaciendo el trabajo del migrador. Si no lo están, bloquea la migración.
+     *
+     * @return bool true si las claves ajenas están desactivadas.
+     */
+    private function checkForeignKeys(): bool
+    {
+        if (false === Tools::config('db_foreign_keys')) {
+            return true;
+        }
+
+        $this->foreignKeysReady = false;
+        $this->enableRun = false;
+        return false;
     }
 
     private function checkMySQLCharset(): void
@@ -128,7 +158,7 @@ class FS2017Migrator extends Controller
         ];
 
         $next = false;
-        foreach ($steps as $step) {
+        foreach ($steps as $num => $step) {
             if ($next) {
                 Cache::clear();
                 DbUpdater::rebuild();
@@ -146,12 +176,16 @@ class FS2017Migrator extends Controller
                 $step :
                 $step . ' (' . Tools::number($this->offset, 0) . ')';
 
+            // progreso aproximado según el paso actual sobre el total
+            $this->progress = (int)round(($num + 1) / count($steps) * 100);
+
             // selected step
             $next = true;
             if ($step == 'end') {
                 Cache::clear();
                 DbUpdater::rebuild();
                 $this->working = false;
+                $this->migrationFinished = true;
                 break;
             }
 

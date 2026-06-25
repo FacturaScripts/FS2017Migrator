@@ -1,7 +1,10 @@
 {
     "2017-files-paragraph": "Do you have a backup of the FacturaScripts 2017 files? Copy the zip to the MyFiles \/ FS2017Migrator folder in FacturaScripts.",
+    "2017-foreign-keys-enabled": "Foreign keys are enabled. Before migrating you must disable them by adding define('FS_DB_FOREIGN_KEYS', false); to your config.php file and reloading this page. Re-enable them when the migration is finished.",
+    "2017-foreign-keys-restore": "Migration finished. Re-enable foreign keys by removing the FS_DB_FOREIGN_KEYS line from your config.php file (or setting it to true).",
     "2017-migrator": "2017 migrator",
-    "2017-migrator-paragraph": "This wizard allows you to migrate data from the 2017 version to the new 2023 structure.",
+    "2017-restart": "Start over",
+    "2017-migrator-paragraph": "This wizard allows you to migrate data from the 2017 version to the new 2026 structure.",
     "2017-mysql-charset-problem": "MySQL encoding must be utf8. Check this page %web%",
     "are-you-sure-migration": "Remember that the changes cannot be undone, and that you will not be able to use FacturaScripts 2017 with this same database. Do you want to continue?",
     "backup-found": "Backup found",

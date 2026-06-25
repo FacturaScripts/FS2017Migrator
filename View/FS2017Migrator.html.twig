@@ -23,6 +23,15 @@
                 <div class="col">
                     <div class="card shadow mb-4">
                         <div class="card-body">
+                            {% if fsc.working %}
+                                <div class="progress mb-3" style="height: 22px;">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning"
+                                         role="progressbar" style="width: {{ fsc.progress }}%;"
+                                         aria-valuenow="{{ fsc.progress }}" aria-valuemin="0" aria-valuemax="100">
+                                        {{ fsc.progress }}%
+                                    </div>
+                                </div>
+                            {% endif %}
                             <ul class="mb-0">
                                 {% for log in fsc.migrationLog %}
                                     <li>{{ log }}</li>
@@ -35,13 +44,53 @@
                                     <i class="fa-solid fa-cog fa-spin fa-fw"></i> {{ trans('run') }}
                                 </button>
                             </div>
-                        {% elseif fsc.findFileBackup() %}
+                        {% else %}
                             <div class="card-footer">
-                                <a class="btn btn-danger" href="{{ fsc.url() }}?action=remove-backup">
-                                    <i class="fa-solid fa-trash-alt fa-fw"></i> {{ trans('remove-backup') }}
-                                </a>
+                                {% if fsc.migrationFinished == false %}
+                                    <button type="button" class="btn btn-warning" onclick="executeMigration();">
+                                        <i class="fa-solid fa-redo fa-fw"></i> {{ trans('2017-restart') }}
+                                    </button>
+                                {% endif %}
+                                {% if fsc.findFileBackup() %}
+                                    <a class="btn btn-danger" href="{{ fsc.url() }}?action=remove-backup">
+                                        <i class="fa-solid fa-trash-alt fa-fw"></i> {{ trans('remove-backup') }}
+                                    </a>
+                                {% endif %}
                             </div>
                         {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        {% if fsc.migrationFinished %}
+            <div class="row">
+                <div class="col">
+                    <div class="card border-success shadow mb-4">
+                        <div class="card-body">
+                            <h2 class="h5 card-title text-success">
+                                <i class="fa-solid fa-circle-check fa-fw"></i> {{ trans('done') }}
+                            </h2>
+                            <p class="card-text mb-0">{{ trans('2017-foreign-keys-restore') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        {% if fsc.foreignKeysReady == false %}
+            <div class="row">
+                <div class="col">
+                    <div class="card border-warning shadow mb-4">
+                        <div class="card-body">
+                            <h2 class="h5 card-title text-warning">
+                                <i class="fa-solid fa-triangle-exclamation fa-fw"></i> {{ trans('warning') }}
+                            </h2>
+                            <p class="card-text mb-0">{{ trans('2017-foreign-keys-enabled') }}</p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ fsc.url() }}" class="btn btn-secondary">
+                                <i class="fa-solid fa-redo fa-fw"></i> {{ trans('refresh') }}
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>

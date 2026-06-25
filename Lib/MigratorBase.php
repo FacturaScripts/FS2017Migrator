@@ -54,24 +54,14 @@ abstract class MigratorBase
 
     public function migrate(int &$offset = 0): bool
     {
-        // start transaction
-        $this->dataBase->beginTransaction();
-
+        // No usamos transacción: el core 2026 no permite crear tablas dentro de
+        // una transacción, y los modelos pueden necesitar crear tablas al guardarse.
         try {
-            $return = $this->migrationProcess($offset);
-
-            // confirm data
-            $this->dataBase->commit();
+            return $this->migrationProcess($offset);
         } catch (Exception $exp) {
             Tools::log()->error($exp->getMessage());
-            $return = false;
-        } finally {
-            if ($this->dataBase->inTransaction()) {
-                $this->dataBase->rollback();
-            }
+            return false;
         }
-
-        return $return;
     }
 
     protected function disableForeignKeys(bool $disable = true): void

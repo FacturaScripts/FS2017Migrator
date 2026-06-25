@@ -1,7 +1,10 @@
 {
     "2017-files-paragraph": "¿Tiene una copia de seguridad de los archivos de FacturaScripts 2017? Copie el zip a la carpeta MyFiles\/FS2017Migrator de FacturaScripts.",
+    "2017-foreign-keys-enabled": "Las claves ajenas (foreign keys) están activadas. Antes de migrar debe desactivarlas añadiendo define('FS_DB_FOREIGN_KEYS', false); a su archivo config.php y recargar esta página. Vuelva a activarlas cuando termine la migración.",
+    "2017-foreign-keys-restore": "Migración finalizada. Vuelva a activar las claves ajenas quitando la línea FS_DB_FOREIGN_KEYS de config.php (o poniéndola a true).",
     "2017-migrator": "Migrador 2017",
-    "2017-migrator-paragraph": "Este asistente permite migrar los datos de la versión 2017 a la nueva estructura de 2024.",
+    "2017-restart": "Comenzar de nuevo",
+    "2017-migrator-paragraph": "Este asistente permite migrar los datos de la versión 2017 a la nueva estructura de 2026.",
     "2017-mysql-charset-problem": "La codificación de MySQL debe ser utf8. Consulta está página %web%",
     "are-you-sure-migration": "Recuerde que los cambios no se pueden deshacer, y que no podrá usar FacturaScripts 2017 con esta misma base de datos ¿Desea continuar?",
     "backup-found": "Copia de seguridad encontrada",

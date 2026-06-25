@@ -1,7 +1,7 @@
 {
     "2017-files-paragraph": "Lembre ter uma cópia de segurança dos ficheiros de FacturaScripts 2017? Copie o  zip à pasta MyFiles\/ FS2017 Migrator de FacturaScripts.",
     "2017-migrator": "Migrador 2017",
-    "2017-migrator-paragraph": "Este assistente permite migrar os dados da versão 2017 para a nova estrutura de tabelas do FS2021",
+    "2017-migrator-paragraph": "Este assistente permite migrar os dados da versão 2017 para a nova estrutura de tabelas do FS2026",
     "2017-mysql-charset-problem": "A codificação do MySQL deve ser utf8. Verifique esta página %web%",
     "are-you-sure-migration": "¿Está seguro de la migración?",
     "backup-found": "Copia de seguridad encontrada",

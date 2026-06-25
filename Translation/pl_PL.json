@@ -1,7 +1,7 @@
 {
     "2017-files-paragraph": "Czy posiadasz kopię zapasową plików FacturaScripts 2017? Skopiuj plik zip do katalogu MyFiles\/FS2017Migrator w FacturaScripts.",
     "2017-migrator": "Migrator 2017",
-    "2017-migrator-paragraph": "Ten asystent pozwala na migrację danych z wersji 2017 do nowej struktury 2022.",
+    "2017-migrator-paragraph": "Ten asystent pozwala na migrację danych z wersji 2017 do nowej struktury 2026.",
     "2017-mysql-charset-problem": "Kodowanie MySQL musi być utf8. Sprawdź tę stronę %web%",
     "are-you-sure-migration": "Proszę pamiętać, że zmiany są nieodwracalne i nie można będzie używać FacturaScripts 2017 z tą samą bazą danych. Czy chcesz kontynuować?",
     "backup-found": "Znaleziono kopię zapasową",
